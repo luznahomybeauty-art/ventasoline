@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Luz Gomez - Tienda de artesanías, ropa, accesorios y regalos personalizados. Emprendimiento familiar con amor y creatividad.">
+    <title>Luz Gomez | Artesanías, Ropa & Regalos con Amor</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" type="image/png" href="../img/flores.png">
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+    <!-- ==================== LOADER INICIAL ==================== -->
+    <div id="page-loader" class="loader">
+        <div class="loader-content">
+            <img src="../img/flores.png" alt="Luz Gomez" class="loader-flower-img">
+            <h2 class="loader-brand">Luz Gomez</h2>
+            <div class="loader-bar">
+                <div class="loader-progress"></div>
+            </div>
+            <p class="loader-text">Cargando magia artesanal...</p>
+        </div>
+    </div>
+
+    <!-- ==================== BOTÓN FLOTANTE WHATSAPP ==================== -->
+    <a href="https://wa.me/573213092850?text=¡Hola!%20Me%20interesa%20un%20producto%20de%20Luz%20Gomez" 
+       class="whatsapp-float" target="_blank" aria-label="Contactar por WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+        <span class="whatsapp-pulse"></span>
+    </a>
+
+    <!-- ==================== BOTÓN VOLVER ARRIBA ==================== -->
+    <button id="backToTop" class="back-to-top" aria-label="Volver arriba">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- ==================== HEADER / NAVEGACIÓN ==================== -->
+    <header class="header" id="header">
+        <div class="header-container">
+            <!-- Logo -->
+            <a href="#" class="logo">
+                <img src="../img/flores.png" alt="Luz Gomez" class="logo-img">
+                <div class="logo-text">
+                    <span class="logo-main">Luz Gomez</span>
+                    <span class="logo-sub">Hecho con amor</span>
+                </div>
+            </a>
+
+            <!-- Navegación Desktop -->
+            <nav class="nav-desktop">
+                <a href="#inicio" class="nav-link active">Inicio</a>
+                <a href="#categorias" class="nav-link">Categorías</a>
+                <a href="#productos" class="nav-link">Productos</a>
+                <a href="#promociones" class="nav-link">Promociones</a>
+                <a href="#nosotros" class="nav-link">Nosotros</a>
+                <a href="#galeria" class="nav-link">Galería</a>
+                <a href="#contacto" class="nav-link">Contacto</a>
+            </nav>
+
+            <!-- Acciones Header -->
+            <div class="header-actions">
+                <!-- Buscador -->
+                <div class="search-box">
+                    <input type="text" placeholder="Buscar productos..." id="searchInput">
+                    <button class="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+
+                <!-- Modo Oscuro -->
+                <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+                    <i class="fas fa-moon"></i>
+                </button>
+
+                <!-- Carrito -->
+                <button class="cart-btn" id="cartBtn" aria-label="Ver carrito">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </button>
+
+                <!-- Menú Hamburguesa -->
+                <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Menú Mobile -->
+        <nav class="nav-mobile" id="navMobile">
+            <a href="#inicio" class="nav-mobile-link">Inicio</a>
+            <a href="#categorias" class="nav-mobile-link">Categorías</a>
+            <a href="#productos" class="nav-mobile-link">Productos</a>
+            <a href="#promociones" class="nav-mobile-link">Promociones</a>
+            <a href="#nosotros" class="nav-mobile-link">Nosotros</a>
+            <a href="#galeria" class="nav-mobile-link">Galería</a>
+            <a href="#contacto" class="nav-mobile-link">Contacto</a>
+            <div class="nav-mobile-footer">
+                <a href="https://wa.me/573213092850" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
+                <a href="#" target="_blank"><i class="fab fa-facebook"></i></a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ==================== CARRITO SIDEBAR ==================== -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <aside class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-bag"></i> Tu Carrito</h3>
+            <button class="cart-close" id="cartClose"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Items se agregan dinámicamente -->
+            <div class="cart-empty">
+                <i class="fas fa-shopping-basket"></i>
+                <p>Tu carrito está vacío</p>
+                <span>¡Agrega productos hermosos!</span>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cartTotal">S/ 0.00</span>
+            </div>
+            <a href="https://wa.me/573213092850?text=Hola,%20quiero%20comprar%20estos%20productos" 
+               class="cart-checkout" target="_blank">
+                <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
+            </a>
+        </div>
+    </aside>
+
+    <!-- ==================== HERO SECTION ==================== -->
+    <section class="hero" id="inicio">
+        <div class="hero-particles" id="heroParticles">
+            <div class="hero-logo-float">
+                <img src="../img/flores.png" alt="Decoración">
+            </div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge fade-in-up">
+                <i class="fas fa-sparkles"></i>
+                <span>Emprendimiento Familiar Peruano</span>
+            </div>
+            <h1 class="hero-title fade-in-up delay-1">
+                Descubre la magia de lo <span class="text-gradient">hecho a mano</span>
+            </h1>
+            <p class="hero-desc fade-in-up delay-2">
+                Artesanías únicas, ropa con estilo, accesorios que enamoran y regalos que 
+                guardan recuerdos para siempre. Cada pieza cuenta una historia de amor.
+            </p>
+            <div class="hero-buttons fade-in-up delay-3">
+                <a href="#productos" class="btn btn-primary">
+                    <i class="fas fa-shopping-bag"></i> Comprar Ahora
+                </a>
+                <a href="#categorias" class="btn btn-secondary">
+                    <i class="fas fa-th-large"></i> Ver Catálogo
+                </a>
+            </div>
+            <div class="hero-stats fade-in-up delay-4">
+                <div class="stat-item">
+                    <span class="stat-number" data-target="500">0</span>+
+                    <span class="stat-label">Productos Únicos</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-target="1200">0</span>+
+                    <span class="stat-label">Clientes Felices</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-target="50">0</span>+
+                    <span class="stat-label">Diseños Exclusivos</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-image fade-in-left delay-2">
+            <div class="hero-img-wrapper">
+                <img src="../img/flores.png" 
+                     alt="Artesanías y productos femeninos Luz Gomez">
+                     
+                <div class="hero-img-decoration deco-1">🌺</div>
+                <br>
+                <div class="hero-img-decoration deco-2">✨</div>
+                <br>
+                <div class="hero-img-decoration deco-3">🌸</div>
+            </div>
+        </div>
+        <div class="hero-scroll">
+            <div class="scroll-mouse">
+                <div class="scroll-wheel"></div>
+            </div>
+            <span>Desplaza para explorar</span>
+        </div>
+    </section>
+
+    <!-- ==================== CATEGORÍAS ==================== -->
+    <section class="categories" id="categorias">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-tag">Nuestras Colecciones</span>
+                <h2 class="section-title">Explora por <span>Categoría</span></h2>
+                <p class="section-desc">Encuentra exactamente lo que buscas en nuestras exclusivas colecciones</p>
+            </div>
+            <div class="categories-grid">
+                <div class="category-card reveal" data-category="artesanias">
+                    <div class="category-img">
+                        <img src="../img/flores.png" alt="Artesanías">
+                        <div class="category-overlay"></div>
+                    </div>
+                    <div class="category-info">
+                        <div class="category-icon">🎨</div>
+                        <h3>Artesanías</h3>
+                        <p>Piezas únicas hechas a mano con dedicación</p>
+                        <span class="category-count">120 productos</span>
+                    </div>
+                </div>
+                <div class="category-card reveal" data-category="ropa">
+                    <div class="category-img">
+                        <img src="../img/flores.png" alt="Ropa">
+                        <div class="category-overlay"></div>
+                    </div>
+                    <div class="category-info">
+                        <div class="category-icon">👗</div>
+                        <h3>Ropa</h3>
+                        <p>Estilo femenino, moderno y artesanal</p>
+                        <span class="category-count">85 productos</span>
+                    </div>
+                </div>
+                <div class="category-card reveal" data-category="accesorios">
+                    <div class="category-img">
+                        <img src="../img/flores.png" alt="Accesorios">
+                        <div class="category-overlay"></div>
+                    </div>
+                    <div class="category-info">
+                        <div class="category-icon">💍</div>
+                        <h3>Accesorios</h3>
+                        <p>Detalles que complementan tu belleza</p>
+                        <span class="category-count">200 productos</span>
+                    </div>
+                </div>
+                <div class="category-card reveal" data-category="regalos">
+                    <div class="category-img">
+                        <img src="../img/flores.png" alt="Regalos">
+                        <div class="category-overlay"></div>
+                    </div>
+                    <div class="category-info">
+                        <div class="category-icon">🎁</div>
+                        <h3>Regalos</h3>
+                        <p>Sorpresas inolvidables para cada ocasión</p>
+                        <span class="category-count">95 productos</span>
+                    </div>
+                </div>
+                <div class="category-card reveal" data-category="personalizados">
+                    <div class="category-img">
+                        <img src="../img/flores.png" alt="Personalizados">
+                        <div class="category-overlay"></div>
+                    </div>
+                    <div class="category-info">
+                        <div class="category-icon">✨</div>
+                        <h3>Detalles Personalizados</h3>
+                        <p>Creados especialmente para ti</p>
+                        <span class="category-count">60 productos</span>
+                    </div>
+                </div>
+                <div class="category-card reveal" data-category="decoraciones">
+                    <div class="category-img">
+                        <img src="../img/flores.png" alt="Decoraciones">
+                        <div class="category-overlay"></div>
+                    </div>
+                    <div class="category-info">
+                        <div class="category-icon">🏠</div>
+                        <h3>Decoraciones</h3>
+                        <p>Transforma tu hogar con arte</p>
+                        <span class="category-count">75 productos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== PRODUCTOS DESTACADOS ==================== -->
+    <section class="products" id="productos">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-tag">Lo Más Vendido</span>
+                <h2 class="section-title">Productos <span>Destacados</span></h2>
+                <p class="section-desc">Las piezas favoritas de nuestras clientas</p>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filters reveal">
+                <button class="filter-btn active" data-filter="all">Todos</button>
+                <button class="filter-btn" data-filter="artesanias">Artesanías</button>
+                <button class="filter-btn" data-filter="ropa">Ropa</button>
+                <button class="filter-btn" data-filter="accesorios">Accesorios</button>
+                <button class="filter-btn" data-filter="regalos">Regalos</button>
+            </div>
+
+            <!-- Grid Productos -->
+            <div class="products-grid" id="productsGrid">
+                <!-- Producto 1 -->
+                <div class="product-card reveal" data-category="accesorios">
+                    <div class="product-badge">Más Vendido</div>
+                    <div class="product-img">
+                        <img src="../img/flores.png" alt="Collar Artesanal">
+                        <div class="product-actions">
+                            <button class="product-action-btn add-to-cart" data-name="Collar Boho Chic" data-price="45.00" data-img="../img/flores.png">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                            <a href="https://wa.me/573213092850?text=Hola,%20quiero%20el%20Collar%20Boho%20Chic" 
+                               class="product-action-btn" target="_blank">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <button class="product-action-btn quick-view">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">Accesorios</span>
+                        <h3 class="product-name">Collar Boho Chic</h3>
+                        <div class="product-price">
+                            <span class="price-current">S/ 45.00</span>
+                        </div>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                            <span>(48)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 2 -->
+                <div class="product-card reveal" data-category="ropa">
+                    <div class="product-badge new">Nuevo</div>
+                    <div class="product-img">
+                        <img src="../img/flores.png" alt="Blusa Floral">
+                        <div class="product-actions">
+                            <button class="product-action-btn add-to-cart" data-name="Blusa Floral Elegante" data-price="89.00" data-img="../img/flores.png">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                            <a href="https://wa.me/573213092850?text=Hola,%20quiero%20la%20Blusa%20Floral%20Elegante" 
+                               class="product-action-btn" target="_blank">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <button class="product-action-btn quick-view">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">Ropa</span>
+                        <h3 class="product-name">Blusa Floral Elegante</h3>
+                        <div class="product-price">
+                            <span class="price-current">S/ 89.00</span>
+                        </div>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <span>(62)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 3 -->
+                <div class="product-card reveal" data-category="artesanias">
+                    <div class="product-img">
+                        <img src="../img/flores.png" alt="Atrapasueños">
+                        <div class="product-actions">
+                            <button class="product-action-btn add-to-cart" data-name="Atrapasueños Arcoíris" data-price="55.00" data-img="../img/flores.png">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                            <a href="https://wa.me/573213092850?text=Hola,%20quiero%20el%20Atrapasueños%20Arcoíris" 
+                               class="product-action-btn" target="_blank">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <button class="product-action-btn quick-view">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">Artesanías</span>
+                        <h3 class="product-name">Atrapasueños Arcoíris</h3>
+                        <div class="product-price">
+                            <span class="price-current">S/ 55.00</span>
+                            <span class="price-old">S/ 70.00</span>
+                        </div>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                            <span>(35)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 4 -->
+                <div class="product-card reveal" data-category="regalos">
+                    <div class="product-badge sale">-20%</div>
+                    <div class="product-img">
+                        <img src="../img/flores.png" alt="Caja de Regalo">
+                        <div class="product-actions">
+                            <button class="product-action-btn add-to-cart" data-name="Caja Sorpresa Premium" data-price="120.00" data-img="../img/flores.png">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                            <a href="https://wa.me/573213092850?text=Hola,%20quiero%20la%20Caja%20Sorpresa%20Premium" 
+                               class="product-action-btn" target="_blank">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <button class="product-action-btn quick-view">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">Regalos</span>
+                        <h3 class="product-name">Caja Sorpresa Premium</h3>
+                        <div class="product-price">
+                            <span class="price-current">S/ 120.00</span>
+                            <span class="price-old">S/ 150.00</span>
+                        </div>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <span>(89)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 5 -->
+                <div class="product-card reveal" data-category="accesorios">
+                    <div class="product-img">
+                        <img src="../img/flores.png" alt="Pulseras">
+                        <div class="product-actions">
+                            <button class="product-action-btn add-to-cart" data-name="Set de Pulseras Bohemias" data-price="35.00" data-img="../img/flores.png">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                            <a href="https://wa.me/573213092850?text=Hola,%20quiero%20el%20Set%20de%20Pulseras%20Bohemias" 
+                               class="product-action-btn" target="_blank">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <button class="product-action-btn quick-view">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">Accesorios</span>
+                        <h3 class="product-name">Set de Pulseras Bohemias</h3>
+                        <div class="product-price">
+                            <span class="price-current">S/ 35.00</span>
+                        </div>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                            <span>(41)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 6 -->
+                <div class="product-card reveal" data-category="ropa">
+                    <div class="product-badge new">Nuevo</div>
+                    <div class="product-img">
+                        <img src="../img/flores.png" alt="Vestido">
+                        <div class="product-actions">
+                            <button class="product-action-btn add-to-cart" data-name="Vestido Boho Primavera" data-price="145.00" data-img="../img/flores.png">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                            <a href="https://wa.me/573213092850?text=Hola,%20quiero%20el%20Vestido%20Boho%20Primavera" 
+                               class="product-action-btn" target="_blank">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <button class="product-action-btn quick-view">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">Ropa</span>
+                        <h3 class="product-name">Vestido Boho Primavera</h3>
+                        <div class="product-price">
+                            <span class="price-current">S/ 145.00</span>
+                        </div>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <span>(73)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 7 -->
+                <div class="product-card reveal" data-category="artesanias">
+                    <div class="product-img">
+                        <img src="../img/flores.png" alt="Macramé">
+                        <div class="product-actions">
+                            <button class="product-action-btn add-to-cart" data-name="Colgante Macramé Floral" data-price="68.00" data-img="../img/flores.png">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                            <a href="https://wa.me/573213092850?text=Hola,%20quiero%20el%20Colgante%20Macramé%20Floral" 
+                               class="product-action-btn" target="_blank">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <button class="product-action-btn quick-view">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">Artesanías</span>
+                        <h3 class="product-name">Colgante Macramé Floral</h3>
+                        <div class="product-price">
+                            <span class="price-current">S/ 68.00</span>
+                        </div>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                            <span>(28)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 8 -->
+                <div class="product-card reveal" data-category="regalos">
+                    <div class="product-badge sale">-15%</div>
+                    <div class="product-img">
+                        <img src="../img/flores.png" alt="Ramo de Flores">
+                        <div class="product-actions">
+                            <button class="product-action-btn add-to-cart" data-name="Ramo Flores Eternas" data-price="95.00" data-img="../img/flores.png">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                            <a href="https://wa.me/573213092850?text=Hola,%20quiero%20el%20Ramo%20Flores%20Eternas" 
+                               class="product-action-btn" target="_blank">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <button class="product-action-btn quick-view">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">Regalos</span>
+                        <h3 class="product-name">Ramo Flores Eternas</h3>
+                        <div class="product-price">
+                            <span class="price-current">S/ 95.00</span>
+                            <span class="price-old">S/ 112.00</span>
+                        </div>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                            <span>(56)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="products-more reveal">
+                <a href="https://wa.me/573213092850?text=Hola,%20quiero%20ver%20más%20productos" 
+                   class="btn btn-outline" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Ver Catálogo Completo
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== PROMOCIONES ==================== -->
+    <section class="promotions" id="promociones">
+        <div class="container">
+            <div class="promo-banner reveal">
+                <div class="promo-content">
+                    <span class="promo-tag">Oferta Especial</span>
+                    <h2 class="promo-title">¡Semana de la <span>Mujer Emprendedora</span>!</h2>
+                    <p class="promo-desc">
+                        Celebra con nosotras y obtén <strong>25% de descuento</strong> en todos nuestros 
+                        productos artesanales y detalles personalizados.
+                    </p>
+                    <div class="promo-timer" id="promoTimer">
+                        <div class="timer-item">
+                            <span class="timer-num" id="timerDays">03</span>
+                            <span class="timer-label">Días</span>
+                        </div>
+                        <div class="timer-item">
+                            <span class="timer-num" id="timerHours">14</span>
+                            <span class="timer-label">Horas</span>
+                        </div>
+                        <div class="timer-item">
+                            <span class="timer-num" id="timerMinutes">32</span>
+                            <span class="timer-label">Min</span>
+                        </div>
+                        <div class="timer-item">
+                            <span class="timer-num" id="timerSeconds">45</span>
+                            <span class="timer-label">Seg</span>
+                        </div>
+                    </div>
+                    <a href="https://wa.me/573213092850?text=Hola,%20quiero%20aprovechar%20la%20promoción" 
+                       class="btn btn-primary btn-large" target="_blank">
+                        <i class="fab fa-whatsapp"></i> Aprovechar Oferta
+                    </a>
+                </div>
+                <div class="promo-image">
+                    <img src="../img/flores.png" alt="Promoción">
+                    <div class="promo-float">-25%</div>
+                </div>
+                <div class="promo-decoration">🌸</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SOBRE NOSOTROS ==================== -->
+    <section class="about" id="nosotros">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-images reveal">
+                    <div class="about-img-main">
+                        <img src="../img/flores.png" alt="Luz Gomez Artesanías">
+                    </div>
+                    <div class="about-img-small">
+                        <img src="../img/flores.png" alt="Detalle artesanal">
+                    </div>
+                    <div class="about-experience">
+                        <span class="exp-number">8+</span>
+                        <span class="exp-text">Años de<br>experiencia</span>
+                    </div>
+                </div>
+                <div class="about-content reveal">
+                    <span class="section-tag">Nuestra Historia</span>
+                    <h2 class="section-title">Hecho con <span>Amor</span> y <span>Dedicación</span></h2>
+                    <p class="about-text">
+                        <strong>Luz Gomez</strong> nació del sueño de una familia peruana apasionada por el arte 
+                        y la creatividad. Cada pieza que creamos lleva consigo horas de dedicación, 
+                        selección de materiales de la mejor calidad y mucho cariño.
+                    </p>
+                    <p class="about-text">
+                        Nos especializamos en artesanías únicas, ropa con estilo propio, accesorios que 
+                        cuentan historias y regalos que guardan recuerdos para toda la vida. Creemos 
+                        firmemente que lo hecho a mano tiene un valor incomparable.
+                    </p>
+                    
+                    <div class="about-values">
+                        <div class="value-item">
+                            <div class="value-icon">💜</div>
+                            <div class="value-info">
+                                <h4>Amor</h4>
+                                <p>Cada pieza es creada con pasión</p>
+                            </div>
+                        </div>
+                        <div class="value-item">
+                            <div class="value-icon">✨</div>
+                            <div class="value-info">
+                                <h4>Creatividad</h4>
+                                <p>Diseños únicos e innovadores</p>
+                            </div>
+                        </div>
+                        <div class="value-item">
+                            <div class="value-icon">💎</div>
+                            <div class="value-info">
+                                <h4>Calidad</h4>
+                                <p>Materiales seleccionados cuidadosamente</p>
+                            </div>
+                        </div>
+                        <div class="value-item">
+                            <div class="value-icon">🤝</div>
+                            <div class="value-info">
+                                <h4>Atención Personalizada</h4>
+                                <p>Cada cliente es especial para nosotros</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="https://wa.me/573213092850?text=Hola,%20quiero%20conocer%20más%20de%20Luz%20Gomez" 
+                       class="btn btn-primary" target="_blank">
+                        <i class="fab fa-whatsapp"></i> Conversemos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== TESTIMONIOS ==================== -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-tag">Testimonios</span>
+                <h2 class="section-title">Lo que dicen <span>nuestras clientas</span></h2>
+            </div>
+            <div class="testimonials-slider reveal" id="testimonialsSlider">
+                <div class="testimonials-track" id="testimonialsTrack">
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="testimonial-text">
+                            "Los detalles personalizados que encargué para el cumpleaños de mi mamá 
+                            fueron espectaculares. La calidad, el empaque, todo perfecto. ¡100% recomendado!"
+                        </p>
+                        <div class="testimonial-author">
+                            <img src="../img/flores.png" alt="María">
+                            <div>
+                                <h4>María Fernanda</h4>
+                                <span>Lima, Perú</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="testimonial-text">
+                            "Compré una blusa y un collar boho y me encantaron. La atención es increíble, 
+                            te asesoran en todo. Ya soy clienta fija de Luz Gomez."
+                        </p>
+                        <div class="testimonial-author">
+                            <img src="../img/flores.png" alt="Ana">
+                            <div>
+                                <h4>Ana Lucía</h4>
+                                <span>Arequipa, Perú</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <p class="testimonial-text">
+                            "El atrapasueños que compré para decorar mi cuarto es una obra de arte. 
+                            Se nota el trabajo artesanal y el amor puesto en cada detalle."
+                        </p>
+                        <div class="testimonial-author">
+                            <img src="../img/flores.png" alt="Carla">
+                            <div>
+                                <h4>Carla Mendoza</h4>
+                                <span>Trujillo, Perú</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="testimonial-text">
+                            "Pedí una caja sorpresa para mi mejor amiga y quedó fascinada. Cada producto 
+                            estaba hermosamente presentado. ¡El mejor regalo que he dado!"
+                        </p>
+                        <div class="testimonial-author">
+                            <img src="../img/flores.png" alt="Diana">
+                            <div>
+                                <h4>Diana Torres</h4>
+                                <span>Cusco, Perú</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonials-nav">
+                    <button class="testimonial-btn prev" id="testimonialPrev"><i class="fas fa-arrow-left"></i></button>
+                    <button class="testimonial-btn next" id="testimonialNext"><i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== GALERÍA ==================== -->
+    <section class="gallery" id="galeria">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-tag">Galería</span>
+                <h2 class="section-title">Nuestra <span> Inspiración</span></h2>
+            </div>
+            <div class="gallery-grid reveal">
+                <div class="gallery-item large">
+                    <img src="../img/flores.png" alt="Galería 1">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-heart"></i>
+                        <span>Artesanía Viva</span>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../img/flores.png" alt="Galería 2">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-heart"></i>
+                        <span>Detalles Únicos</span>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../img/flores.png" alt="Galería 3">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-heart"></i>
+                        <span>Moda Artesanal</span>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../img/flores.png" alt="Galería 4">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-heart"></i>
+                        <span>Accesorios con Alma</span>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../img/flores.png" alt="Galería 5">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-heart"></i>
+                        <span>Regalos Especiales</span>
+                    </div>
+                </div>
+                <div class="gallery-item wide">
+                    <img src="../img/flores.png" alt="Galería 6">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-heart"></i>
+                        <span>Hecho con Amor</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CONTACTO ==================== -->
+    <section class="contact" id="contacto">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-tag">Contacto</span>
+                <h2 class="section-title">Hablemos de tu <span>Próximo Pedido</span></h2>
+            </div>
+            <div class="contact-grid">
+                <div class="contact-info reveal">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>WhatsApp</h4>
+                            <p>+57 321 3092850</p>
+                            <a href="https://wa.me/573213092850" target="_blank">Escríbenos ahora</a>
+                        </div>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fab fa-instagram"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Instagram</h4>
+                            <p>@luzgomez.artesanal</p>
+                            <a href="#" target="_blank">Síguenos</a>
+                        </div>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fab fa-facebook"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Facebook</h4>
+                            <p>Luz Gomez Artesanal</p>
+                            <a href="#" target="_blank">Visítanos</a>
+                        </div>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Ubicación</h4>
+                            <p>Lima, Perú</p>
+                            <span>Envíos a todo el país</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form-wrapper reveal">
+                    <form class="contact-form" id="contactForm">
+                        <div class="form-group">
+                            <label for="name">Nombre completo</label>
+                            <input type="text" id="name" placeholder="Tu nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Correo electrónico</label>
+                            <input type="email" id="email" placeholder="tu@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Teléfono (opcional)</label>
+                            <input type="tel" id="phone" placeholder="+57 321 3092850">
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Mensaje</label>
+                            <textarea id="message" rows="4" placeholder="¿Qué producto te interesa?" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">
+                            <i class="fas fa-paper-plane"></i> Enviar Mensaje
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="footer">
+        <div class="footer-decoration">🌸</div>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="#" class="logo">
+                        <img src="../img/flores.png" alt="Luz Gomez" class="logo-img">
+                        <div class="logo-text">
+                            <span class="logo-main">Luz Gomez</span>
+                            <span class="logo-sub">Hecho con amor</span>
+                        </div>
+                    </a>
+                    <p class="footer-desc">
+                        Emprendimiento familiar peruano dedicado a crear productos únicos con amor, 
+                        creatividad y la mejor calidad. Cada pieza cuenta una historia.
+                    </p>
+                    <div class="footer-social">
+                        <a href="https://wa.me/573213092850" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" target="_blank" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Categorías</h4>
+                    <ul>
+                        <li><a href="#categorias">Artesanías</a></li>
+                        <li><a href="#categorias">Ropa</a></li>
+                        <li><a href="#categorias">Accesorios</a></li>
+                        <li><a href="#categorias">Regalos</a></li>
+                        <li><a href="#categorias">Detalles Personalizados</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="#inicio">Inicio</a></li>
+                        <li><a href="#productos">Productos</a></li>
+                        <li><a href="#promociones">Promociones</a></li>
+                        <li><a href="#nosotros">Sobre Nosotros</a></li>
+                        <li><a href="#contacto">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Atención al Cliente</h4>
+                    <ul>
+                        <li><a href="#">Preguntas Frecuentes</a></li>
+                        <li><a href="#">Envíos y Entregas</a></li>
+                        <li><a href="#">Política de Devoluciones</a></li>
+                        <li><a href="#">Términos y Condiciones</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 Luz Gomez. Todos los derechos reservados.</p>
+                <p>Hecho con 💜 en Perú</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==================== MODAL VISTA RÁPIDA ==================== -->
+    <div class="modal" id="quickViewModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
+            <div class="modal-body">
+                <div class="modal-img">
+                    <img src="../img/flores.png" alt="" id="modalImg">
+                </div>
+                <div class="modal-info">
+                    <span class="modal-category" id="modalCategory"></span>
+                    <h3 class="modal-title" id="modalTitle"></h3>
+                    <div class="modal-price" id="modalPrice"></div>
+                    <p class="modal-desc">
+                        Producto artesanal elaborado con materiales de alta calidad. 
+                        Cada pieza es única y puede variar ligeramente, lo que la hace especial.
+                    </p>
+                    <div class="modal-actions">
+                        <button class="btn btn-primary" id="modalAddToCart">
+                            <i class="fas fa-shopping-bag"></i> Agregar al Carrito
+                        </button>
+                        <a href="https://wa.me/573213092850" class="btn btn-whatsapp" target="_blank">
+                            <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Producto agregado al carrito</span>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="../js/script.js"></script>
+</body>
+</html>
+
+
+
+

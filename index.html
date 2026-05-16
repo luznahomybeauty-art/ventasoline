@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Luz Gomez - Tienda artesanal peruana integrada con Google Sheets y Google Drive.">
+  <title>Luz Gomez | Tienda Artesanal</title>
+  <link rel="icon" type="image/png" href="img/flores.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --purple: #8B5CF6;
+      --purple-light: #A78BFA;
+      --purple-dark: #7C3AED;
+      --fuchsia: #D946EF;
+      --pink: #F472B6;
+      --yellow: #FCD34D;
+      --green: #10B981;
+      --rose: #FB7185;
+      --danger: #EF4444;
+      --white: #FFFFFF;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-300: #D1D5DB;
+      --gray-500: #6B7280;
+      --gray-600: #4B5563;
+      --gray-700: #374151;
+      --gray-800: #1F2937;
+      --gray-900: #111827;
+      --gradient-primary: linear-gradient(135deg, var(--purple) 0%, var(--fuchsia) 50%, var(--pink) 100%);
+      --gradient-warm: linear-gradient(135deg, var(--yellow) 0%, var(--pink) 50%, var(--fuchsia) 100%);
+      --gradient-hero: linear-gradient(135deg, #FDF4FF 0%, #FFF7ED 35%, #ECFDF5 70%, #EFF6FF 100%);
+      --shadow: 0 8px 24px rgba(17, 24, 39, 0.09);
+      --shadow-lg: 0 20px 45px rgba(17, 24, 39, 0.16);
+      --shadow-xl: 0 26px 70px rgba(17, 24, 39, 0.22);
+      --shadow-glow: 0 0 24px rgba(139, 92, 246, 0.30);
+      --radius-sm: 8px;
+      --radius: 16px;
+      --radius-lg: 24px;
+      --radius-xl: 32px;
+      --radius-full: 999px;
+      --font-display: 'Playfair Display', serif;
+      --font-body: 'Poppins', sans-serif;
+      --font-script: 'Great Vibes', cursive;
+      --transition: 0.3s ease;
+    }
+
+    [data-theme="light"] {
+      --bg-primary: var(--white);
+      --bg-secondary: var(--gray-50);
+      --bg-card: var(--white);
+      --text-primary: var(--gray-900);
+      --text-secondary: var(--gray-600);
+      --text-muted: var(--gray-500);
+      --border-color: var(--gray-200);
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0F0F1A;
+      --bg-secondary: #1A1A2E;
+      --bg-card: #16162A;
+      --text-primary: #F9FAFB;
+      --text-secondary: #D1D5DB;
+      --text-muted: #9CA3AF;
+      --border-color: rgba(255,255,255,0.10);
+      --gradient-hero: linear-gradient(135deg, #151226 0%, #241A2E 45%, #101F22 100%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-body); background: var(--bg-primary); color: var(--text-primary); line-height: 1.6; overflow-x: hidden; }
+    body.no-scroll { overflow: hidden; touch-action: none; }
+    a { color: inherit; text-decoration: none; }
+    button, input, textarea, select { font: inherit; }
+    button { border: 0; cursor: pointer; }
+    img { display: block; max-width: 100%; }
+    .hidden { display: none !important; }
+    .view { min-height: 100vh; }
+    .container { width: min(1280px, calc(100% - 48px)); margin: 0 auto; }
+    section { padding: 90px 0; }
+    .text-gradient, .section-title span, .logo-main { background: var(--gradient-primary); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 13px 24px; border-radius: var(--radius-full); font-weight: 700; transition: var(--transition); white-space: nowrap; min-height: 44px; }
+    .btn-primary { background: var(--gradient-primary); color: #fff; box-shadow: 0 8px 20px rgba(139,92,246,.25); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-glow); }
+    .btn-secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); }
+    .btn-danger { background: var(--rose); color: #fff; }
+    .btn-green { background: var(--green); color: #fff; }
+    .btn-small { padding: 8px 12px; font-size: .82rem; }
+    .btn-full { width: 100%; }
+    .icon-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--bg-secondary); color: var(--text-secondary); display: inline-flex; align-items: center; justify-content: center; transition: var(--transition); }
+    .icon-btn:hover { background: var(--purple); color: #fff; }
+    .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .placeholder { background: linear-gradient(110deg, rgba(139,92,246,.10), rgba(244,114,182,.18), rgba(252,211,77,.16)); background-size: 220% 100%; animation: shimmer 1.3s infinite linear; }
+    @keyframes shimmer { to { background-position: -220% 0; } }
+
+    .loader { position: fixed; inset: 0; z-index: 5000; display: grid; place-items: center; background: var(--bg-primary); transition: .5s ease; }
+    .loader.hidden { opacity: 0; visibility: hidden; }
+    .loader-content { text-align: center; }
+    .loader-logo { width: 82px; height: 82px; margin: 0 auto 10px; border-radius: 50%; object-fit: contain; animation: flowerSpin 2s ease-in-out infinite; }
+    .loader-brand, .brand-fallback { font-family: var(--font-script); font-size: 3rem; line-height: 1; }
+    .loader-bar { width: 210px; height: 4px; margin: 18px auto 8px; border-radius: 99px; background: var(--gray-200); overflow: hidden; }
+    .loader-progress { height: 100%; width: 100%; background: var(--gradient-primary); animation: loadProgress 1.6s ease forwards; }
+    @keyframes loadProgress { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+    @keyframes flowerSpin { 50% { transform: rotate(180deg) scale(1.12); } }
+
+    .access-wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: var(--gradient-hero); position: relative; overflow: hidden; }
+    .access-card { width: min(960px, 100%); display: grid; grid-template-columns: .9fr 1.1fr; overflow: hidden; }
+    .access-art { padding: 48px; background: var(--gradient-primary); color: #fff; display: flex; flex-direction: column; justify-content: space-between; min-height: 560px; }
+    .access-art .brand-fallback { color: #fff; -webkit-text-fill-color: #fff; }
+    .access-art p { max-width: 360px; opacity: .92; margin-top: 18px; }
+    .access-panel { padding: 42px; background: var(--bg-card); }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 6px; background: var(--bg-secondary); border-radius: var(--radius-full); margin: 24px 0; }
+    .tab-btn { padding: 11px; border-radius: var(--radius-full); color: var(--text-secondary); background: transparent; font-weight: 700; }
+    .tab-btn.active { background: var(--gradient-primary); color: #fff; }
+    .form-grid { display: grid; gap: 15px; }
+    .field label { display: block; margin-bottom: 7px; font-size: .88rem; font-weight: 700; }
+    .field input, .field textarea, .field select { width: 100%; padding: 13px 15px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-secondary); color: var(--text-primary); outline: none; transition: var(--transition); min-height: 46px; }
+    .field textarea { min-height: 110px; resize: vertical; }
+    .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(139,92,246,.13); }
+    .field.error input, .field.error textarea, .field.error select { border-color: var(--rose); }
+    .error-text { display: none; color: var(--rose); font-size: .78rem; margin-top: 5px; }
+    .field.error .error-text { display: block; }
+
+    .header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(255,255,255,.86); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color); }
+    [data-theme="dark"] .header { background: rgba(15,15,26,.86); }
+    .header-container { height: 80px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-img { width: 48px; height: 48px; object-fit: contain; border-radius: 50%; filter: drop-shadow(0 2px 8px rgba(139,92,246,.25)); }
+    .logo-main { font-family: var(--font-script); font-size: 1.75rem; line-height: 1; }
+    .logo-sub { display: block; font-size: .65rem; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; }
+    .nav-desktop { display: flex; gap: 4px; }
+    .nav-link { padding: 8px 13px; border-radius: var(--radius-full); color: var(--text-secondary); font-weight: 600; font-size: .9rem; }
+    .nav-link:hover, .nav-link.active { color: var(--purple); background: rgba(139,92,246,.10); }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .search-box { position: relative; }
+    .search-box input { width: 210px; padding: 11px 38px 11px 15px; border: 1px solid var(--border-color); border-radius: var(--radius-full); background: var(--bg-secondary); color: var(--text-primary); outline: none; }
+    .search-box i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+    .cart-btn { position: relative; }
+    .cart-count { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--fuchsia); color: #fff; font-size: .68rem; font-weight: 800; }
+    .menu-toggle { display: none; }
+    .nav-mobile { display: none; }
+
+    .hero { min-height: 100vh; padding: 124px 0 70px; background: var(--gradient-hero); position: relative; overflow: hidden; }
+    .hero-bg { position: absolute; inset: 0; opacity: .18; background-position: center; background-size: cover; }
+    .hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 1.05fr .95fr; align-items: center; gap: 60px; min-height: calc(100vh - 190px); }
+    .hero-badge { display: inline-flex; gap: 8px; align-items: center; color: var(--purple); background: rgba(139,92,246,.12); border: 1px solid rgba(139,92,246,.20); border-radius: var(--radius-full); padding: 8px 16px; font-weight: 700; font-size: .86rem; margin-bottom: 22px; }
+    .hero-title { font-family: var(--font-display); font-size: clamp(2.6rem, 5vw, 4.6rem); line-height: 1.08; margin-bottom: 22px; }
+    .hero-desc { color: var(--text-secondary); font-size: 1.08rem; max-width: 590px; margin-bottom: 30px; }
+    .hero-buttons { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 44px; }
+    .hero-stats { display: flex; gap: 34px; flex-wrap: wrap; }
+    .stat-number { display: block; font-family: var(--font-display); font-weight: 800; font-size: 2rem; }
+    .stat-label { color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-size: .75rem; }
+    .hero-visual { position: relative; min-height: 460px; border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-lg); background: var(--gradient-primary); }
+    .hero-visual img { width: 100%; height: 100%; min-height: 460px; object-fit: cover; }
+    .hero-visual.empty { display: grid; place-items: center; color: #fff; font-family: var(--font-script); font-size: 4rem; }
+    .particle { position: absolute; font-size: 1.4rem; opacity: .35; pointer-events: none; animation: floatParticle 14s ease-in-out infinite; }
+    @keyframes floatParticle { 33% { transform: translateY(-28px) rotate(90deg); } 66% { transform: translateY(18px) rotate(210deg); } }
+    .scroll-indicator { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); color: var(--text-muted); font-size: .8rem; display: grid; justify-items: center; gap: 6px; }
+    .mouse { width: 24px; height: 38px; border: 2px solid var(--text-muted); border-radius: 30px; position: relative; }
+    .mouse:after { content: ""; width: 4px; height: 8px; background: var(--text-muted); border-radius: 10px; position: absolute; left: 50%; top: 7px; transform: translateX(-50%); animation: wheel 1.3s infinite; }
+    @keyframes wheel { to { transform: translate(-50%, 12px); opacity: 0; } }
+    .fade-in-up { opacity: 0; transform: translateY(28px); animation: fadeInUp .8s forwards; }
+    .delay-1 { animation-delay: .15s; } .delay-2 { animation-delay: .3s; } .delay-3 { animation-delay: .45s; } .delay-4 { animation-delay: .6s; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+    .section-header { text-align: center; max-width: 720px; margin: 0 auto 42px; }
+    .section-tag { color: var(--purple); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-size: .78rem; }
+    .section-title { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); line-height: 1.15; margin: 8px 0 10px; }
+    .section-desc { color: var(--text-secondary); }
+    .categories, .testimonials, .contact, .admin-main { background: var(--bg-secondary); }
+    .categories-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .category-card { min-height: 330px; border-radius: var(--radius-lg); overflow: hidden; position: relative; cursor: pointer; background: var(--bg-card); box-shadow: var(--shadow); }
+    .category-card img { width: 100%; height: 100%; min-height: 330px; object-fit: cover; transition: .55s ease; }
+    .category-card:hover img { transform: scale(1.08); }
+    .category-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 15%, rgba(0,0,0,.68)); }
+    .category-info { position: absolute; inset: auto 0 0; padding: 26px; color: #fff; }
+    .category-icon { font-size: 2.2rem; }
+    .category-info h3 { font-family: var(--font-display); font-size: 1.55rem; }
+    .category-info p, .category-count { opacity: .88; font-size: .9rem; }
+
+    .filters { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+    .filter-btn { padding: 10px 18px; border-radius: var(--radius-full); background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); font-weight: 700; }
+    .filter-btn.active { background: var(--gradient-primary); color: #fff; border-color: transparent; }
+    .products-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+    .product-card { position: relative; overflow: hidden; transition: var(--transition); }
+    .product-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+    .product-img { aspect-ratio: 1; background: var(--bg-secondary); overflow: hidden; position: relative; }
+    .product-img img { width: 100%; height: 100%; object-fit: cover; }
+    .product-badge { position: absolute; left: 14px; top: 14px; z-index: 2; padding: 6px 12px; border-radius: var(--radius-full); background: var(--gradient-warm); color: var(--gray-900); font-weight: 800; font-size: .72rem; }
+    .product-actions { position: absolute; right: 12px; bottom: 12px; display: flex; gap: 8px; opacity: 0; transform: translateY(12px); transition: var(--transition); }
+    .product-card:hover .product-actions { opacity: 1; transform: translateY(0); }
+    .product-action-btn { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: #fff; color: var(--purple); box-shadow: var(--shadow); }
+    .product-info { padding: 18px; }
+    .product-category { color: var(--purple); font-size: .74rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; }
+    .product-name { font-size: 1rem; margin: 5px 0 8px; min-height: 48px; }
+    .product-price { display: flex; align-items: baseline; gap: 10px; }
+    .price-current { color: var(--purple); font-weight: 900; font-size: 1.15rem; }
+    .price-old { color: var(--text-muted); text-decoration: line-through; font-size: .88rem; }
+    .product-rating { color: var(--yellow); font-size: .82rem; margin-top: 9px; }
+    .load-more-wrap { text-align: center; margin-top: 32px; }
+
+    .promo-banner { display: grid; grid-template-columns: 1.1fr .9fr; overflow: hidden; }
+    .promo-content { padding: 46px; }
+    .promo-title { font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.6rem); }
+    .promo-timer { display: flex; gap: 12px; margin: 25px 0; flex-wrap: wrap; }
+    .timer-item { min-width: 72px; text-align: center; padding: 13px; border-radius: var(--radius); background: var(--bg-secondary); border: 1px solid var(--border-color); }
+    .timer-num { display: block; color: var(--purple); font-family: var(--font-display); font-size: 1.7rem; font-weight: 800; }
+    .promo-image { min-height: 360px; background: var(--gradient-primary); }
+    .promo-image img, .promo-image video { width: 100%; height: 100%; object-fit: cover; border: 0; }
+    .about-grid, .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 54px; align-items: center; }
+    .about-image { min-height: 440px; border-radius: var(--radius-xl); overflow: hidden; background: var(--gradient-primary); display: grid; place-items: center; color: #fff; font-family: var(--font-script); font-size: 4rem; box-shadow: var(--shadow-lg); }
+    .about-values { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 28px 0; }
+    .value-item { display: flex; gap: 12px; padding: 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius); }
+    .testimonials-slider { overflow: hidden; }
+    .testimonials-track { display: flex; gap: 20px; transition: transform .45s ease; }
+    .testimonial-card { min-width: calc(50% - 10px); padding: 30px; }
+    .testimonial-stars { color: var(--yellow); margin-bottom: 12px; }
+    .testimonial-author { display: flex; align-items: center; gap: 12px; margin-top: 22px; }
+    .testimonial-author img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 3px solid var(--purple-light); }
+    .slider-nav { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
+    .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 245px; gap: 14px; }
+    .gallery-item { border-radius: var(--radius); overflow: hidden; position: relative; background: var(--bg-secondary); }
+    .gallery-item.large { grid-column: span 2; grid-row: span 2; }
+    .gallery-item.wide { grid-column: span 2; }
+    .gallery-item img, .gallery-item video { width: 100%; height: 100%; object-fit: cover; transition: .5s ease; border: 0; }
+    .gallery-item:hover img { transform: scale(1.08); }
+    .gallery-overlay { position: absolute; inset: 0; background: rgba(139,92,246,.70); color: #fff; display: grid; place-items: center; opacity: 0; transition: var(--transition); text-align: center; padding: 20px; }
+    .gallery-item:hover .gallery-overlay { opacity: 1; }
+    .contact-card { display: flex; gap: 18px; align-items: center; padding: 22px; margin-bottom: 16px; }
+    .contact-icon { width: 54px; height: 54px; border-radius: var(--radius); background: var(--gradient-primary); color: #fff; display: grid; place-items: center; font-size: 1.35rem; flex: none; }
+    .footer { background: var(--gray-900); color: var(--gray-300); padding: 62px 0 25px; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 34px; }
+    .footer h4 { color: #fff; margin-bottom: 13px; }
+    .footer a { color: var(--gray-300); display: block; margin: 7px 0; }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,.08); margin-top: 34px; padding-top: 20px; display: flex; justify-content: space-between; color: var(--gray-500); font-size: .86rem; }
+
+    .cart-overlay, .modal { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 2000; opacity: 0; visibility: hidden; transition: var(--transition); }
+    .cart-overlay.active, .modal.active { opacity: 1; visibility: visible; }
+    .cart-sidebar { position: fixed; right: 0; top: 0; height: 100vh; width: min(420px, 92vw); background: var(--bg-primary); z-index: 2100; transform: translateX(100%); transition: .4s ease; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
+    .cart-sidebar.active { transform: translateX(0); }
+    .cart-header, .cart-footer { padding: 22px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .cart-footer { border-bottom: 0; border-top: 1px solid var(--border-color); display: block; }
+    .cart-items { flex: 1; overflow: auto; padding: 16px; }
+    .cart-empty { text-align: center; color: var(--text-muted); padding: 60px 10px; }
+    .cart-item { display: grid; grid-template-columns: 72px 1fr auto; gap: 12px; padding: 12px; border-radius: var(--radius); background: var(--bg-secondary); margin-bottom: 10px; align-items: center; }
+    .cart-item img { width: 72px; height: 72px; object-fit: cover; border-radius: var(--radius-sm); }
+    .qty-controls { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+    .qty-controls button { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); }
+    .cart-total { display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 1.2rem; font-weight: 900; }
+    .toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 80px); z-index: 4000; background: var(--gray-900); color: #fff; padding: 14px 22px; border-radius: var(--radius-full); box-shadow: var(--shadow-lg); opacity: 0; transition: var(--transition); max-width: min(520px, 92vw); }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+    .modal { display: grid; place-items: center; padding: 22px; }
+    .modal-card { width: min(850px, 100%); max-height: 90vh; overflow: auto; background: var(--bg-primary); border-radius: var(--radius-lg); padding: 24px; position: relative; }
+    .modal-close { position: absolute; right: 18px; top: 18px; }
+    .product-detail { display: grid; grid-template-columns: .95fr 1.05fr; gap: 32px; padding: 120px 0 70px; }
+    .detail-main-img { aspect-ratio: 1; border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-secondary); }
+    .detail-main-img img, .detail-main-img video { width: 100%; height: 100%; object-fit: contain; border: 0; background:#000; }
+    .video-shell { width:100%; height:100%; min-height:220px; position:relative; display:grid; background:#050505; color:#fff; border-radius:inherit; overflow:hidden; }
+    .video-shell video { width:100%; height:100%; min-height:220px; object-fit:contain; background:#000; }
+    .video-loading { position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; background:linear-gradient(135deg, rgba(17,24,39,.65), rgba(139,92,246,.28)); transition:opacity .25s ease; }
+    .video-shell.ready .video-loading { opacity:0; }
+    .video-error { position:absolute; inset:auto 14px 14px; display:none; gap:8px; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:12px; background:rgba(17,24,39,.88); color:#fff; font-size:.84rem; }
+    .video-shell.failed .video-error { display:flex; }
+    .video-error a { color:#fff; text-decoration:underline; font-weight:700; }
+    .thumb-row { display: flex; gap: 10px; margin-top: 12px; overflow-x: auto; }
+    .thumb-row button { width: 76px; height: 76px; border-radius: var(--radius-sm); overflow: hidden; border: 2px solid transparent; background: var(--bg-secondary); flex: none; }
+    .thumb-row button.active { border-color: var(--purple); }
+    .thumb-row img { width: 100%; height: 100%; object-fit: cover; }
+    .comments-list { display: grid; gap: 12px; margin: 20px 0; }
+    .comment { padding: 16px; border-radius: var(--radius); background: var(--bg-secondary); border: 1px solid var(--border-color); }
+    .admin-actions { display:flex; align-items:center; gap:10px; position:relative; }
+    .notification-wrap { position:relative; }
+    .bell-count { position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; border-radius:99px; background:var(--danger); color:#fff; font-size:.7rem; display:flex; align-items:center; justify-content:center; padding:0 5px; }
+    .notification-panel { position:absolute; right:0; top:52px; width:min(360px, calc(100vw - 28px)); max-height:430px; overflow:auto; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius); box-shadow:var(--shadow-xl); padding:12px; z-index:50; display:none; }
+    .notification-panel.active { display:grid; gap:10px; }
+    .admin-response { margin-top:10px; padding:10px 12px; border-left:3px solid var(--purple); background:var(--bg-card); border-radius:8px; }
+    .media-id { font-size:.75rem; color:var(--text-muted); word-break:break-all; }
+
+    .admin-layout { min-height: 100vh; display: grid; grid-template-columns: 280px 1fr; background: var(--bg-secondary); }
+    .admin-sidebar { background: #26164E; color: #fff; padding: 24px 18px; position: sticky; top: 0; height: 100vh; overflow: auto; }
+    .admin-close { display:none; margin-left:auto; background:rgba(255,255,255,.12); color:#fff; }
+    .admin-overlay { position:fixed; inset:0; background:rgba(17,24,39,.52); backdrop-filter:blur(3px); z-index:1190; opacity:0; visibility:hidden; transition:var(--transition); }
+    .admin-overlay.active { opacity:1; visibility:visible; }
+    .admin-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .admin-nav { display: grid; gap: 6px; }
+    .admin-link { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-sm); color: rgba(255,255,255,.82); background: transparent; text-align: left; }
+    .admin-link.active, .admin-link:hover { background: rgba(255,255,255,.12); color: #fff; }
+    .admin-main { min-width: 0; }
+    .admin-header { height: 74px; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 0 28px; background: var(--bg-card); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 20; }
+    .admin-content { padding: 28px; }
+    .admin-page { display: none; }
+    .admin-page.active { display: block; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 22px; }
+    .stat-card { padding: 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .stat-card i { width: 52px; height: 52px; display: grid; place-items: center; border-radius: var(--radius); color: #fff; background: var(--gradient-primary); }
+    .admin-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .toolbar { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 760px; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); text-align: left; vertical-align: middle; }
+    th { color: var(--text-muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .8px; }
+    .table-img { width: 48px; height: 48px; border-radius: var(--radius-sm); object-fit: cover; background: var(--bg-secondary); }
+    .status { display: inline-flex; padding: 5px 10px; border-radius: 999px; font-size: .75rem; font-weight: 800; background: rgba(16,185,129,.14); color: var(--green); }
+    .status.off { background: rgba(251,113,133,.14); color: var(--rose); }
+    .bars { display: flex; align-items: end; gap: 12px; min-height: 190px; padding-top: 20px; }
+    .bar { flex: 1; display: grid; align-content: end; justify-items: center; gap: 8px; color: var(--text-muted); font-size: .78rem; }
+    .bar span { width: 100%; min-height: 8px; border-radius: 8px 8px 0 0; background: var(--gradient-primary); }
+    .admin-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .admin-form .full { grid-column: 1 / -1; }
+    .preview-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    .preview-grid img, .preview-grid video { width: 88px; height: 88px; object-fit: cover; border-radius: var(--radius-sm); background: var(--bg-secondary); }
+    .floating-wa { position: fixed; right: 26px; bottom: 26px; width: 60px; height: 60px; border-radius: 50%; background: #25D366; color: #fff; display: grid; place-items: center; z-index: 999; font-size: 1.8rem; box-shadow: 0 10px 28px rgba(37,211,102,.35); animation: waBounce 2s infinite; }
+    @keyframes waBounce { 50% { transform: translateY(-8px); } }
+    .back-to-top { position: fixed; left: 26px; bottom: 26px; width: 50px; height: 50px; border-radius: 50%; background: var(--gradient-primary); color: #fff; z-index: 998; opacity: 0; pointer-events: none; transition: var(--transition); }
+    .back-to-top.visible { opacity: 1; pointer-events: auto; }
+
+    @media (max-width: 1100px) {
+      .products-grid { grid-template-columns: repeat(3, 1fr); }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .admin-grid-2, .hero-inner, .about-grid, .contact-grid, .promo-banner, .product-detail { grid-template-columns: 1fr; }
+      .hero-visual { min-height: 360px; }
+      .categories-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 820px) {
+      .container { width: min(100% - 32px, 1280px); }
+      .access-card { grid-template-columns: 1fr; }
+      .access-art { min-height: auto; padding: 34px; }
+      .nav-desktop, .search-box { display: none; }
+      .menu-toggle { display: inline-flex; }
+      .nav-mobile { position: fixed; left: 0; right: 0; top: 80px; padding: 18px; background: var(--bg-primary); border-bottom: 1px solid var(--border-color); display: none; z-index: 999; }
+      .nav-mobile.active { display: grid; gap: 8px; }
+      .nav-mobile a { padding: 12px; border-radius: var(--radius-sm); background: var(--bg-secondary); }
+      .hero { padding-top: 112px; }
+      .hero-inner { text-align: center; }
+      .hero-buttons, .hero-stats { justify-content: center; }
+      .products-grid, .categories-grid { grid-template-columns: 1fr 1fr; }
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 190px; }
+      .gallery-item.large, .gallery-item.wide { grid-column: span 2; grid-row: span 1; }
+      .testimonial-card { min-width: 100%; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-bottom { display: grid; gap: 8px; text-align: center; }
+      .admin-layout { grid-template-columns: 1fr; }
+      .admin-header { height: auto; min-height: 68px; padding: 12px 16px; align-items: flex-start; }
+      .admin-header h2 { font-size: 1.15rem; max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .admin-actions { gap: 6px; }
+      .admin-actions strong { display: none; }
+      .notification-panel { right: -56px; top: 48px; }
+      .admin-content { padding: 16px; }
+      .toolbar { align-items: stretch; }
+      .toolbar .btn { width: 100%; }
+      .admin-sidebar { position: fixed; inset: 0 auto 0 0; width: min(300px, 86vw); transform: translateX(-100%); transition: var(--transition); z-index: 1200; }
+      .admin-sidebar.active { transform: translateX(0); }
+      .admin-close { display:inline-flex; }
+      .admin-brand { position:sticky; top:0; z-index:2; padding-bottom:12px; background:#26164E; }
+      .admin-form { grid-template-columns: 1fr; }
+      table { min-width: 680px; }
+    }
+
+    @media (max-width: 540px) {
+      section { padding: 64px 0; }
+      .products-grid, .categories-grid, .stats-grid, .about-values { grid-template-columns: 1fr; }
+      .hero-title { font-size: 2.45rem; }
+      .hero-buttons .btn { width: 100%; }
+      .header-container { height: 70px; }
+      .logo-main { font-size: 1.45rem; }
+      .logo-sub { display: none; }
+      .header-actions { gap: 6px; }
+      .icon-btn { width: 40px; height: 40px; }
+      #clientLogout { display: inline-flex; }
+      .product-actions { opacity: 1; transform: none; }
+      .cart-item { grid-template-columns: 58px 1fr auto; }
+      .cart-item img { width: 58px; height: 58px; }
+      .access-panel { padding: 28px 20px; }
+      .promo-content { padding: 28px; }
+      .admin-content { padding: 12px; }
+      .stat-card, .comment, .card { border-radius: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="page-loader" class="loader">
+    <div class="loader-content">
+      <img id="loaderLogo" class="loader-logo" src="img/flores.png" alt="Luz Gomez">
+      <div class="loader-brand text-gradient">Luz Gomez</div>
+      <div class="loader-bar"><div class="loader-progress"></div></div>
+      <p>Cargando magia artesanal...</p>
+    </div>
+  </div>
+
+  <div id="app">
+    <div id="view-acceso" class="view">
+      <div class="access-wrap" id="accessParticles">
+        <div class="access-card card">
+          <aside class="access-art">
+            <div>
+              <div class="brand-fallback">Luz Gomez</div>
+              <p>Una tienda artesanal peruana con productos unicos, regalos personalizados y gestion conectada a Google.</p>
+            </div>
+            <div>
+              <strong id="accessWelcome">Bienvenida a Luz Gomez!</strong>
+              <p>Ingresa como clienta para comprar o como vendedora para administrar el catalogo.</p>
+            </div>
+          </aside>
+          <main class="access-panel">
+            <div class="logo">
+              <img id="accessLogo" class="logo-img" src="img/flores.png" alt="Logo Luz Gomez">
+              <div>
+                <span class="logo-main">Luz Gomez</span>
+                <span class="logo-sub">Hecho con amor</span>
+              </div>
+            </div>
+            <div class="tabs">
+              <button class="tab-btn active" data-access-tab="cliente">Cliente</button>
+              <button class="tab-btn" data-access-tab="vendedor">Vendedor</button>
+            </div>
+            <form id="clienteForm" class="form-grid" novalidate>
+              <div class="field"><label>Nombre completo</label><input name="nombre" autocomplete="name"><span class="error-text">Ingresa tu nombre.</span></div>
+              <div class="field"><label>Correo electronico</label><input name="correo" type="email" autocomplete="email"><span class="error-text">Ingresa un correo valido.</span></div>
+              <div class="field"><label>Telefono</label><input name="telefono" type="tel" autocomplete="tel"><span class="error-text">Ingresa tu telefono.</span></div>
+              <button class="btn btn-primary btn-full" type="submit"><i class="fa-solid fa-store"></i> Entrar a la Tienda</button>
+            </form>
+            <form id="vendedorForm" class="form-grid hidden" novalidate>
+              <div id="sellerPasswordFields" class="form-grid">
+                <div class="field"><label>Correo</label><input name="correo" type="email" autocomplete="username"><span class="error-text">Correo requerido.</span></div>
+                <div class="field"><label>Contrasena</label><input name="password" type="password" autocomplete="current-password"><span class="error-text">Contrasena requerida.</span></div>
+              </div>
+              <div id="sellerPinField" class="field hidden"><label>PIN de acceso</label><input name="pin" type="password" inputmode="numeric" maxlength="6"><span class="error-text">PIN de 4 a 6 digitos.</span></div>
+              <button class="btn btn-primary btn-full" type="submit"><i class="fa-solid fa-lock"></i> Ingresar</button>
+              <button class="btn btn-secondary btn-full" id="togglePinLogin" type="button">Ingresar con PIN</button>
+            </form>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-tienda" class="view hidden">
+      <header class="header" id="header">
+        <div class="header-container container">
+          <a href="#inicio" class="logo">
+            <img id="siteLogo" class="logo-img" src="img/flores.png" alt="Luz Gomez">
+            <div><span class="logo-main">Luz Gomez</span><span class="logo-sub">Hecho con amor</span></div>
+          </a>
+          <nav class="nav-desktop">
+            <a class="nav-link active" href="#inicio">Inicio</a>
+            <a class="nav-link" href="#categorias">Categorias</a>
+            <a class="nav-link" href="#productos">Productos</a>
+            <a class="nav-link" href="#promociones">Promociones</a>
+            <a class="nav-link" href="#nosotros">Nosotros</a>
+            <a class="nav-link" href="#galeria">Galeria</a>
+            <a class="nav-link" href="#contacto">Contacto</a>
+          </nav>
+          <div class="header-actions">
+            <div class="search-box"><input id="searchInput" placeholder="Buscar productos..."><i class="fa-solid fa-search"></i></div>
+            <button class="icon-btn" id="themeToggle" aria-label="Cambiar tema"><i class="fa-solid fa-moon"></i></button>
+            <button class="icon-btn" id="clientLogout" aria-label="Cerrar sesion"><i class="fa-solid fa-right-from-bracket"></i></button>
+            <button class="icon-btn cart-btn" id="cartBtn" aria-label="Ver carrito"><i class="fa-solid fa-shopping-bag"></i><span class="cart-count" id="cartCount">0</span></button>
+            <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+          </div>
+        </div>
+        <nav class="nav-mobile" id="navMobile">
+          <a href="#inicio">Inicio</a><a href="#categorias">Categorias</a><a href="#productos">Productos</a><a href="#promociones">Promociones</a><a href="#nosotros">Nosotros</a><a href="#galeria">Galeria</a><a href="#contacto">Contacto</a>
+        </nav>
+      </header>
+
+      <section class="hero" id="inicio">
+        <div class="hero-bg" id="heroBg"></div>
+        <div id="heroParticles"></div>
+        <div class="container hero-inner">
+          <div class="hero-content">
+            <div class="hero-badge fade-in-up"><i class="fa-solid fa-sparkles"></i> Emprendimiento Familiar Peruano</div>
+            <h1 class="hero-title fade-in-up delay-1">Descubre la magia de lo <span class="text-gradient">hecho a mano</span></h1>
+            <p class="hero-desc fade-in-up delay-2" id="heroDesc">Artesanias unicas, ropa con estilo, accesorios que enamoran y regalos personalizados hechos con amor.</p>
+            <div class="hero-buttons fade-in-up delay-3">
+              <a href="#productos" class="btn btn-primary"><i class="fa-solid fa-shopping-bag"></i> Comprar Ahora</a>
+              <a href="#categorias" class="btn btn-secondary"><i class="fa-solid fa-grip"></i> Ver Catalogo</a>
+            </div>
+            <div class="hero-stats fade-in-up delay-4">
+              <div><span class="stat-number" data-stat="productos">0</span><span class="stat-label">Productos unicos</span></div>
+              <div><span class="stat-number" data-stat="clientes">0</span><span class="stat-label">Clientes felices</span></div>
+              <div><span class="stat-number" data-stat="categorias">0</span><span class="stat-label">Colecciones</span></div>
+            </div>
+          </div>
+          <div class="hero-visual empty" id="heroVisual">Luz Gomez</div>
+        </div>
+        <div class="scroll-indicator"><div class="mouse"></div><span>Desplaza para explorar</span></div>
+      </section>
+
+      <section class="categories" id="categorias">
+        <div class="container">
+          <div class="section-header"><span class="section-tag">Nuestras Colecciones</span><h2 class="section-title">Explora por <span>Categoria</span></h2><p class="section-desc">Encuentra exactamente lo que buscas en nuestras colecciones.</p></div>
+          <div class="categories-grid" id="categoriesGrid"></div>
+        </div>
+      </section>
+
+      <section class="products" id="productos">
+        <div class="container">
+          <div class="section-header"><span class="section-tag">Lo mas querido</span><h2 class="section-title">Productos <span>Destacados</span></h2><p class="section-desc">Las piezas favoritas de nuestras clientas.</p></div>
+          <div class="filters" id="filters"></div>
+          <div class="products-grid" id="productsGrid"></div>
+          <div class="load-more-wrap"><button class="btn btn-secondary" id="loadMoreBtn">Cargar mas</button></div>
+        </div>
+      </section>
+
+      <section class="promotions" id="promociones">
+        <div class="container">
+          <div id="promoBox" class="promo-banner card hidden"></div>
+        </div>
+      </section>
+
+      <section class="about" id="nosotros">
+        <div class="container about-grid">
+          <div class="about-image" id="aboutImage">Luz Gomez</div>
+          <div>
+            <span class="section-tag">Nuestra Historia</span>
+            <h2 class="section-title">Hecho con <span>Amor</span> y <span>Dedicacion</span></h2>
+            <p class="section-desc"><strong>Luz Gomez</strong> nacio del sueno de una familia peruana apasionada por el arte y la creatividad. Cada pieza lleva dedicacion, seleccion de materiales y mucho carino.</p>
+            <div class="about-values">
+              <div class="value-item"><strong>💜</strong><div><h4>Amor</h4><p>Cada pieza es creada con pasion.</p></div></div>
+              <div class="value-item"><strong>✨</strong><div><h4>Creatividad</h4><p>Disenos unicos e innovadores.</p></div></div>
+              <div class="value-item"><strong>💎</strong><div><h4>Calidad</h4><p>Materiales seleccionados.</p></div></div>
+              <div class="value-item"><strong>🤝</strong><div><h4>Atencion</h4><p>Trato personalizado.</p></div></div>
+            </div>
+            <a id="aboutWhatsapp" class="btn btn-primary" target="_blank"><i class="fa-brands fa-whatsapp"></i> Conversemos</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="testimonials">
+        <div class="container">
+          <div class="section-header"><span class="section-tag">Testimonios</span><h2 class="section-title">Lo que dicen <span>nuestras clientas</span></h2></div>
+          <div class="testimonials-slider"><div class="testimonials-track" id="testimonialsTrack"></div></div>
+          <div class="slider-nav"><button class="icon-btn" id="testimonialPrev"><i class="fa-solid fa-arrow-left"></i></button><button class="icon-btn" id="testimonialNext"><i class="fa-solid fa-arrow-right"></i></button></div>
+        </div>
+      </section>
+
+      <section class="gallery" id="galeria">
+        <div class="container">
+          <div class="section-header"><span class="section-tag">Galeria</span><h2 class="section-title">Nuestra <span>Inspiracion</span></h2></div>
+          <div class="gallery-grid" id="galleryGrid"></div>
+        </div>
+      </section>
+
+      <section class="contact" id="contacto">
+        <div class="container contact-grid">
+          <div>
+            <div class="section-header" style="text-align:left;margin:0 0 22px;"><span class="section-tag">Contacto</span><h2 class="section-title">Hablemos de tu <span>Pedido</span></h2></div>
+            <div id="contactCards"></div>
+          </div>
+          <form id="contactForm" class="card form-grid" style="padding:28px;" novalidate>
+            <div class="field"><label>Nombre completo</label><input name="nombre"><span class="error-text">Ingresa tu nombre.</span></div>
+            <div class="field"><label>Correo electronico</label><input name="correo" type="email"><span class="error-text">Ingresa tu correo.</span></div>
+            <div class="field"><label>Telefono</label><input name="telefono" type="tel"><span class="error-text">Ingresa tu telefono.</span></div>
+            <div class="field"><label>Mensaje</label><textarea name="mensaje"></textarea><span class="error-text">Escribe tu mensaje.</span></div>
+            <button class="btn btn-primary btn-full" type="submit"><i class="fa-solid fa-paper-plane"></i> Enviar por WhatsApp</button>
+          </form>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="container footer-grid">
+          <div><div class="logo"><img id="footerLogo" class="logo-img" src="img/flores.png" alt="Luz Gomez"><div><span class="logo-main">Luz Gomez</span><span class="logo-sub">Hecho con amor</span></div></div><p style="margin-top:15px;color:var(--gray-400);">Productos artesanales peruanos creados con amor, creatividad y calidad.</p></div>
+          <div><h4>Categorias</h4><div id="footerCategories"></div></div>
+          <div><h4>Enlaces</h4><a href="#inicio">Inicio</a><a href="#productos">Productos</a><a href="#nosotros">Nosotros</a><a href="#contacto">Contacto</a></div>
+          <div><h4>Redes</h4><div id="footerSocial"></div></div>
+        </div>
+        <div class="container footer-bottom"><span>© 2026 Luz Gomez. Todos los derechos reservados.</span><span>Hecho con amor en Peru</span></div>
+      </footer>
+    </div>
+
+    <div id="view-producto" class="view hidden">
+      <div class="container product-detail" id="productDetail"></div>
+    </div>
+
+    <div id="view-dashboard" class="view hidden">
+      <div class="admin-layout">
+        <aside class="admin-sidebar" id="adminSidebar">
+          <div class="admin-brand"><span class="brand-fallback" style="font-size:2rem;color:#fff;">Luz Gomez</span><button class="icon-btn admin-close" id="adminClose" aria-label="Cerrar menu"><i class="fa-solid fa-xmark"></i></button></div>
+          <nav class="admin-nav">
+            <button class="admin-link active" data-admin="dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
+            <button class="admin-link" data-admin="productos-admin"><i class="fa-solid fa-box"></i> Productos</button>
+            <button class="admin-link" data-admin="categorias-admin"><i class="fa-solid fa-layer-group"></i> Categorias</button>
+            <button class="admin-link" data-admin="promociones-admin"><i class="fa-solid fa-tags"></i> Promociones</button>
+            <button class="admin-link" data-admin="testimonios-admin"><i class="fa-solid fa-star"></i> Testimonios</button>
+            <button class="admin-link" data-admin="galeria-admin"><i class="fa-solid fa-images"></i> Galeria</button>
+            <button class="admin-link" data-admin="pedidos-admin"><i class="fa-solid fa-receipt"></i> Pedidos</button>
+            <button class="admin-link" data-admin="comentarios-admin"><i class="fa-solid fa-comments"></i> Comentarios</button>
+            <button class="admin-link" data-admin="config-admin"><i class="fa-solid fa-gear"></i> Configuracion</button>
+            <button class="admin-link" id="adminLogout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesion</button>
+          </nav>
+        </aside>
+        <main class="admin-main">
+          <header class="admin-header">
+            <div style="display:flex;align-items:center;gap:12px;"><button class="icon-btn" id="adminMenu"><i class="fa-solid fa-bars"></i></button><h2 id="adminTitle">Dashboard</h2></div>
+            <div class="admin-actions"><div class="notification-wrap"><button class="icon-btn" id="notificationBell" aria-label="Comentarios nuevos"><i class="fa-solid fa-bell"></i><span class="bell-count hidden" id="notificationCount">0</span></button><div class="notification-panel" id="notificationPanel"></div></div><button class="icon-btn" id="adminTheme"><i class="fa-solid fa-moon"></i></button><strong id="sellerName">Vendedor</strong></div>
+          </header>
+          <div class="admin-content">
+            <section id="admin-dashboard" class="admin-page active"></section>
+            <section id="admin-productos-admin" class="admin-page"></section>
+            <section id="admin-form-producto" class="admin-page"></section>
+            <section id="admin-categorias-admin" class="admin-page"></section>
+            <section id="admin-promociones-admin" class="admin-page"></section>
+            <section id="admin-testimonios-admin" class="admin-page"></section>
+            <section id="admin-galeria-admin" class="admin-page"></section>
+            <section id="admin-pedidos-admin" class="admin-page"></section>
+            <section id="admin-comentarios-admin" class="admin-page"></section>
+            <section id="admin-config-admin" class="admin-page"></section>
+          </div>
+        </main>
+        <div class="admin-overlay" id="adminOverlay"></div>
+      </div>
+    </div>
+
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <aside class="cart-sidebar" id="cartSidebar">
+      <div class="cart-header"><h3><i class="fa-solid fa-shopping-bag"></i> Tu Carrito</h3><button class="icon-btn" id="cartClose"><i class="fa-solid fa-times"></i></button></div>
+      <div class="cart-items" id="cartItems"></div>
+      <div class="cart-footer"><div class="cart-total"><span>Total</span><span id="cartTotal">S/ 0.00</span></div><button class="btn btn-green btn-full" id="checkoutBtn"><i class="fa-brands fa-whatsapp"></i> Comprar por WhatsApp</button></div>
+    </aside>
+
+    <a id="whatsappFloat" class="floating-wa" target="_blank" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+    <button id="backToTop" class="back-to-top" aria-label="Volver arriba"><i class="fa-solid fa-arrow-up"></i></button>
+    <div id="modal" class="modal"><div class="modal-card"><button class="icon-btn modal-close" id="modalClose"><i class="fa-solid fa-times"></i></button><div id="modalBody"></div></div></div>
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script>
+    const BASE_URL = 'https://script.google.com/macros/s/AKfycbyI1pONadMWJhganMWt4kah4bB4jNHgraJG8S1A_uAGnRHiGdjL_U9tdDhpCEbKNqQ/exec';
+    const LOGO_SRC = 'img/flores.png';
+    const SELLER_WHATSAPP = '573213092850';
+    const SELLER_WHATSAPP_DISPLAY = '+57 321 3092850';
+    const SELLER_WHATSAPP_URL = `https://wa.me/${SELLER_WHATSAPP}`;
+    const SELLER_EMAIL = 'luznahomybeauty@gmail.com';
+    const state = {
+      config: {},
+      categorias: [],
+      products: [],
+      page: 1,
+      totalPages: 1,
+      currentFilter: 'all',
+      search: '',
+      session: null,
+      cart: JSON.parse(localStorage.getItem('lg_cart') || '[]'),
+      cache: {},
+      adminProducts: [],
+      editingProductId: null,
+      notificationTimer: null,
+      unreadComments: [],
+      testimonialSlide: 0
+    };
+
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+    const moneyValue = n => Number(n || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const money = n => `${state.config.moneda || 'S/'} ${moneyValue(n)}`;
+    const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+    const truthy = value => value === true || String(value).toLowerCase() === 'true';
+    const driveUrl = id => id ? `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w1200` : LOGO_SRC;
+    const thumbUrl = (id, w = 500) => id ? `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w${w}` : LOGO_SRC;
+    function normalizeWhatsAppLink(value) {
+      const raw = String(value || '').trim();
+      const digitsRaw = raw.replace(/\D/g, '');
+      let digits = digitsRaw;
+      if (['3213092850', '3118744555', '31187445555', '573118744555'].includes(digits)) digits = SELLER_WHATSAPP;
+      if (digits.length === 10 && digits.startsWith('3')) digits = `57${digits}`;
+      if (!digits) digits = SELLER_WHATSAPP;
+      return `https://wa.me/${digits}`;
+    }
+    function whatsappUrl(message, base = state.config.whatsapp_link) {
+      return `${normalizeWhatsAppLink(base)}?text=${encodeURIComponent(message)}`;
+    }
+    function extractDriveId(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return '';
+      const patterns = [
+        /\/file\/d\/([^/]+)/,
+        /[?&]id=([^&]+)/,
+        /\/d\/([^/]+)/,
+      ];
+      for (const pattern of patterns) {
+        const match = raw.match(pattern);
+        if (match) return decodeURIComponent(match[1]);
+      }
+      return raw.includes('http') ? '' : raw;
+    }
+    const driveVideoSrc = value => {
+      const id = extractDriveId(value);
+      return id ? `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}` : String(value || '');
+    };
+    const driveOpenUrl = value => {
+      const id = extractDriveId(value);
+      return id ? `https://drive.google.com/file/d/${encodeURIComponent(id)}/view` : String(value || '#');
+    };
+    const videoPlayer = (idOrUrl, options = {}) => {
+      const src = driveVideoSrc(idOrUrl);
+      const openUrl = driveOpenUrl(idOrUrl);
+      const poster = options.poster || LOGO_SRC;
+      if (!src) return '';
+      return `<div class="video-shell" data-video-shell>
+        <video controls playsinline preload="metadata" poster="${esc(poster)}" ${options.autoplay ? 'autoplay muted' : ''} src="${esc(src)}"></video>
+        <div class="video-loading"><span><i class="fa-solid fa-spinner fa-spin"></i> Cargando video...</span></div>
+        <div class="video-error"><span>No se pudo reproducir aqui.</span><a href="${esc(openUrl)}" target="_blank" rel="noopener">Abrir video</a></div>
+      </div>`;
+    };
+    function parseMoneyInput(value) {
+      const raw = String(value ?? '').trim();
+      if (!raw) return 0;
+      const cleaned = raw.replace(/[^\d.,-]/g, '');
+      const lastComma = cleaned.lastIndexOf(',');
+      const lastDot = cleaned.lastIndexOf('.');
+      if (lastComma > lastDot) return Number(cleaned.replace(/\./g, '').replace(',', '.')) || 0;
+      if (lastDot > -1 && cleaned.slice(lastDot + 1).length <= 2) return Number(cleaned.replace(/,/g, '')) || 0;
+      return Number(cleaned.replace(/[.,]/g, '')) || 0;
+    }
+    function formatDate(value) {
+      if (!value) return '';
+      return new Date(value).toLocaleDateString('es-PE');
+    }
+
+    async function apiCall(action, params = {}) {
+      try {
+        const response = await fetch(BASE_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, params }) });
+        if (!response.ok) throw new Error('Sin conexion');
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || 'Error al cargar datos');
+        normalizeApiResult(action, result);
+        return result;
+      } catch (error) {
+        showToast(error.message || 'Error de red');
+        return { success: false, data: null, error: error.message };
+      }
+    }
+
+    function normalizeApiResult(action, result) {
+      if (action === 'getProductos' && result.data) {
+        const productos = result.data.productos || result.data.items || [];
+        productos.forEach(normalizeProduct);
+        result.data.items = productos;
+      }
+      if (action === 'getProductosDestacados' && result.data?.productos) {
+        result.data.productos.forEach(normalizeProduct);
+      }
+      if (action === 'getProductoById' && result.data) {
+        normalizeProduct(result.data);
+      }
+    }
+
+    function normalizeProduct(product) {
+      product.thumbnail_url = product.thumbnail_url || product.imagen_url || thumbUrl(product.imagen_drive_id, 500);
+      product.imagen_url = product.imagen_url || thumbUrl(product.imagen_drive_id, 800);
+      product.imagenes_extra_urls = product.imagenes_extra_urls || product.imagenes_extra || [];
+      product.video_url = product.video_url || '';
+      product.video_drive_id = extractDriveId(product.video_drive_id || product.video_url || product.video_direct_url || '');
+      return product;
+    }
+
+    function cached(key, loader) {
+      if (state.cache[key]) return Promise.resolve(state.cache[key]);
+      return loader().then(result => {
+        if (result.success) state.cache[key] = result;
+        return result;
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', initApp);
+
+    async function initApp() {
+      setupTheme();
+      bindGlobalEvents();
+      createParticles('accessParticles');
+      createParticles('heroParticles');
+      await loadConfig();
+      restoreSession();
+      updateCart();
+      setTimeout(() => $('#page-loader').classList.add('hidden'), 700);
+    }
+
+    async function loadConfig() {
+      const result = await cached('config', () => apiCall('getConfig'));
+      if (!result.success) return;
+      state.config = result.data || {};
+      state.config.whatsapp_link = normalizeWhatsAppLink(state.config.whatsapp_link || state.config.telefono || SELLER_WHATSAPP);
+      if (!state.config.telefono || ['3213092850', '573213092850', '3118744555', '31187445555', '573118744555'].includes(String(state.config.telefono).replace(/\D/g, ''))) state.config.telefono = SELLER_WHATSAPP_DISPLAY;
+      $('#accessWelcome').textContent = state.config.mensaje_bienvenida || 'Bienvenida a Luz Gomez!';
+      $('#heroDesc').textContent = state.config.descripcion_tienda || $('#heroDesc').textContent;
+      ['siteLogo', 'footerLogo', 'accessLogo', 'loaderLogo'].forEach(id => {
+        const img = $('#' + id);
+        if (img) { img.src = LOGO_SRC; img.classList.remove('hidden'); }
+      });
+      let link = document.querySelector('link[rel="icon"]') || document.createElement('link');
+      link.rel = 'icon'; link.type = 'image/png'; link.href = LOGO_SRC; document.head.appendChild(link);
+      $('#heroBg').style.backgroundImage = '';
+      $('#heroVisual').classList.remove('empty');
+      $('#heroVisual').innerHTML = `<img src="${LOGO_SRC}" alt="Luz Gomez" loading="lazy">`;
+      $('#aboutImage').innerHTML = `<img src="${LOGO_SRC}" alt="Luz Gomez" loading="lazy" style="width:100%;height:100%;object-fit:contain;padding:56px;">`;
+      const wa = normalizeWhatsAppLink(state.config.whatsapp_link);
+      $('#whatsappFloat').href = whatsappUrl('Hola! Me interesa un producto de Luz Gomez', wa);
+      $('#aboutWhatsapp').href = whatsappUrl('Hola, quiero conocer mas de Luz Gomez', wa);
+      renderContact();
+    }
+
+    function restoreSession() {
+      const raw = localStorage.getItem('lg_session');
+      if (!raw) return showView('acceso');
+      state.session = JSON.parse(raw);
+      apiCall('validateSession', { token: state.session.token }).then(result => {
+        if (!result.success) return logoutLocal();
+        state.session = result.data;
+        localStorage.setItem('lg_session', JSON.stringify(state.session));
+        if (state.session.tipo === 'vendedor') openDashboard();
+        else openStore();
+      });
+    }
+
+    function showView(name) {
+      $$('.view').forEach(view => view.classList.add('hidden'));
+      $('#view-' + name).classList.remove('hidden');
+      $('#whatsappFloat').classList.toggle('hidden', name === 'dashboard');
+      closeAdminMenu();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function openStore() {
+      showView('tienda');
+      await Promise.all([loadCategorias(), loadProductos(true), loadPromo(), loadTestimonials(), loadGallery()]);
+      animateStats();
+    }
+
+    function bindGlobalEvents() {
+      $$('[data-access-tab]').forEach(btn => btn.addEventListener('click', () => {
+        $$('[data-access-tab]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        $('#clienteForm').classList.toggle('hidden', btn.dataset.accessTab !== 'cliente');
+        $('#vendedorForm').classList.toggle('hidden', btn.dataset.accessTab !== 'vendedor');
+      }));
+      $('#clienteForm').addEventListener('submit', submitCliente);
+      $('#vendedorForm').addEventListener('submit', submitVendedor);
+      $('#togglePinLogin').addEventListener('click', togglePinLogin);
+      $('#themeToggle').addEventListener('click', toggleTheme);
+      $('#adminTheme').addEventListener('click', toggleTheme);
+      $('#clientLogout').addEventListener('click', logout);
+      $('#menuToggle').addEventListener('click', () => $('#navMobile').classList.toggle('active'));
+      $('#cartBtn').addEventListener('click', openCart);
+      $('#cartClose').addEventListener('click', closeCart);
+      $('#cartOverlay').addEventListener('click', closeCart);
+      $('#checkoutBtn').addEventListener('click', checkout);
+      $('#loadMoreBtn').addEventListener('click', () => loadProductos(false));
+      $('#searchInput').addEventListener('input', debounce(e => { state.search = e.target.value; loadProductos(true); }, 350));
+      $('#contactForm').addEventListener('submit', submitContact);
+      $('#modalClose').addEventListener('click', closeModal);
+      $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+      $('#backToTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+      window.addEventListener('scroll', () => $('#backToTop').classList.toggle('visible', window.scrollY > 500));
+      $('#testimonialPrev').addEventListener('click', () => moveTestimonials(-1));
+      $('#testimonialNext').addEventListener('click', () => moveTestimonials(1));
+      $('#adminMenu').addEventListener('click', openAdminMenu);
+      $('#adminClose').addEventListener('click', closeAdminMenu);
+      $('#adminOverlay').addEventListener('click', closeAdminMenu);
+      $('#adminLogout').addEventListener('click', logout);
+      $('#notificationBell').addEventListener('click', toggleNotifications);
+      $$('.admin-link[data-admin]').forEach(btn => btn.addEventListener('click', () => openAdminPage(btn.dataset.admin)));
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAdminMenu(); });
+    }
+
+    function openAdminMenu() {
+      $('#adminSidebar').classList.add('active');
+      $('#adminOverlay').classList.add('active');
+      document.body.classList.add('no-scroll');
+    }
+
+    function closeAdminMenu() {
+      $('#adminSidebar').classList.remove('active');
+      $('#adminOverlay').classList.remove('active');
+      document.body.classList.remove('no-scroll');
+    }
+
+    function togglePinLogin() {
+      const pinMode = $('#sellerPinField').classList.toggle('hidden') === false;
+      $('#sellerPasswordFields').classList.toggle('hidden', pinMode);
+      $('#togglePinLogin').textContent = pinMode ? 'Ingresar con correo' : 'Ingresar con PIN';
+    }
+
+    async function submitCliente(e) {
+      e.preventDefault();
+      const form = e.currentTarget;
+      if (!validateForm(form, ['nombre', 'correo', 'telefono'])) return;
+      const data = Object.fromEntries(new FormData(form));
+      const result = await apiCall('doRegisterCliente', data);
+      if (!result.success) return;
+      state.session = result.data;
+      state.session.telefono = data.telefono;
+      localStorage.setItem('lg_session', JSON.stringify(state.session));
+      showToast('Bienvenida, ' + state.session.nombre);
+      openStore();
+    }
+
+    async function submitVendedor(e) {
+      e.preventDefault();
+      const form = e.currentTarget;
+      const fd = Object.fromEntries(new FormData(form));
+      const pinMode = !$('#sellerPinField').classList.contains('hidden');
+      const result = pinMode
+        ? await apiCall('doLoginWithPin', { pin: fd.pin })
+        : await apiCall('doLogin', { tipo: 'vendedor', correo: fd.correo, password: fd.password });
+      if (!result.success) return;
+      state.session = result.data;
+      localStorage.setItem('lg_session', JSON.stringify(state.session));
+      openDashboard();
+    }
+
+    async function loadCategorias() {
+      const result = await cached('categorias', () => apiCall('getCategorias'));
+      if (!result.success) return;
+      state.categorias = result.data || [];
+      $('#categoriesGrid').innerHTML = state.categorias.map(cat => `
+        <article class="category-card" data-slug="${esc(cat.slug)}">
+          <img src="${cat.imagen_url || LOGO_SRC}" alt="${esc(cat.nombre)}" loading="lazy" onerror="this.src='${LOGO_SRC}'">
+          <div class="category-overlay"></div>
+          <div class="category-info"><div class="category-icon">${esc(cat.icono || '✨')}</div><h3>${esc(cat.nombre)}</h3><p>${esc(cat.descripcion)}</p><span class="category-count">${cat.productos_count || 0} productos</span></div>
+        </article>`).join('');
+      $('#filters').innerHTML = `<button class="filter-btn active" data-filter="all">Todos</button>` + state.categorias.map(c => `<button class="filter-btn" data-filter="${esc(c.slug)}">${esc(c.nombre)}</button>`).join('');
+      $('#footerCategories').innerHTML = state.categorias.slice(0, 6).map(c => `<a href="#productos" data-footer-filter="${esc(c.slug)}">${esc(c.nombre)}</a>`).join('');
+      $$('.category-card').forEach(card => card.addEventListener('click', () => { state.currentFilter = card.dataset.slug; $('#productos').scrollIntoView(); loadProductos(true); setActiveFilter(); }));
+      $$('.filter-btn').forEach(btn => btn.addEventListener('click', () => { state.currentFilter = btn.dataset.filter; setActiveFilter(); loadProductos(true); }));
+      $$('[data-footer-filter]').forEach(link => link.addEventListener('click', () => { state.currentFilter = link.dataset.footerFilter; setActiveFilter(); loadProductos(true); }));
+    }
+
+    function setActiveFilter() {
+      $$('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === state.currentFilter));
+    }
+
+    async function loadProductos(reset) {
+      if (reset) { state.page = 1; state.products = []; $('#productsGrid').innerHTML = skeletonProducts(); }
+      const filters = { buscar: state.search, pagina: state.page, por_pagina: 8 };
+      if (state.currentFilter !== 'all') filters.categoria_slug = state.currentFilter;
+      const result = await apiCall('getProductos', { filters });
+      if (!result.success) return;
+      state.totalPages = result.data.total_paginas || 1;
+      state.products = reset ? result.data.items : state.products.concat(result.data.items);
+      renderProducts();
+      $('#loadMoreBtn').classList.toggle('hidden', state.page >= state.totalPages);
+      state.page += 1;
+    }
+
+    function skeletonProducts() {
+      return Array.from({ length: 8 }, () => `<div class="product-card card"><div class="product-img placeholder"></div><div class="product-info"><div class="placeholder" style="height:16px;width:45%;border-radius:8px;"></div><div class="placeholder" style="height:42px;margin:12px 0;border-radius:8px;"></div><div class="placeholder" style="height:18px;width:35%;border-radius:8px;"></div></div></div>`).join('');
+    }
+
+    function renderProducts() {
+      $('#productsGrid').innerHTML = state.products.map(p => `
+        <article class="product-card card">
+          ${p.badge ? `<div class="product-badge">${esc(p.badge)}</div>` : ''}
+          <div class="product-img">
+            <img src="${p.thumbnail_url || LOGO_SRC}" alt="${esc(p.nombre)}" loading="lazy" onerror="this.src='${LOGO_SRC}'">
+            <div class="product-actions">
+              <button class="product-action-btn" data-cart="${esc(p.id)}" title="Agregar"><i class="fa-solid fa-shopping-bag"></i></button>
+              <button class="product-action-btn" data-detail="${esc(p.id)}" title="Ver"><i class="fa-solid fa-eye"></i></button>
+            </div>
+          </div>
+          <div class="product-info"><span class="product-category">${esc(p.categoria_nombre)}</span><h3 class="product-name">${esc(p.nombre)}</h3><div class="product-price"><span class="price-current">${money(p.precio)}</span>${Number(p.precio_antiguo || 0) > 0 ? `<span class="price-old">${money(p.precio_antiguo)}</span>` : ''}</div><div class="product-rating">${stars(p.rating)} <span style="color:var(--text-muted)">(${p.resenas_count || 0})</span></div></div>
+        </article>`).join('');
+      $$('[data-cart]').forEach(btn => btn.addEventListener('click', () => addToCart(state.products.find(p => p.id === btn.dataset.cart))));
+      $$('[data-detail]').forEach(btn => btn.addEventListener('click', () => openProductDetail(btn.dataset.detail)));
+    }
+
+    async function openProductDetail(id) {
+      const result = await apiCall('getProductoById', { id });
+      if (!result.success) return;
+      const p = result.data;
+      const images = [{ id: p.imagen_drive_id, url: p.imagen_url || LOGO_SRC }].concat(p.imagenes_extra_urls || []).filter(i => i.url);
+      showView('producto');
+      $('#productDetail').innerHTML = `
+        <div>
+          <button class="btn btn-secondary" id="backStore"><i class="fa-solid fa-arrow-left"></i> Volver</button>
+          <div class="detail-main-img" id="detailMain">${images[0] ? `<img src="${images[0].url}" alt="${esc(p.nombre)}">` : `<div class="placeholder" style="height:100%;"></div>`}</div>
+          <div class="thumb-row">${images.map((img, i) => `<button class="${i === 0 ? 'active' : ''}" data-img="${img.url}"><img src="${img.url}" alt=""></button>`).join('')}${p.video_drive_id || p.video_url ? `<button data-video-source="${esc(p.video_drive_id || p.video_url)}"><i class="fa-solid fa-play"></i></button>` : ''}</div>
+        </div>
+        <div>
+          ${p.badge ? `<div class="product-badge" style="position:static;display:inline-flex;margin-bottom:12px;">${esc(p.badge)}</div>` : ''}
+          <h1 class="section-title" style="text-align:left;">${esc(p.nombre)}</h1>
+          <p class="product-category">${esc(p.categoria_nombre)}</p>
+          <div class="product-price" style="font-size:1.5rem;margin:14px 0;"><span class="price-current">${money(p.precio)}</span></div>
+          <p class="section-desc">${esc(p.descripcion || 'Producto artesanal elaborado con mucho amor y materiales seleccionados.')}</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin:24px 0;"><button class="btn btn-primary" id="detailCart"><i class="fa-solid fa-shopping-bag"></i> Agregar al carrito</button><a class="btn btn-green" target="_blank" href="${whatsappProductUrl(p)}"><i class="fa-brands fa-whatsapp"></i> Comprar</a></div>
+          <h3>Comentarios</h3>
+          <div class="comments-list" id="productComments">${renderProductComments(p.comentarios || [])}</div>
+          <form id="commentForm" class="form-grid card" style="padding:18px;"><input type="hidden" name="producto_id" value="${esc(p.id)}"><div class="field"><label>Calificacion</label><select name="calificacion"><option value="5">5 estrellas</option><option value="4">4 estrellas</option><option value="3">3 estrellas</option><option value="2">2 estrellas</option><option value="1">1 estrella</option></select></div><div class="field"><label>Comentario</label><textarea name="comentario"></textarea><span class="error-text">Escribe tu comentario.</span></div><button class="btn btn-primary" type="submit">Publicar comentario</button></form>
+        </div>`;
+      $('#backStore').addEventListener('click', () => showView('tienda'));
+      $('#detailCart').addEventListener('click', () => addToCart(p));
+      $$('.thumb-row button').forEach(btn => btn.addEventListener('click', () => {
+        $$('.thumb-row button').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+        $('#detailMain').innerHTML = btn.dataset.videoSource ? videoPlayer(btn.dataset.videoSource, { poster: p.imagen_url || LOGO_SRC }) : `<img src="${btn.dataset.img}" alt="${esc(p.nombre)}">`;
+        bindVideoPlayers($('#detailMain'));
+      }));
+      $('#commentForm').addEventListener('submit', e => submitComment(e, p.id));
+    }
+
+    function renderProductComments(comments) {
+      return comments.length ? comments.map(c => `
+        <div class="comment">
+          <strong>${esc(c.cliente_nombre)}</strong>
+          <div style="color:var(--yellow)">${stars(c.calificacion)} <span style="color:var(--text-muted);font-size:.85rem;">${esc(formatDate(c.fecha))}</span></div>
+          <p>${esc(c.comentario)}</p>
+          ${c.respuesta_admin ? `<div class="admin-response"><strong>Luz Gomez responde</strong><p>${esc(c.respuesta_admin)}</p></div>` : ''}
+        </div>`).join('') : '<p class="section-desc">Aun no hay comentarios.</p>';
+    }
+
+    async function submitComment(e, productId) {
+      e.preventDefault();
+      const form = e.currentTarget;
+      if (!validateForm(form, ['comentario'])) return;
+      const data = Object.fromEntries(new FormData(form));
+      data.producto_id = productId;
+      data.cliente_id = state.session?.id || '';
+      data.cliente_nombre = state.session?.nombre || 'Cliente';
+      const result = await apiCall('createComentario', { data });
+      if (result.success) {
+        showToast('Comentario publicado');
+        form.reset();
+        const comments = await apiCall('getComentariosByProducto', { productoId });
+        if (comments.success) $('#productComments').innerHTML = renderProductComments(comments.data || []);
+      }
+    }
+
+    async function loadPromo() {
+      const result = await apiCall('getPromocionActiva');
+      const promo = result.data;
+      if (!promo) return;
+      $('#promoBox').classList.remove('hidden');
+      $('#promoBox').innerHTML = `<div class="promo-content"><span class="section-tag">Promocion activa</span><h2 class="promo-title">${esc(promo.titulo)} <span>${promo.descuento_porcentaje || 0}% OFF</span></h2><p class="section-desc">${esc(promo.descripcion)}</p><div class="promo-timer"><div class="timer-item"><span class="timer-num" id="td">00</span><small>Dias</small></div><div class="timer-item"><span class="timer-num" id="th">00</span><small>Horas</small></div><div class="timer-item"><span class="timer-num" id="tm">00</span><small>Min</small></div><div class="timer-item"><span class="timer-num" id="ts">00</span><small>Seg</small></div></div><a class="btn btn-primary" href="#productos">Ver productos</a></div><div class="promo-image">${promo.video_drive_id || promo.video_url ? videoPlayer(promo.video_drive_id || promo.video_url, { poster: promo.imagen_url || LOGO_SRC }) : `<img src="${promo.imagen_url || LOGO_SRC}" alt="${esc(promo.titulo)}" loading="lazy" onerror="this.src='${LOGO_SRC}'">`}</div>`;
+      bindVideoPlayers($('#promoBox'));
+      startTimer(promo.fecha_fin);
+    }
+
+    function startTimer(endDate) {
+      const tick = () => {
+        const diff = Math.max(0, new Date(endDate).getTime() - Date.now());
+        const d = Math.floor(diff / 86400000), h = Math.floor(diff % 86400000 / 3600000), m = Math.floor(diff % 3600000 / 60000), s = Math.floor(diff % 60000 / 1000);
+        ['td','th','tm','ts'].forEach((id, i) => { const el = $('#' + id); if (el) el.textContent = String([d,h,m,s][i]).padStart(2, '0'); });
+      };
+      tick(); setInterval(tick, 1000);
+    }
+
+    async function loadTestimonials() {
+      const result = await cached('testimonios', () => apiCall('getTestimonios'));
+      const data = result.data || [];
+      $('#testimonialsTrack').innerHTML = data.length ? data.map(t => `<article class="testimonial-card card"><div class="testimonial-stars">${stars(t.calificacion)}</div>${t.video_drive_id || t.video_url ? `<div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;margin-bottom:12px;">${videoPlayer(t.video_drive_id || t.video_url, { poster: t.imagen_url || LOGO_SRC })}</div>` : ''}<p>"${esc(t.texto)}"</p><div class="testimonial-author"><img src="${t.imagen_url || LOGO_SRC}" alt="${esc(t.cliente_nombre)}" loading="lazy" onerror="this.src='${LOGO_SRC}'"><div><h4>${esc(t.cliente_nombre)}</h4><span>${esc(t.cliente_ciudad)}</span></div></div></article>`).join('') : `<article class="testimonial-card card"><div class="testimonial-stars">${stars(5)}</div><p>"Una experiencia hermosa con productos hechos con amor."</p><div class="testimonial-author"><img src="${LOGO_SRC}" alt="Luz Gomez"><div><h4>Clienta Luz Gomez</h4><span>Peru</span></div></div></article>`;
+      bindVideoPlayers($('#testimonialsTrack'));
+    }
+
+    function moveTestimonials(direction) {
+      const cards = $$('.testimonial-card');
+      const max = Math.max(0, cards.length - (innerWidth <= 820 ? 1 : 2));
+      state.testimonialSlide = Math.max(0, Math.min(max, state.testimonialSlide + direction));
+      $('#testimonialsTrack').style.transform = `translateX(-${state.testimonialSlide * (innerWidth <= 820 ? 100 : 50)}%)`;
+    }
+
+    function bindVideoPlayers(root = document) {
+      $$('[data-video-shell]', root).forEach(shell => {
+        if (shell.dataset.bound) return;
+        shell.dataset.bound = 'true';
+        const video = $('video', shell);
+        if (!video) return;
+        const ready = () => shell.classList.add('ready');
+        const fail = () => {
+          shell.classList.add('failed');
+          shell.classList.add('ready');
+        };
+        video.addEventListener('loadedmetadata', ready, { once: true });
+        video.addEventListener('canplay', ready, { once: true });
+        video.addEventListener('error', fail, { once: true });
+        setTimeout(() => {
+          if (video.readyState < 1) shell.classList.add('ready');
+        }, 5000);
+      });
+    }
+
+    async function loadGallery() {
+      const result = await cached('galeria', () => apiCall('getGaleria'));
+      const data = result.data || [];
+      $('#galleryGrid').innerHTML = data.length ? data.map((g, i) => `<div class="gallery-item ${i === 0 ? 'large' : i === 5 ? 'wide' : ''}">${g.video_drive_id || g.video_url ? videoPlayer(g.video_drive_id || g.video_url, { poster: g.imagen_url || LOGO_SRC }) : `<img src="${g.imagen_url || LOGO_SRC}" alt="${esc(g.titulo)}" loading="lazy" onerror="this.src='${LOGO_SRC}'">`}<div class="gallery-overlay"><div><i class="fa-solid ${g.video_drive_id || g.video_url ? 'fa-play' : 'fa-heart'}"></i><br>${esc(g.titulo || 'Luz Gomez')}</div></div></div>`).join('') : `<div class="gallery-item large"><img src="${LOGO_SRC}" alt="Luz Gomez"><div class="gallery-overlay" style="opacity:1;">Galeria Luz Gomez</div></div>`;
+      bindVideoPlayers($('#galleryGrid'));
+    }
+
+    function renderContact() {
+      const wa = normalizeWhatsAppLink(state.config.whatsapp_link);
+      const mail = state.config.correo_tienda || SELLER_EMAIL;
+      $('#contactCards').innerHTML = [
+        ['fa-brands fa-whatsapp', 'WhatsApp', state.config.telefono || SELLER_WHATSAPP_DISPLAY, wa],
+        ['fa-solid fa-envelope', 'Gmail', mail, `mailto:${mail}`]
+      ].map(c => `<div class="contact-card card"><div class="contact-icon"><i class="${c[0]}"></i></div><div><h4>${c[1]}</h4><p>${esc(c[2])}</p><a href="${c[3]}" target="_blank">Abrir</a></div></div>`).join('');
+      $('#footerSocial').innerHTML = `<a target="_blank" href="${wa}">WhatsApp</a><a href="mailto:${mail}">Gmail</a>`;
+    }
+
+    function submitContact(e) {
+      e.preventDefault();
+      const form = e.currentTarget;
+      if (!validateForm(form, ['nombre', 'correo', 'telefono', 'mensaje'])) return;
+      const data = Object.fromEntries(new FormData(form));
+      const msg = `Hola, soy ${data.nombre}.\nEmail: ${data.correo}\nTelefono: ${data.telefono}\n\n${data.mensaje}`;
+      window.open(whatsappUrl(msg), '_blank');
+      showToast('Mensaje enviado a WhatsApp');
+      form.reset();
+    }
+
+    function addToCart(product) {
+      if (!product) return;
+      const existing = state.cart.find(i => i.producto_id === product.id);
+      if (existing) existing.cantidad += 1;
+      else state.cart.push({ producto_id: product.id, nombre: product.nombre, cantidad: 1, precio_unitario: Number(product.precio || 0), imagen_url: product.thumbnail_url || product.imagen_url || LOGO_SRC });
+      updateCart();
+      showToast('Producto agregado al carrito');
+    }
+
+    function updateCart() {
+      localStorage.setItem('lg_cart', JSON.stringify(state.cart));
+      const count = state.cart.reduce((s, i) => s + i.cantidad, 0);
+      $('#cartCount').textContent = count;
+      const total = state.cart.reduce((s, i) => s + i.precio_unitario * i.cantidad, 0);
+      $('#cartTotal').textContent = money(total);
+      $('#cartItems').innerHTML = state.cart.length ? state.cart.map((i, idx) => `<div class="cart-item"><img src="${i.imagen_url || LOGO_SRC}" alt="${esc(i.nombre)}" onerror="this.src='${LOGO_SRC}'"><div><strong>${esc(i.nombre)}</strong><div>${money(i.precio_unitario)} x ${i.cantidad}</div><div class="qty-controls"><button data-dec="${idx}">-</button><span>${i.cantidad}</span><button data-inc="${idx}">+</button></div></div><button class="icon-btn" data-remove="${idx}"><i class="fa-solid fa-trash"></i></button></div>`).join('') : `<div class="cart-empty"><i class="fa-solid fa-shopping-basket" style="font-size:3rem;"></i><p>Tu carrito esta vacio</p><span>Agrega productos hermosos.</span></div>`;
+      $$('[data-inc]').forEach(b => b.addEventListener('click', () => { state.cart[b.dataset.inc].cantidad++; updateCart(); }));
+      $$('[data-dec]').forEach(b => b.addEventListener('click', () => { const item = state.cart[b.dataset.dec]; item.cantidad--; if (item.cantidad <= 0) state.cart.splice(b.dataset.dec, 1); updateCart(); }));
+      $$('[data-remove]').forEach(b => b.addEventListener('click', () => { state.cart.splice(b.dataset.remove, 1); updateCart(); }));
+    }
+
+    async function checkout() {
+      if (!state.cart.length) return showToast('Tu carrito esta vacio');
+      const items = state.cart.map(i => ({ ...i, subtotal: i.precio_unitario * i.cantidad }));
+      const total = items.reduce((s, i) => s + i.subtotal, 0);
+      const message = buildCartMessage(items, total);
+      const data = {
+        cliente_id: state.session?.id || 'CLI_WEB',
+        cliente_nombre: state.session?.nombre || 'Cliente',
+        cliente_telefono: state.session?.telefono || 'No registrado',
+        items_json: JSON.stringify(items),
+        total,
+        whatsapp_mensaje: message
+      };
+      const result = await apiCall('createPedido', { data });
+      if (!result.success) return;
+      window.open(whatsappUrl(message), '_blank');
+      state.cart = [];
+      updateCart();
+      closeCart();
+      showToast('Pedido guardado y enviado a WhatsApp');
+    }
+
+    function buildCartMessage(items, total) {
+      return ['Hola, quiero comprar estos productos:', '', ...items.map(i => `- ${i.nombre} x${i.cantidad}: ${money(i.subtotal)}`), '', `Total: ${money(total)}`].join('\n');
+    }
+
+    function openCart() { $('#cartSidebar').classList.add('active'); $('#cartOverlay').classList.add('active'); }
+    function closeCart() { $('#cartSidebar').classList.remove('active'); $('#cartOverlay').classList.remove('active'); }
+
+    async function openDashboard() {
+      showView('dashboard');
+      $('#sellerName').textContent = state.session?.nombre || 'Vendedor';
+      startNotifications();
+      openAdminPage('dashboard');
+    }
+
+    function startNotifications() {
+      loadUnreadComments();
+      clearInterval(state.notificationTimer);
+      state.notificationTimer = setInterval(loadUnreadComments, 30000);
+    }
+
+    async function loadUnreadComments() {
+      if (!state.session?.token || state.session.tipo !== 'vendedor') return;
+      const result = await apiCall('getNotificacionesVendedor', { token: state.session.token });
+      if (!result.success) return;
+      state.unreadComments = result.data || [];
+      const count = $('#notificationCount');
+      count.textContent = state.unreadComments.length;
+      count.classList.toggle('hidden', !state.unreadComments.length);
+      renderNotificationPanel();
+    }
+
+    async function toggleNotifications() {
+      $('#notificationPanel').classList.toggle('active');
+      renderNotificationPanel();
+      if (state.unreadComments.length) {
+        await apiCall('marcarNotificacionesLeidas', { token: state.session.token });
+        state.unreadComments = [];
+        $('#notificationCount').classList.add('hidden');
+        renderNotificationPanel();
+      }
+    }
+
+    function renderNotificationPanel() {
+      const panel = $('#notificationPanel');
+      panel.innerHTML = state.unreadComments.length ? state.unreadComments.map(c => `
+        <button class="comment" style="text-align:left;width:100%;border:1px solid var(--border-color);" data-admin-notification="${esc(c.tipo)}">
+          <strong>${c.tipo === 'pedido' ? '<i class="fa-solid fa-receipt"></i> ' : '<i class="fa-solid fa-comment"></i> '}${esc(c.titulo || 'Notificacion')}</strong>
+          <p>${esc(c.texto || '')}</p>
+        </button>`).join('') : '<p class="section-desc">No hay notificaciones nuevas.</p>';
+      $$('[data-admin-notification]', panel).forEach(btn => btn.addEventListener('click', () => openAdminPage(btn.dataset.adminNotification === 'pedido' ? 'pedidos-admin' : 'comentarios-admin')));
+    }
+
+    async function openAdminPage(page) {
+      $$('.admin-link').forEach(b => b.classList.toggle('active', b.dataset.admin === page));
+      $$('.admin-page').forEach(p => p.classList.remove('active'));
+      $('#admin-' + page).classList.add('active');
+      $('#adminTitle').textContent = page.replace('-admin', '').replace('-', ' ');
+      closeAdminMenu();
+      const loaders = {
+        dashboard: renderDashboard,
+        'productos-admin': renderProductsAdmin,
+        'categorias-admin': renderCategoriasAdmin,
+        'promociones-admin': renderPromocionesAdmin,
+        'testimonios-admin': renderTestimoniosAdmin,
+        'galeria-admin': renderGaleriaAdmin,
+        'pedidos-admin': renderPedidosAdmin,
+        'comentarios-admin': renderComentariosAdmin,
+        'config-admin': renderConfigAdmin
+      };
+      if (loaders[page]) await loaders[page]();
+    }
+
+    async function renderDashboard() {
+      const result = await apiCall('getDashboardStats', { token: state.session.token });
+      if (!result.success) return;
+      const s = result.data;
+      $('#admin-dashboard').innerHTML = `<div class="stats-grid">
+        ${statCard('fa-box', 'Total Productos', s.total_productos)}
+        ${statCard('fa-users', 'Total Clientes', s.total_clientes)}
+        ${statCard('fa-clock', 'Pedidos Pendientes', s.pedidos_pendientes)}
+        ${statCard('fa-coins', 'Ingresos del Mes', money(s.ingresos_mes))}
+      </div><div class="admin-grid-2"><div class="card" style="padding:22px;"><h3>Resumen operativo</h3><div class="bars">${[
+        {label:'Pedidos', total:s.total_pedidos || 0},
+        {label:'Pendientes', total:s.pedidos_pendientes || 0},
+        {label:'Nuevos', total:s.pedidos_nuevos || 0},
+        {label:'Comentarios', total:s.comentarios_pendientes || 0}
+      ].map(b => `<div class="bar"><span style="height:${Math.max(8, Math.min(170, Number(b.total || 0) * 22))}px"></span>${esc(b.label)}</div>`).join('')}</div></div><div class="card" style="padding:22px;"><h3>Actividad reciente</h3><p>Productos sin stock: <strong>${s.productos_sin_stock}</strong></p><p>Comentarios nuevos: <strong>${s.comentarios_pendientes}</strong></p><p>Pedidos nuevos: <strong>${s.pedidos_nuevos || 0}</strong></p><hr style="border:0;border-top:1px solid var(--border-color);margin:15px 0;"><h4>Ultimos pedidos</h4>${(s.ultimos_pedidos || []).map(p => `<p>${esc(p.id)} - ${esc(p.cliente_nombre)} - ${money(p.total)}</p>`).join('') || '<p class="section-desc">Sin pedidos aun.</p>'}</div></div>`;
+    }
+
+    function statCard(icon, label, value) {
+      return `<div class="stat-card card"><div><p class="section-desc">${label}</p><h2>${value}</h2></div><i class="fa-solid ${icon}"></i></div>`;
+    }
+
+    async function renderProductsAdmin() {
+      const [products, cats] = await Promise.all([apiCall('getProductos', { filters: { pagina: 1, por_pagina: 50 } }), cached('categorias', () => apiCall('getCategorias'))]);
+      state.adminProducts = products.data?.items || [];
+      state.categorias = cats.data || [];
+      $('#admin-productos-admin').innerHTML = `<div class="toolbar"><h3>Productos</h3><button class="btn btn-primary" id="newProduct"><i class="fa-solid fa-plus"></i> Nuevo Producto</button></div><div class="card table-wrap"><table><thead><tr><th>Img</th><th>Nombre</th><th>Categoria</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Destacado</th><th>Acciones</th></tr></thead><tbody>${state.adminProducts.map(p => `<tr><td><img class="table-img" src="${p.thumbnail_url || LOGO_SRC}" alt="" onerror="this.src='${LOGO_SRC}'"></td><td>${esc(p.nombre)}</td><td>${esc(p.categoria_nombre)}</td><td>${money(p.precio)}</td><td>${p.stock || 0}</td><td><span class="status ${truthy(p.activo) ? '' : 'off'}">${truthy(p.activo) ? 'Activo' : 'Inactivo'}</span></td><td>${truthy(p.destacado) ? 'Si' : 'No'}</td><td><button class="btn btn-secondary btn-small" data-edit-product="${p.id}"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger btn-small" data-del-product="${p.id}"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')}</tbody></table></div>`;
+      $('#newProduct').addEventListener('click', () => renderProductForm());
+      $$('[data-edit-product]').forEach(b => b.addEventListener('click', () => renderProductForm(state.adminProducts.find(p => p.id === b.dataset.editProduct))));
+      $$('[data-del-product]').forEach(b => b.addEventListener('click', async () => { const r = await apiCall('deleteProducto', { id: b.dataset.delProduct, token: state.session.token }); if (r.success) renderProductsAdmin(); }));
+    }
+
+    function renderProductForm(product = null) {
+      state.editingProductId = product?.id || null;
+      $$('.admin-page').forEach(p => p.classList.remove('active'));
+      $('#admin-form-producto').classList.add('active');
+      $('#adminTitle').textContent = product ? 'Editar producto' : 'Nuevo producto';
+      $('#admin-form-producto').innerHTML = `<div class="toolbar"><h3>${product ? 'Editar' : 'Crear'} Producto</h3><button class="btn btn-secondary" id="backProducts">Volver</button></div><form id="productForm" class="admin-form card" style="padding:22px;" novalidate>
+        <div class="field"><label>Nombre</label><input name="nombre" value="${esc(product?.nombre)}"><span class="error-text">Nombre requerido.</span></div>
+        <div class="field"><label>Categoria</label><select name="categoria_id">${state.categorias.map(c => `<option value="${c.id}" ${product?.categoria_id === c.id ? 'selected' : ''}>${esc(c.nombre)}</option>`).join('')}</select></div>
+        <div class="field full"><label>Descripcion</label><textarea name="descripcion">${esc(product?.descripcion)}</textarea></div>
+        <div class="field"><label>Precio</label><input name="precio" type="text" inputmode="decimal" value="${product?.precio ? moneyValue(product.precio) : ''}"><span class="error-text">Precio requerido.</span></div>
+        <div class="field"><label>Precio antiguo</label><input name="precio_antiguo" type="text" inputmode="decimal" value="${product?.precio_antiguo ? moneyValue(product.precio_antiguo) : ''}"></div>
+        <div class="field"><label>Stock</label><input name="stock" type="number" value="${product?.stock || 0}"></div>
+        <div class="field"><label>Badge</label><select name="badge"><option value="">Ninguno</option>${['Nuevo','Mas Vendido','-20%','-30%','Oferta'].map(v => `<option ${product?.badge === v ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+        <div class="field"><label><input name="destacado" type="checkbox" ${product?.destacado ? 'checked' : ''}> Destacado</label></div>
+        <input type="hidden" name="imagen_drive_id" value="${esc(product?.imagen_drive_id)}"><input type="hidden" name="imagenes_extra_ids" value="${esc(product?.imagenes_extra_ids)}"><input type="hidden" name="video_drive_id" value="${esc(product?.video_drive_id)}">
+        <div class="field full"><label>Imagen principal</label><input id="mainImageInput" type="file" accept="image/*"><div class="preview-grid" id="mainPreview">${product?.imagen_url ? `<img src="${product.imagen_url}" onerror="this.src='${LOGO_SRC}'">` : ''}</div></div>
+        <div class="field full"><label>Imagenes extra</label><input id="extraImagesInput" type="file" accept="image/*" multiple><div class="preview-grid" id="extraPreview">${(product?.imagenes_extra_urls || []).map(i => `<img src="${i.url}" onerror="this.src='${LOGO_SRC}'">`).join('')}</div></div>
+        <div class="field full"><label>Video</label><input id="videoInput" type="file" accept="video/*"><div class="preview-grid" id="videoPreview">${product?.video_url ? `<video src="${product.video_url}" controls></video>` : ''}</div></div>
+        <div class="full"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar</button></div>
+      </form>`;
+      $('#backProducts').addEventListener('click', () => openAdminPage('productos-admin'));
+      $('#productForm').addEventListener('submit', saveProduct);
+      $('#mainImageInput').addEventListener('change', e => previewFiles(e.target, '#mainPreview'));
+      $('#extraImagesInput').addEventListener('change', e => previewFiles(e.target, '#extraPreview'));
+      $('#videoInput').addEventListener('change', e => previewFiles(e.target, '#videoPreview'));
+    }
+
+    async function saveProduct(e) {
+      e.preventDefault();
+      const form = e.currentTarget;
+      if (!validateForm(form, ['nombre', 'precio'])) return;
+      const data = Object.fromEntries(new FormData(form));
+      data.precio = parseMoneyInput(data.precio);
+      data.precio_antiguo = parseMoneyInput(data.precio_antiguo);
+      data.destacado = form.destacado.checked;
+      const action = state.editingProductId ? 'updateProducto' : 'createProducto';
+      const params = state.editingProductId ? { id: state.editingProductId, data, token: state.session.token } : { data, token: state.session.token };
+      const result = await apiCall(action, params);
+      if (!result.success) return;
+      const productId = state.editingProductId || result.data.id;
+      await uploadProductFiles(productId);
+      showToast('Producto guardado');
+      openAdminPage('productos-admin');
+    }
+
+    function uploadProductFiles(productId) {
+      const jobs = [];
+      const main = $('#mainImageInput').files[0];
+      if (main) jobs.push(uploadViaScript('uploadProductoImagenBase64', [main, productId, true, state.session.token]));
+      Array.from($('#extraImagesInput').files || []).forEach(file => jobs.push(uploadViaScript('uploadProductoImagenBase64', [file, productId, false, state.session.token])));
+      const video = $('#videoInput').files[0];
+      if (video) jobs.push(uploadViaScript('uploadProductoVideoBase64', [video, productId, state.session.token]));
+      return Promise.all(jobs);
+    }
+
+    async function uploadViaScript(functionName, args) {
+      const fileArgs = await Promise.all(args.map(arg => arg instanceof File ? fileToPayload(arg) : arg));
+      const params = {};
+      if (functionName === 'uploadProductoImagenBase64') {
+        Object.assign(params, { fileData: fileArgs[0], productoId: fileArgs[1], esPrincipal: fileArgs[2], token: fileArgs[3] });
+      } else if (functionName === 'uploadProductoVideoBase64') {
+        Object.assign(params, { fileData: fileArgs[0], productoId: fileArgs[1], token: fileArgs[2] });
+      } else if (functionName === 'uploadCategoriaImagenBase64') {
+        Object.assign(params, { fileData: fileArgs[0], categoriaId: fileArgs[1], token: fileArgs[2] });
+      } else if (functionName === 'uploadCategoriaVideoBase64') {
+        Object.assign(params, { fileData: fileArgs[0], categoriaId: fileArgs[1], token: fileArgs[2] });
+      } else if (functionName === 'uploadPromocionImagenBase64') {
+        Object.assign(params, { fileData: fileArgs[0], promocionId: fileArgs[1], token: fileArgs[2] });
+      } else if (functionName === 'uploadPromocionVideoBase64') {
+        Object.assign(params, { fileData: fileArgs[0], promocionId: fileArgs[1], token: fileArgs[2] });
+      } else if (functionName === 'uploadTestimonioImagenBase64') {
+        Object.assign(params, { fileData: fileArgs[0], testimonioId: fileArgs[1], token: fileArgs[2] });
+      } else if (functionName === 'uploadTestimonioVideoBase64') {
+        Object.assign(params, { fileData: fileArgs[0], testimonioId: fileArgs[1], token: fileArgs[2] });
+      } else if (functionName === 'uploadGaleriaImagenBase64') {
+        Object.assign(params, { fileData: fileArgs[0], galeriaId: fileArgs[1], token: fileArgs[2] });
+      } else if (functionName === 'uploadGaleriaVideoBase64') {
+        Object.assign(params, { fileData: fileArgs[0], galeriaId: fileArgs[1], token: fileArgs[2] });
+      }
+
+      if (Object.keys(params).length) return apiCall(functionName, params);
+
+      return new Promise(resolve => {
+        if (!window.google || !google.script || !google.script.run) {
+          showToast('Uploads disponibles al desplegar en Apps Script');
+          return resolve(null);
+        }
+        google.script.run.withSuccessHandler(resolve).withFailureHandler(err => { showToast('Error al subir: ' + err); resolve(null); })[functionName](...args);
+      });
+    }
+
+    function fileToPayload(file) {
+      return new Promise((resolve, reject) => {
+        if (file.type.startsWith('video') && file.size > 20 * 1024 * 1024) {
+          showToast('El video supera 20MB. Usa un archivo mas pequeno.');
+          return reject(new Error('Video demasiado grande'));
+        }
+        const reader = new FileReader();
+        reader.onload = () => resolve({ name: file.name, type: file.type, dataUrl: reader.result });
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function previewFiles(input, target) {
+      const box = $(target);
+      box.innerHTML = '';
+      Array.from(input.files || []).forEach(file => {
+        const url = URL.createObjectURL(file);
+        box.insertAdjacentHTML('beforeend', file.type.startsWith('video') ? `<video src="${url}" controls></video>` : `<img src="${url}" alt="">`);
+      });
+    }
+
+    async function renderCategoriasAdmin() { renderSimpleCrud('categorias-admin', 'Categorias', 'Categoria', ['nombre','descripcion','icono','orden'], 'getCategorias', 'createCategoria', 'updateCategoria', 'deleteCategoria'); }
+    async function renderPromocionesAdmin() { renderSimpleCrud('promociones-admin', 'Promociones', 'Promocion', ['titulo','descripcion','descuento_porcentaje','fecha_inicio','fecha_fin'], 'getPromociones', 'createPromocion', 'updatePromocion', 'deletePromocion'); }
+    async function renderTestimoniosAdmin() { renderSimpleCrud('testimonios-admin', 'Testimonios', 'Testimonio', ['cliente_nombre','cliente_ciudad','texto','calificacion','orden'], 'getTestimonios', 'createTestimonio', 'updateTestimonio', 'deleteTestimonio'); }
+    async function renderGaleriaAdmin() { renderSimpleCrud('galeria-admin', 'Galeria', 'Imagen', ['titulo','orden'], 'getGaleria', 'addGaleriaItem', null, 'deleteGaleriaItem'); }
+
+    async function renderSimpleCrud(page, title, singular, fields, listAction, createAction, updateAction, deleteAction) {
+      const listParams = ['getPromociones'].includes(listAction) ? { token: state.session.token } : {};
+      const result = await apiCall(listAction, listParams);
+      const items = result.data || [];
+      const el = $('#admin-' + page);
+      el.innerHTML = `<div class="toolbar"><h3>${title}</h3></div><form class="admin-form card simple-form" style="padding:22px;margin-bottom:18px;">${fields.map(f => {
+        const isLong = f === 'descripcion' || f === 'texto';
+        const control = isLong ? `<textarea name="${f}"></textarea>` : `<input name="${f}" ${f.includes('fecha') ? 'type="date"' : ''}>`;
+        return `<div class="field ${isLong ? 'full' : ''}"><label>${label(f)}</label>${control}</div>`;
+      }).join('')}<div class="field"><label>Imagen</label><input name="file" type="file" accept="image/*"><div class="preview-grid" data-preview="image"></div></div><div class="field"><label>Video</label><input name="video" type="file" accept="video/*"><div class="preview-grid" data-preview="video"></div></div><div class="full"><button class="btn btn-primary" type="submit">Guardar ${singular}</button></div></form><div class="card table-wrap"><table><thead><tr><th>Media</th><th>Datos</th><th>IDs</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${items.map(i => `<tr><td>${i.video_url ? `<video class="table-img" src="${i.video_url}" controls></video>` : `<img class="table-img" src="${i.imagen_url || LOGO_SRC}" alt="" onerror="this.src='${LOGO_SRC}'">`}</td><td><strong>${esc(i.nombre || i.titulo || i.cliente_nombre || i.id)}</strong><br><small>${esc(i.descripcion || i.texto || i.cliente_ciudad || '')}</small></td><td><div class="media-id">Img: ${esc(i.imagen_drive_id || '-')}</div><div class="media-id">Video: ${esc(i.video_drive_id || '-')}</div></td><td><span class="status ${i.activa === false || i.activo === false ? 'off' : ''}">${i.activa === false || i.activo === false ? 'Inactivo' : 'Activo'}</span></td><td><button class="btn btn-danger btn-small" data-delete-simple="${i.id}"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')}</tbody></table></div>`;
+      $('input[name="file"]', el).addEventListener('change', e => previewFiles(e.target, '[data-preview="image"]'));
+      $('input[name="video"]', el).addEventListener('change', e => previewFiles(e.target, '[data-preview="video"]'));
+      $('.simple-form', el).addEventListener('submit', async e => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const data = Object.fromEntries(new FormData(form)); delete data.file; delete data.video;
+        const r = await apiCall(createAction, { data, token: state.session.token });
+        if (!r.success) return;
+        const file = form.file.files[0];
+        const video = form.video.files[0];
+        if (file) await uploadSimpleMedia(page, r.data.id, file, 'image');
+        if (video) await uploadSimpleMedia(page, r.data.id, video, 'video');
+        showToast(singular + ' guardado');
+        renderSimpleCrud(page, title, singular, fields, listAction, createAction, updateAction, deleteAction);
+      });
+      $$('[data-delete-simple]', el).forEach(b => b.addEventListener('click', async () => { const r = await apiCall(deleteAction, { id: b.dataset.deleteSimple, token: state.session.token }); if (r.success) renderSimpleCrud(page, title, singular, fields, listAction, createAction, updateAction, deleteAction); }));
+    }
+
+    function uploadSimpleMedia(page, id, file, type) {
+      const maps = {
+        image: { 'categorias-admin': 'uploadCategoriaImagenBase64', 'promociones-admin': 'uploadPromocionImagenBase64', 'testimonios-admin': 'uploadTestimonioImagenBase64', 'galeria-admin': 'uploadGaleriaImagenBase64' },
+        video: { 'categorias-admin': 'uploadCategoriaVideoBase64', 'promociones-admin': 'uploadPromocionVideoBase64', 'testimonios-admin': 'uploadTestimonioVideoBase64', 'galeria-admin': 'uploadGaleriaVideoBase64' }
+      };
+      return uploadViaScript(maps[type][page], [file, id, state.session.token]);
+    }
+
+    async function renderPedidosAdmin() {
+      const result = await apiCall('getPedidos', { token: state.session.token });
+      const items = result.data || [];
+      $('#admin-pedidos-admin').innerHTML = `<div class="toolbar"><h3>Pedidos</h3></div><div class="card table-wrap"><table><thead><tr><th>ID</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${items.map(p => `<tr><td>${esc(p.id)}</td><td>${esc(p.cliente_nombre)}<br><small>${esc(p.cliente_telefono)}</small></td><td>${new Date(p.fecha_creacion).toLocaleDateString()}</td><td>${money(p.total)}</td><td><select data-order-state="${p.id}">${['pendiente','confirmado','en_preparacion','enviado','entregado','cancelado'].map(s => `<option ${p.estado === s ? 'selected' : ''}>${s}</option>`).join('')}</select></td><td><button class="btn btn-secondary btn-small" data-order-detail="${p.id}">Detalle</button></td></tr>`).join('')}</tbody></table></div>`;
+      $$('[data-order-state]').forEach(s => s.addEventListener('change', async () => { const r = await apiCall('updatePedidoEstado', { id: s.dataset.orderState, estado: s.value, token: state.session.token }); if (r.success) showToast('Estado actualizado'); }));
+      $$('[data-order-detail]').forEach(b => b.addEventListener('click', () => {
+        const p = items.find(x => x.id === b.dataset.orderDetail);
+        const lines = JSON.parse(p.items_json || '[]').map(i => `<li>${esc(i.nombre)} x${i.cantidad} - ${money(i.subtotal)}</li>`).join('');
+        openModal(`<h2>Pedido ${esc(p.id)}</h2><p><strong>${esc(p.cliente_nombre)}</strong></p><ul style="margin:15px 0 15px 20px;">${lines}</ul><p>Total: <strong>${money(p.total)}</strong></p><p style="white-space:pre-wrap">${esc(p.whatsapp_mensaje)}</p>`);
+      }));
+    }
+
+    async function renderComentariosAdmin() {
+      const result = await apiCall('getComentariosPendientes', { token: state.session.token });
+      const items = result.data || [];
+      $('#admin-comentarios-admin').innerHTML = `<div class="toolbar"><h3>Comentarios recientes</h3><button class="btn btn-secondary btn-small" id="refreshComments">Refrescar</button></div><div class="card" style="padding:18px;">${items.length ? items.map(c => `<div class="comment"><strong>${esc(c.producto_nombre || 'Producto')}</strong><br><span>${esc(c.cliente_nombre)}</span> ${stars(c.calificacion)}<p>${esc(c.comentario)}</p><textarea data-response="${esc(c.id)}" placeholder="Respuesta para el cliente">${esc(c.respuesta_admin || '')}</textarea><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;"><button class="btn btn-secondary btn-small" data-reply="${c.id}">Responder</button><button class="btn btn-danger btn-small" data-reject="${c.id}">Eliminar</button></div></div>`).join('') : '<p class="section-desc">No hay comentarios todavia.</p>'}</div>`;
+      $('#refreshComments').addEventListener('click', renderComentariosAdmin);
+      $$('[data-reply]').forEach(b => b.addEventListener('click', async () => {
+        const respuesta = $(`[data-response="${CSS.escape(b.dataset.reply)}"]`).value;
+        const r = await apiCall('responderComentario', { id: b.dataset.reply, respuesta, token: state.session.token });
+        if (r.success) renderComentariosAdmin();
+      }));
+      $$('[data-reject]').forEach(b => b.addEventListener('click', async () => { const r = await apiCall('rechazarComentario', { id: b.dataset.reject, token: state.session.token }); if (r.success) renderComentariosAdmin(); }));
+    }
+
+    async function renderConfigAdmin() {
+      await loadConfig();
+      const keys = Object.keys(state.config);
+      $('#admin-config-admin').innerHTML = `<div class="toolbar"><h3>Configuracion</h3></div><form id="configForm" class="admin-form card" style="padding:22px;">${keys.map(k => `<div class="field"><label>${label(k)}</label><input name="${k}" value="${esc(state.config[k])}"></div>`).join('')}<div class="full"><button class="btn btn-primary" type="submit">Guardar configuracion</button></div></form>`;
+      $('#configForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const entries = Object.entries(Object.fromEntries(new FormData(e.currentTarget)));
+        for (const [clave, valor] of entries) await apiCall('updateConfig', { clave, valor, token: state.session.token });
+        state.cache = {};
+        await loadConfig();
+        showToast('Configuracion guardada');
+      });
+    }
+
+    function animateStats() {
+      const vals = { productos: state.products.length || 0, categorias: state.categorias.length || 0, clientes: 0 };
+      if (state.session?.tipo === 'cliente') vals.clientes = 1;
+      $$('[data-stat]').forEach(el => {
+        const target = Number(vals[el.dataset.stat] || 0);
+        let current = 0;
+        const step = Math.max(1, Math.ceil(target / 35));
+        const timer = setInterval(() => { current += step; if (current >= target) { current = target; clearInterval(timer); } el.textContent = current + (target >= 10 ? '+' : ''); }, 25);
+      });
+    }
+
+    function createParticles(containerId) {
+      const c = $('#' + containerId);
+      if (!c) return;
+      ['🌸','✨','🌺','💜','⭐','🌷','💫'].forEach((p, i) => {
+        for (let j = 0; j < 2; j++) {
+          const el = document.createElement('div');
+          el.className = 'particle';
+          el.textContent = p;
+          el.style.left = Math.random() * 100 + '%';
+          el.style.top = Math.random() * 100 + '%';
+          el.style.animationDelay = (i + j) * .7 + 's';
+          c.appendChild(el);
+        }
+      });
+    }
+
+    function stars(value) {
+      const n = Math.round(Number(value || 5));
+      return Array.from({ length: 5 }, (_, i) => `<i class="fa-${i < n ? 'solid' : 'regular'} fa-star"></i>`).join('');
+    }
+
+    function whatsappProductUrl(p) {
+      return whatsappUrl('Hola, quiero comprar: ' + p.nombre + ' - ' + money(p.precio));
+    }
+
+    function validateForm(form, names) {
+      let ok = true;
+      names.forEach(name => {
+        const input = form.elements[name];
+        const field = input?.closest('.field');
+        const invalid = !input || !String(input.value || '').trim() || (input.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value));
+        field?.classList.toggle('error', invalid);
+        if (invalid) ok = false;
+      });
+      return ok;
+    }
+
+    function openModal(html) { $('#modalBody').innerHTML = html; $('#modal').classList.add('active'); }
+    function closeModal() { $('#modal').classList.remove('active'); }
+    function showToast(message) { const t = $('#toast'); t.textContent = message; t.classList.add('show'); clearTimeout(showToast.timer); showToast.timer = setTimeout(() => t.classList.remove('show'), 3200); }
+    function setupTheme() { document.documentElement.setAttribute('data-theme', localStorage.getItem('lg_theme') || 'light'); }
+    function toggleTheme() { const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', next); localStorage.setItem('lg_theme', next); }
+    function logoutLocal() {
+      clearInterval(state.notificationTimer);
+      localStorage.removeItem('lg_session');
+      localStorage.removeItem('cliente_id');
+      localStorage.removeItem('cliente_nombre');
+      state.session = null;
+      state.cache = {};
+      showView('acceso');
+    }
+    async function logout() { if (state.session?.token) await apiCall('doLogout', { token: state.session.token }); logoutLocal(); }
+    function label(k) { return String(k).replaceAll('_', ' ').replace(/\b\w/g, c => c.toUpperCase()); }
+    function debounce(fn, wait) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); }; }
+  </script>
+</body>
+</html>
+
