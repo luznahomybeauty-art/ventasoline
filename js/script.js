@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
         cartCount.textContent = totalItems;
-        cartTotal.textContent = `S/ ${totalPrice.toFixed(2)}`;
+        cartTotal.textContent = `$ ${totalPrice.toFixed(2)}`;
         
         if (cart.length === 0) {
             cartItems.innerHTML = `
@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <img src="${item.img}" alt="${item.name}" class="cart-item-img">
                     <div class="cart-item-info">
                         <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-price">S/ ${item.price.toFixed(2)} x ${item.quantity}</div>
+                        <div class="cart-item-price">$ ${item.price.toFixed(2)} x ${item.quantity}</div>
                         <button class="cart-item-remove" onclick="window.removeCartItem(${index})">
                             <i class="fas fa-trash-alt"></i> Eliminar
                         </button>
@@ -204,8 +204,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateWhatsAppLink(total) {
         const checkoutBtn = document.querySelector('.cart-checkout');
         if (cart.length > 0) {
-            const itemsList = cart.map(item => `- ${item.name} (x${item.quantity}): S/ ${(item.price * item.quantity).toFixed(2)}`).join('%0A');
-            const message = `Hola, quiero comprar estos productos:%0A%0A${itemsList}%0A%0ATotal: S/ ${total.toFixed(2)}`;
+            const itemsList = cart.map(item => `- ${item.name} (x${item.quantity}): $ ${(item.price * item.quantity).toFixed(2)}`).join('%0A');
+            const message = `Hola, quiero comprar estos productos:%0A%0A${itemsList}%0A%0ATotal: $ ${total.toFixed(2)}`;
             checkoutBtn.href = `https://wa.me/573213092850?text=${message}`;
         }
     }
@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Configurar botón de agregar en modal
             const modalAddBtn = document.getElementById('modalAddToCart');
-            const priceValue = parseFloat(price.replace('S/ ', ''));
+            const priceValue = parseFloat(price.replace('$ ', ''));
             modalAddBtn.onclick = () => {
                 addToCart(name, priceValue, '../img/flores.png');
                 modal.classList.remove('active');
@@ -313,17 +313,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function updateSlider() {
+        if (!track || testimonialCards.length === 0) return;
         const slideWidth = getSlideWidth();
         track.style.transform = `translateX(-${currentSlide * slideWidth}%)`;
     }
     
     nextBtn.addEventListener('click', () => {
+        if (testimonialCards.length === 0) return;
         const maxSlides = window.innerWidth <= 768 ? testimonialCards.length - 1 : Math.ceil(testimonialCards.length / 2) - 1;
         currentSlide = currentSlide >= maxSlides ? 0 : currentSlide + 1;
         updateSlider();
     });
     
     prevBtn.addEventListener('click', () => {
+        if (testimonialCards.length === 0) return;
         const maxSlides = window.innerWidth <= 768 ? testimonialCards.length - 1 : Math.ceil(testimonialCards.length / 2) - 1;
         currentSlide = currentSlide <= 0 ? maxSlides : currentSlide - 1;
         updateSlider();
@@ -331,6 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Auto-slide cada 5 segundos
     setInterval(() => {
+        if (testimonialCards.length === 0) return;
         const maxSlides = window.innerWidth <= 768 ? testimonialCards.length - 1 : Math.ceil(testimonialCards.length / 2) - 1;
         currentSlide = currentSlide >= maxSlides ? 0 : currentSlide + 1;
         updateSlider();
@@ -543,6 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('✨ Luz Gomez - Tienda Artesanal cargada correctamente');
 });
+
 
 
 

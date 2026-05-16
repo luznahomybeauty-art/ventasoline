@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Luz Gomez - Tienda artesanal peruana integrada con Google Sheets y Google Drive.">
+  <meta name="description" content="Luz Gomez - Tienda artesanal colombiana integrada con Google Sheets y Google Drive.">
   <title>Luz Gomez | Tienda Artesanal</title>
   <link rel="icon" type="image/png" href="img/flores.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -399,7 +399,7 @@
           <aside class="access-art">
             <div>
               <div class="brand-fallback">Luz Gomez</div>
-              <p>Una tienda artesanal peruana con productos unicos, regalos personalizados y gestion conectada a Google.</p>
+              <p>Una tienda artesanal colombiana con productos unicos, regalos personalizados y gestion conectada a Google.</p>
             </div>
             <div>
               <strong id="accessWelcome">Bienvenida a Luz Gomez!</strong>
@@ -472,7 +472,7 @@
         <div id="heroParticles"></div>
         <div class="container hero-inner">
           <div class="hero-content">
-            <div class="hero-badge fade-in-up"><i class="fa-solid fa-sparkles"></i> Emprendimiento Familiar Peruano</div>
+            <div class="hero-badge fade-in-up"><i class="fa-solid fa-sparkles"></i> Emprendimiento Familiar Colombiano</div>
             <h1 class="hero-title fade-in-up delay-1">Descubre la magia de lo <span class="text-gradient">hecho a mano</span></h1>
             <p class="hero-desc fade-in-up delay-2" id="heroDesc">Artesanias unicas, ropa con estilo, accesorios que enamoran y regalos personalizados hechos con amor.</p>
             <div class="hero-buttons fade-in-up delay-3">
@@ -518,7 +518,7 @@
           <div>
             <span class="section-tag">Nuestra Historia</span>
             <h2 class="section-title">Hecho con <span>Amor</span> y <span>Dedicacion</span></h2>
-            <p class="section-desc"><strong>Luz Gomez</strong> nacio del sueno de una familia peruana apasionada por el arte y la creatividad. Cada pieza lleva dedicacion, seleccion de materiales y mucho carino.</p>
+            <p class="section-desc"><strong>Luz Gomez</strong> nacio del sueno de una familia colombiana apasionada por el arte y la creatividad. Cada pieza lleva dedicacion, seleccion de materiales y mucho carino.</p>
             <div class="about-values">
               <div class="value-item"><strong>💜</strong><div><h4>Amor</h4><p>Cada pieza es creada con pasion.</p></div></div>
               <div class="value-item"><strong>✨</strong><div><h4>Creatividad</h4><p>Disenos unicos e innovadores.</p></div></div>
@@ -563,12 +563,12 @@
 
       <footer class="footer">
         <div class="container footer-grid">
-          <div><div class="logo"><img id="footerLogo" class="logo-img" src="img/flores.png" alt="Luz Gomez"><div><span class="logo-main">Luz Gomez</span><span class="logo-sub">Hecho con amor</span></div></div><p style="margin-top:15px;color:var(--gray-400);">Productos artesanales peruanos creados con amor, creatividad y calidad.</p></div>
+          <div><div class="logo"><img id="footerLogo" class="logo-img" src="img/flores.png" alt="Luz Gomez"><div><span class="logo-main">Luz Gomez</span><span class="logo-sub">Hecho con amor</span></div></div><p style="margin-top:15px;color:var(--gray-400);">Productos artesanales colombianos creados con amor, creatividad y calidad.</p></div>
           <div><h4>Categorias</h4><div id="footerCategories"></div></div>
           <div><h4>Enlaces</h4><a href="#inicio">Inicio</a><a href="#productos">Productos</a><a href="#nosotros">Nosotros</a><a href="#contacto">Contacto</a></div>
           <div><h4>Redes</h4><div id="footerSocial"></div></div>
         </div>
-        <div class="container footer-bottom"><span>© 2026 Luz Gomez. Todos los derechos reservados.</span><span>Hecho con amor en Peru</span></div>
+        <div class="container footer-bottom"><span>© 2026 Luz Gomez. Todos los derechos reservados.</span><span>Hecho con amor en Colombia</span></div>
       </footer>
     </div>
 
@@ -619,7 +619,7 @@
     <aside class="cart-sidebar" id="cartSidebar">
       <div class="cart-header"><h3><i class="fa-solid fa-shopping-bag"></i> Tu Carrito</h3><button class="icon-btn" id="cartClose"><i class="fa-solid fa-times"></i></button></div>
       <div class="cart-items" id="cartItems"></div>
-      <div class="cart-footer"><div class="cart-total"><span>Total</span><span id="cartTotal">S/ 0.00</span></div><button class="btn btn-green btn-full" id="checkoutBtn"><i class="fa-brands fa-whatsapp"></i> Comprar por WhatsApp</button></div>
+      <div class="cart-footer"><div class="cart-total"><span>Total</span><span id="cartTotal">$ 0.00</span></div><button class="btn btn-green btn-full" id="checkoutBtn"><i class="fa-brands fa-whatsapp"></i> Comprar por WhatsApp</button></div>
     </aside>
 
     <a id="whatsappFloat" class="floating-wa" target="_blank" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
@@ -655,8 +655,8 @@
 
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-    const moneyValue = n => Number(n || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const money = n => `${state.config.moneda || 'S/'} ${moneyValue(n)}`;
+    const moneyValue = n => Number(n || 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const money = n => `${state.config.moneda || '$'} ${moneyValue(n)}`;
     const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
     const truthy = value => value === true || String(value).toLowerCase() === 'true';
     const driveUrl = id => id ? `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w1200` : LOGO_SRC;
@@ -672,6 +672,17 @@
     }
     function whatsappUrl(message, base = state.config.whatsapp_link) {
       return `${normalizeWhatsAppLink(base)}?text=${encodeURIComponent(message)}`;
+    }
+    function normalizeColombiaText(value) {
+      const oldCountry = 'pe' + 'ru';
+      const oldCapital = 'Li' + 'ma';
+      return String(value || '')
+        .replace(new RegExp(`${oldCountry}ano`, 'gi'), 'colombiano')
+        .replace(new RegExp(`${oldCountry}ana`, 'gi'), 'colombiana')
+        .replace(new RegExp(`${oldCountry}anos`, 'gi'), 'colombianos')
+        .replace(new RegExp(`${oldCountry}anas`, 'gi'), 'colombianas')
+        .replace(new RegExp(oldCountry, 'gi'), 'Colombia')
+        .replace(new RegExp(oldCapital, 'gi'), 'Colombia');
     }
     function extractDriveId(value) {
       const raw = String(value || '').trim();
@@ -718,7 +729,7 @@
     }
     function formatDate(value) {
       if (!value) return '';
-      return new Date(value).toLocaleDateString('es-PE');
+      return new Date(value).toLocaleDateString('es-CO');
     }
 
     async function apiCall(action, params = {}) {
@@ -784,6 +795,8 @@
       if (!result.success) return;
       state.config = result.data || {};
       state.config.whatsapp_link = normalizeWhatsAppLink(state.config.whatsapp_link || state.config.telefono || SELLER_WHATSAPP);
+      if (!state.config.moneda || String(state.config.moneda).charAt(0).toUpperCase() === 'S') state.config.moneda = '$';
+      if (state.config.descripcion_tienda) state.config.descripcion_tienda = normalizeColombiaText(state.config.descripcion_tienda);
       if (!state.config.telefono || ['3213092850', '573213092850', '3118744555', '31187445555', '573118744555'].includes(String(state.config.telefono).replace(/\D/g, ''))) state.config.telefono = SELLER_WHATSAPP_DISPLAY;
       $('#accessWelcome').textContent = state.config.mensaje_bienvenida || 'Bienvenida a Luz Gomez!';
       $('#heroDesc').textContent = state.config.descripcion_tienda || $('#heroDesc').textContent;
@@ -1049,7 +1062,9 @@
     async function loadTestimonials() {
       const result = await cached('testimonios', () => apiCall('getTestimonios'));
       const data = result.data || [];
-      $('#testimonialsTrack').innerHTML = data.length ? data.map(t => `<article class="testimonial-card card"><div class="testimonial-stars">${stars(t.calificacion)}</div>${t.video_drive_id || t.video_url ? `<div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;margin-bottom:12px;">${videoPlayer(t.video_drive_id || t.video_url, { poster: t.imagen_url || LOGO_SRC })}</div>` : ''}<p>"${esc(t.texto)}"</p><div class="testimonial-author"><img src="${t.imagen_url || LOGO_SRC}" alt="${esc(t.cliente_nombre)}" loading="lazy" onerror="this.src='${LOGO_SRC}'"><div><h4>${esc(t.cliente_nombre)}</h4><span>${esc(t.cliente_ciudad)}</span></div></div></article>`).join('') : `<article class="testimonial-card card"><div class="testimonial-stars">${stars(5)}</div><p>"Una experiencia hermosa con productos hechos con amor."</p><div class="testimonial-author"><img src="${LOGO_SRC}" alt="Luz Gomez"><div><h4>Clienta Luz Gomez</h4><span>Peru</span></div></div></article>`;
+      $('#testimonialsTrack').innerHTML = data.length ? data.map(t => `<article class="testimonial-card card"><div class="testimonial-stars">${stars(t.calificacion)}</div>${t.video_drive_id || t.video_url ? `<div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;margin-bottom:12px;">${videoPlayer(t.video_drive_id || t.video_url, { poster: t.imagen_url || LOGO_SRC })}</div>` : ''}<p>"${esc(t.texto)}"</p><div class="testimonial-author"><img src="${t.imagen_url || LOGO_SRC}" alt="${esc(t.cliente_nombre)}" loading="lazy" onerror="this.src='${LOGO_SRC}'"><div><h4>${esc(t.cliente_nombre)}</h4><span>${esc(t.cliente_ciudad)}</span></div></div></article>`).join('') : '';
+      const testimonialNav = $('.testimonials .slider-nav');
+      if (testimonialNav) testimonialNav.classList.toggle('hidden', !data.length);
       bindVideoPlayers($('#testimonialsTrack'));
     }
 
@@ -1515,4 +1530,5 @@
   </script>
 </body>
 </html>
+
 

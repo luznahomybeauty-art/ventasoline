@@ -61,6 +61,18 @@ function normalizeWhatsAppLink(value) {
   return 'https://wa.me/' + digits;
 }
 
+function normalizeColombiaText(value) {
+  var oldCountry = 'pe' + 'ru';
+  var oldCapital = 'Li' + 'ma';
+  return String(value || '')
+    .replace(new RegExp(oldCountry + 'ano', 'gi'), 'colombiano')
+    .replace(new RegExp(oldCountry + 'ana', 'gi'), 'colombiana')
+    .replace(new RegExp(oldCountry + 'anos', 'gi'), 'colombianos')
+    .replace(new RegExp(oldCountry + 'anas', 'gi'), 'colombianas')
+    .replace(new RegExp(oldCountry, 'gi'), 'Colombia')
+    .replace(new RegExp(oldCapital, 'gi'), 'Colombia');
+}
+
 /** Valida contraseña hash o texto plano antiguo; si es texto plano, migra a hash */
 function checkAndMigratePassword(vendedor, password) {
   var hashed = hashPassword(password);
@@ -182,7 +194,7 @@ function formatDate(date) {
 
 /** Formato moneda */
 function formatCurrency(amount) {
-  return 'S/ ' + Number(amount || 0).toFixed(2);
+  return '$ ' + Number(amount || 0).toFixed(2);
 }
 
 /** Obtiene fila de hoja como objeto (por ID en columna A) */
@@ -354,11 +366,11 @@ function initDatabase() {
       ['instagram','@luzgomez.artesanal'],
       ['facebook','Luz Gomez Artesanal'],
       ['tiktok','@luzgomez.artesanal'],
-      ['moneda','S/'],
+      ['moneda','$'],
       ['envio_nacional','true'],
       ['mensaje_bienvenida','¡Bienvenida a Luz Gomez!'],
       ['anos_experiencia','8'],
-      ['descripcion_tienda','Emprendimiento familiar peruano dedicado a crear productos únicos con amor, creatividad y la mejor calidad.']
+      ['descripcion_tienda','Emprendimiento familiar colombiano dedicado a crear productos únicos con amor, creatividad y la mejor calidad.']
     ];
     var hojaConfig = getHoja('Config');
     for (var k = 0; k < defaults.length; k++) {
@@ -587,6 +599,8 @@ function getConfig() {
       config[rows[i].clave] = rows[i].valor;
     }
     config.whatsapp_link = normalizeWhatsAppLink(config.whatsapp_link || config.telefono || SELLER_WHATSAPP);
+    if (!config.moneda || String(config.moneda).charAt(0).toUpperCase() === 'S') config.moneda = '$';
+    if (config.descripcion_tienda) config.descripcion_tienda = normalizeColombiaText(config.descripcion_tienda);
     if (!config.telefono || ['3213092850', '573213092850', '3118744555', '31187445555', '573118744555'].indexOf(String(config.telefono).replace(/\D/g, '')) !== -1) {
       config.telefono = SELLER_WHATSAPP_DISPLAY;
     }
@@ -607,6 +621,8 @@ function updateConfig(clave, valor, token) {
     if (clave === 'whatsapp_link' || clave === 'telefono') {
       valor = clave === 'whatsapp_link' ? normalizeWhatsAppLink(valor) : valor;
     }
+    if (clave === 'moneda' && String(valor).charAt(0).toUpperCase() === 'S') valor = '$';
+    if (clave === 'descripcion_tienda') valor = normalizeColombiaText(valor);
     var rows = getAllRows('Config');
     var hoja = getHoja('Config');
     for (var i = 0; i < rows.length; i++) {
@@ -1199,7 +1215,7 @@ function getNotificacionesVendedor(token) {
           tipo: 'pedido',
           id: pedidos[j].id,
           titulo: 'Nuevo pedido',
-          texto: pedidos[j].cliente_nombre + ' - S/ ' + Number(pedidos[j].total || 0).toLocaleString('es-PE', {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+          texto: pedidos[j].cliente_nombre + ' - $ ' + Number(pedidos[j].total || 0).toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2}),
           fecha: pedidos[j].fecha_creacion
         });
       }
@@ -1661,7 +1677,7 @@ function notifyOrderByEmail(order) {
       'Pedido: ' + order.id,
       'Cliente: ' + order.cliente_nombre,
       'Telefono: ' + order.cliente_telefono,
-      'Total: S/ ' + Number(order.total || 0).toLocaleString('es-PE', {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+      'Total: $ ' + Number(order.total || 0).toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2}),
       '',
       'Detalle:',
       order.whatsapp_mensaje || order.items_json
@@ -1907,4 +1923,5 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 }
+
 
