@@ -13,15 +13,15 @@
   <style>
     :root {
       /* Core palette — deep noir with champagne gold & dusty rose */
-      --noir: #0D0B0F;
-      --noir-2: #16121A;
-      --noir-3: #1E1924;
-      --noir-4: #2A2232;
-      --gold: #C9A84C;
-      --gold-light: #E8CA7A;
-      --gold-pale: #F5E9C5;
-      --rose: #C2677A;
-      --rose-light: #E08898;
+      --noir: #100A16;
+      --noir-2: #1B1223;
+      --noir-3: #281C32;
+      --noir-4: #382743;
+      --gold: #E1B943;
+      --gold-light: #FFE28A;
+      --gold-pale: #FFF0BD;
+      --rose: #D95775;
+      --rose-light: #FF8EA4;
       --rose-pale: #F2C4CD;
       --cream: #F8F2E8;
       --cream-2: #EDE5D8;
@@ -35,10 +35,10 @@
       --font-body: 'DM Sans', sans-serif;
       --font-script: 'Alex Brush', cursive;
 
-      --grad-gold: linear-gradient(135deg, #C9A84C 0%, #F0D97A 45%, #C9A84C 100%);
-      --grad-rose: linear-gradient(135deg, #B05570 0%, #E08898 50%, #C2677A 100%);
-      --grad-velvet: linear-gradient(135deg, #6B3F72 0%, #A06AB0 50%, #5A2F62 100%);
-      --grad-hero: linear-gradient(160deg, #0D0B0F 0%, #1A1022 40%, #221530 75%, #1A0E1E 100%);
+      --grad-gold: linear-gradient(135deg, #E1B943 0%, #FFE28A 45%, #D49A29 100%);
+      --grad-rose: linear-gradient(135deg, #B93463 0%, #FF8EA4 50%, #D95775 100%);
+      --grad-velvet: linear-gradient(135deg, #6B3F72 0%, #B579C4 50%, #5A2F62 100%);
+      --grad-hero: linear-gradient(150deg, #100A16 0%, #251333 42%, #3A1C42 72%, #20111F 100%);
       --grad-card: linear-gradient(145deg, rgba(30,22,38,0.95) 0%, rgba(20,14,28,0.98) 100%);
 
       --shadow-gold: 0 0 40px rgba(201,168,76,0.20);
@@ -58,10 +58,10 @@
       --bg-secondary: var(--noir-2);
       --bg-card: var(--noir-3);
       --text-primary: var(--cream);
-      --text-secondary: rgba(248,242,232,0.70);
-      --text-muted: rgba(248,242,232,0.42);
-      --border-color: rgba(201,168,76,0.15);
-      --border-rose: rgba(194,103,122,0.20);
+      --text-secondary: rgba(255,248,236,0.88);
+      --text-muted: rgba(255,248,236,0.66);
+      --border-color: rgba(255,226,138,0.28);
+      --border-rose: rgba(255,142,164,0.30);
     }
 
     [data-theme="light"] {
@@ -69,11 +69,11 @@
       --bg-secondary: #F2EDE5;
       --bg-card: #FFFFFF;
       --text-primary: #1A0E1E;
-      --text-secondary: #4A3558;
-      --text-muted: #8A7A9A;
-      --border-color: rgba(201,168,76,0.30);
-      --border-rose: rgba(194,103,122,0.25);
-      --grad-hero: linear-gradient(160deg, #F8EFE8 0%, #F0E5F5 40%, #EDE5D8 100%);
+      --text-secondary: #35223F;
+      --text-muted: #5C4A66;
+      --border-color: rgba(132,84,30,0.32);
+      --border-rose: rgba(181,52,99,0.28);
+      --grad-hero: linear-gradient(150deg, #FFF8EF 0%, #F9E8F0 48%, #F0E5D8 100%);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -103,8 +103,8 @@
     .btn-gold::before { background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent); }
     .btn-rose { background: var(--grad-rose); color: #fff; box-shadow: var(--shadow-rose); }
     .btn-rose:hover { transform: translateY(-2px); }
-    .btn-outline { background: transparent; color: var(--text-primary); border: 1px solid var(--border-color); }
-    .btn-outline:hover { border-color: var(--gold); color: var(--gold-light); background: rgba(201,168,76,0.06); }
+    .btn-outline { background: rgba(255,248,236,0.07); color: var(--text-primary); border: 1px solid var(--border-color); }
+    .btn-outline:hover { border-color: var(--gold-light); color: var(--gold-light); background: rgba(255,226,138,0.12); }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-success { background: var(--success); color: #fff; }
     .btn-small { padding: 7px 14px; font-size: 0.8rem; min-height: 34px; }
@@ -146,27 +146,27 @@
     /* ═══════════════════════════════════════
        ACCESS / LOGIN VIEW
     ═══════════════════════════════════════ */
-    .access-wrap { min-height: 100vh; padding: 0; background: var(--grad-hero); position: relative; overflow: hidden; }
+    .access-wrap { min-height: 100vh; padding: 0; background: var(--grad-hero); position: relative; overflow-x: clip; overflow-y: clip; overflow-anchor: none; }
     .access-wrap::before { content: ''; position: absolute; top: -30%; left: -20%; width: 700px; height: 700px; border-radius: 50%; background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%); pointer-events: none; }
     .access-wrap::after { content: ''; position: absolute; bottom: -20%; right: -15%; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(194,103,122,0.08) 0%, transparent 70%); pointer-events: none; }
-    .access-nav { position: sticky; top: 0; z-index: 30; background: rgba(13,11,15,0.78); backdrop-filter: blur(22px); border-bottom: 1px solid rgba(201,168,76,0.12); }
+    .access-nav { position: sticky; top: 0; z-index: 30; background: rgba(16,10,22,0.92); backdrop-filter: blur(22px); border-bottom: 1px solid rgba(255,226,138,0.22); box-shadow: 0 12px 36px rgba(0,0,0,0.25); }
     .access-nav-inner { height: 78px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
     .access-nav-links { display: flex; align-items: center; gap: 4px; }
-    .access-nav-links a { padding: 8px 14px; border-radius: var(--radius-full); color: var(--text-secondary); font-size: 0.88rem; transition: var(--transition); }
+    .access-nav-links a { padding: 8px 14px; border-radius: var(--radius-full); color: var(--text-secondary); font-size: 0.88rem; font-weight: 600; transition: var(--transition); }
     .access-nav-links a:hover { color: var(--gold-light); background: rgba(201,168,76,0.07); }
     .access-landing { position: relative; z-index: 2; padding: 54px 0 44px; }
     .access-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 440px); gap: 42px; align-items: center; }
     .access-copy { min-width: 0; }
     .access-kicker { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border: 1px solid rgba(201,168,76,0.22); border-radius: var(--radius-full); color: var(--gold); font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; background: rgba(201,168,76,0.06); margin-bottom: 22px; }
     .access-kicker::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
-    .access-title { font-family: var(--font-display); font-size: clamp(3rem, 7vw, 6.2rem); line-height: 0.98; font-weight: 300; max-width: 760px; margin-bottom: 22px; }
+    .access-title { font-family: var(--font-display); font-size: clamp(3rem, 7vw, 6.2rem); line-height: 0.98; font-weight: 500; max-width: 760px; margin-bottom: 22px; text-shadow: 0 3px 18px rgba(0,0,0,0.28); }
     .access-lead { color: var(--text-secondary); font-size: 1.04rem; line-height: 1.8; max-width: 620px; margin-bottom: 30px; }
     .access-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 34px; }
     .access-info-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; max-width: 720px; }
-    .access-info-card { padding: 18px; background: rgba(201,168,76,0.05); border: 1px solid var(--border-color); border-radius: var(--radius); }
+    .access-info-card { padding: 18px; background: rgba(255,248,236,0.08); border: 1px solid var(--border-color); border-radius: var(--radius); }
     .access-info-card i { color: var(--gold); margin-bottom: 12px; }
     .access-info-card h3 { font-family: var(--font-display); font-weight: 500; font-size: 1.15rem; margin-bottom: 4px; }
-    .access-info-card p { color: var(--text-muted); font-size: 0.82rem; line-height: 1.55; }
+    .access-info-card p { color: var(--text-secondary); font-size: 0.82rem; line-height: 1.55; }
     .access-showcase { margin-top: 42px; max-width: 760px; border: 1px solid var(--border-color); border-radius: var(--radius-xl); background: rgba(13,11,15,0.38); overflow: hidden; box-shadow: var(--shadow-card); }
     .access-slide { display: none; grid-template-columns: 190px 1fr; min-height: 210px; }
     .access-slide.active { display: grid; }
@@ -195,6 +195,7 @@
     .access-panel .logo-sub { display: block; font-size: 0.65rem; letter-spacing: 2.5px; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; }
     .access-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border-color), transparent); margin: 22px 0; }
     .access-section { position: relative; z-index: 2; padding: 58px 0; border-top: 1px solid rgba(201,168,76,0.10); }
+    #access-home, #access-login, #access-about, #access-special, #access-contact { scroll-margin-top: 92px; }
     .access-section.alt { background: rgba(13,11,15,0.28); }
     .access-section-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 48px; align-items: center; }
     .access-mini-title { font-family: var(--font-display); font-size: clamp(2.1rem, 4vw, 3.4rem); line-height: 1.08; font-weight: 300; margin-bottom: 16px; }
@@ -209,7 +210,7 @@
     .access-footer { position: relative; z-index: 2; background: #080609; border-top: 1px solid rgba(201,168,76,0.18); padding: 38px 0 22px; }
     .access-footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 34px; margin-bottom: 30px; }
     .access-footer h4 { color: var(--cream); font-size: 0.82rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; font-weight: 500; }
-    .access-footer a { display: block; color: rgba(248,242,232,0.50); margin: 8px 0; font-size: 0.88rem; transition: color 0.2s; }
+    .access-footer a { display: block; color: rgba(255,248,236,0.72); margin: 8px 0; font-size: 0.88rem; transition: color 0.2s; }
     .access-footer a:hover { color: var(--gold-light); }
 
     /* TABS */
@@ -678,17 +679,17 @@
       <div class="access-wrap" id="accessParticles">
         <header class="access-nav">
           <div class="container access-nav-inner">
-            <a href="#access-home" class="logo">
+            <a href="#" class="logo" data-access-target="access-home">
               <img class="logo-img" src="img/flores.png" alt="Logo Luz Gomez" onerror="this.style.display='none'">
               <div><span class="logo-main">Luz Gomez</span><span class="logo-sub">Hecho con amor</span></div>
             </a>
             <nav class="access-nav-links">
-              <a href="#access-home">Inicio</a>
-              <a href="#access-about">Nosotros</a>
-              <a href="#access-special">Colecciones</a>
-              <a href="#access-contact">Contacto</a>
+              <a href="#" data-access-target="access-home">Inicio</a>
+              <a href="#" data-access-target="access-about">Nosotros</a>
+              <a href="#" data-access-target="access-special">Colecciones</a>
+              <a href="#" data-access-target="access-contact">Contacto</a>
             </nav>
-            <a class="btn btn-outline btn-small" href="#access-login">Ingresar</a>
+            <a class="btn btn-outline btn-small" href="#" data-access-target="access-login">Ingresar</a>
           </div>
         </header>
 
@@ -699,8 +700,7 @@
               <h1 class="access-title">Belleza artesanal para regalar, cuidar y recordar.</h1>
               <p class="access-lead">Luz Gomez reune detalles hechos con amor, productos de belleza, accesorios y regalos personalizados en una experiencia calida y elegante.</p>
               <div class="access-actions">
-                <a class="btn btn-gold" href="#access-login"><i class="fa-solid fa-store"></i> Entrar a la tienda</a>
-                <a class="btn btn-outline" href="#access-about"><i class="fa-solid fa-circle-info"></i> Sobre nosotros</a>
+                <a class="btn btn-gold" href="#" data-access-target="access-login"><i class="fa-solid fa-store"></i> Entrar a la tienda</a>
               </div>
               <div class="access-info-grid">
                 <article class="access-info-card"><i class="fa-solid fa-wand-magic-sparkles"></i><h3>Hecho a mano</h3><p>Piezas pensadas con detalle, paciencia y amor por lo artesanal.</p></article>
@@ -810,8 +810,8 @@
                 </div>
                 <p class="footer-desc">Tienda artesanal colombiana de belleza, accesorios y regalos personalizados.</p>
               </div>
-              <div><h4>Navegacion</h4><a href="#access-home">Inicio</a><a href="#access-about">Nosotros</a><a href="#access-special">Colecciones</a></div>
-              <div><h4>Contacto</h4><a href="https://wa.me/573213092850" target="_blank">WhatsApp</a><a href="#access-login">Ingresar a la tienda</a></div>
+              <div><h4>Navegacion</h4><a href="#" data-access-target="access-home">Inicio</a><a href="#" data-access-target="access-about">Nosotros</a><a href="#" data-access-target="access-special">Colecciones</a></div>
+              <div><h4>Contacto</h4><a href="https://wa.me/573213092850" target="_blank">WhatsApp</a><a href="#" data-access-target="access-login">Ingresar a la tienda</a></div>
             </div>
             <div class="footer-bottom"><span>© 2026 <span class="footer-gold">Luz Gomez</span>.</span><span>Hecho con amor en Colombia</span></div>
           </div>
@@ -1228,6 +1228,8 @@
     document.addEventListener('DOMContentLoaded', initApp);
 
     async function initApp() {
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      if (window.location.hash.startsWith('#access-')) history.replaceState(null, '', window.location.pathname + window.location.search);
       setupTheme();
       bindGlobalEvents();
       setupAccessCarousel();
@@ -1322,6 +1324,7 @@
       const tn = $('#testimonialNext'); if (tn) tn.addEventListener('click', () => moveTestimonials(1));
       const asp = $('#accessSlidePrev'); if (asp) asp.addEventListener('click', () => moveAccessSlide(-1));
       const asn = $('#accessSlideNext'); if (asn) asn.addEventListener('click', () => moveAccessSlide(1));
+      $$('[data-access-target]').forEach(link => link.addEventListener('click', handleAccessNav));
       const am = $('#adminMenu'); if (am) am.addEventListener('click', openAdminMenu);
       const ac = $('#adminClose'); if (ac) ac.addEventListener('click', closeAdminMenu);
       const ao = $('#adminOverlay'); if (ao) ao.addEventListener('click', closeAdminMenu);
@@ -1333,6 +1336,18 @@
 
     function openAdminMenu() { $('#adminSidebar')?.classList.add('active'); $('#adminOverlay')?.classList.add('active'); document.body.classList.add('no-scroll'); }
     function closeAdminMenu() { $('#adminSidebar')?.classList.remove('active'); $('#adminOverlay')?.classList.remove('active'); document.body.classList.remove('no-scroll'); }
+
+    function handleAccessNav(event) {
+      event.preventDefault();
+      const targetId = event.currentTarget.dataset.accessTarget;
+      const target = targetId ? document.getElementById(targetId) : null;
+      if (!target) return;
+      document.body.classList.remove('no-scroll');
+      const navHeight = $('.access-nav')?.offsetHeight || 78;
+      const targetTop = target.getBoundingClientRect().top + window.scrollY - navHeight - 14;
+      window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
 
     function setupAccessCarousel() {
       const slides = $$('.access-slide');
