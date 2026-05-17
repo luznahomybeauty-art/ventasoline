@@ -9,7 +9,7 @@ const DRIVE_ROOT_ID = '1rg-kFBpm7hMfQBGsQ5f74enZGJlmLIrk';
 const SELLER_EMAIL = 'luznahomybeauty@gmail.com';
 const SELLER_WHATSAPP = '573213092850';
 const SELLER_WHATSAPP_DISPLAY = '+57 321 3092850';
-const HOJAS = ['Config','Vendedores','Clientes','Categorias','Productos','Comentarios','Testimonios','Promociones','Pedidos','Galeria','Sesiones'];
+const HOJAS = ['Config','Vendedores','Clientes','Categorias','Productos','Comentarios','Testimonios','Promociones','Pedidos','Galeria','Sesiones','Reacciones'];
 const CARPETAS = ['categorias','productos','galeria','testimonios','promociones','temp','config'];
 
 function getDb() {
@@ -128,13 +128,14 @@ function ensureColumns(hojaNombre, columns) {
 }
 
 function ensureSchema() {
-  ensureColumns('Comentarios', ['id','producto_id','cliente_id','cliente_nombre','calificacion','comentario','fecha','visible','leido','respuesta_admin']);
+  ensureColumns('Comentarios', ['id','producto_id','cliente_id','cliente_nombre','calificacion','comentario','fecha','visible','leido','respuesta_admin','parent_id']);
   ensureColumns('Categorias', ['id','nombre','slug','descripcion','icono','imagen_drive_id','video_drive_id','orden','activa']);
   ensureColumns('Promociones', ['id','titulo','descripcion','descuento_porcentaje','fecha_inicio','fecha_fin','imagen_drive_id','video_drive_id','activa']);
   ensureColumns('Testimonios', ['id','cliente_nombre','cliente_ciudad','texto','imagen_drive_id','calificacion','orden','activo','video_drive_id','fecha']);
   ensureColumns('Galeria', ['id','imagen_drive_id','titulo','orden','activo','video_drive_id','tipo','categoria_galeria']);
   ensureColumns('Productos', ['id','categoria_id','nombre','descripcion','precio','precio_antiguo','imagen_drive_id','imagenes_extra_ids','video_drive_id','badge','rating','resenas_count','stock','activo','destacado','fecha_creacion','fecha_actualizacion']);
   ensureColumns('Pedidos', ['id','cliente_id','cliente_nombre','cliente_telefono','items_json','total','estado','fecha_creacion','fecha_actualizacion','whatsapp_mensaje','leido_vendedor','notificado_email']);
+  ensureColumns('Reacciones', ['id','target_type','target_id','cliente_id','emoji','fecha','fecha_actualizacion']);
 }
 
 function getHeaderMap(hoja) {
@@ -180,6 +181,58 @@ function applyProductRating(producto) {
     producto.resenas_count = comentarios.length;
   }
   return producto;
+}
+
+function normalizeReactionTarget(type) {
+  return String(type || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+}
+
+function normalizeReactionEmoji(emoji) {
+  return String(emoji || '').trim().slice(0, 8);
+}
+
+function reactionKey(type, id) {
+  return normalizeReactionTarget(type) + ':' + String(id || '').trim();
+}
+
+function getReactionSummary(targetType, targetId, clienteId) {
+  ensureColumns('Reacciones', ['id','target_type','target_id','cliente_id','emoji','fecha','fecha_actualizacion']);
+  var type = normalizeReactionTarget(targetType);
+  var id = String(targetId || '').trim();
+  var viewer = String(clienteId || '').trim();
+  var rows = getAllRows('Reacciones');
+  var counts = {};
+  var total = 0;
+  var userReaction = '';
+
+  for (var i = 0; i < rows.length; i++) {
+    if (normalizeReactionTarget(rows[i].target_type) !== type || String(rows[i].target_id) !== id) continue;
+    var emoji = normalizeReactionEmoji(rows[i].emoji);
+    if (!emoji) continue;
+    counts[emoji] = (counts[emoji] || 0) + 1;
+    total++;
+    if (viewer && String(rows[i].cliente_id) === viewer) userReaction = emoji;
+  }
+
+  var top = [];
+  for (var key in counts) top.push([key, counts[key]]);
+  top.sort(function(a, b) { return b[1] - a[1]; });
+
+  return {
+    target_type: type,
+    target_id: id,
+    counts: counts,
+    total: total,
+    top: top.slice(0, 3).map(function(item) { return item[0]; }),
+    userReaction: userReaction
+  };
+}
+
+function attachReactionSummaryToComments(comments, clienteId) {
+  for (var i = 0; i < comments.length; i++) {
+    comments[i].reaction_summary = getReactionSummary('comentario', comments[i].id, clienteId);
+  }
+  return comments;
 }
 
 /** Formato fecha dd/mm/yyyy */
@@ -319,7 +372,8 @@ function initDatabase() {
     'Promociones': ['id','titulo','descripcion','descuento_porcentaje','fecha_inicio','fecha_fin','imagen_drive_id','video_drive_id','activa'],
     'Pedidos': ['id','cliente_id','cliente_nombre','cliente_telefono','items_json','total','estado','fecha_creacion','fecha_actualizacion','whatsapp_mensaje','leido_vendedor','notificado_email'],
     'Galeria': ['id','imagen_drive_id','titulo','orden','activo','video_drive_id','tipo','categoria_galeria'],
-    'Sesiones': ['token','usuario_tipo','usuario_id','fecha_expiracion']
+    'Sesiones': ['token','usuario_tipo','usuario_id','fecha_expiracion'],
+    'Reacciones': ['id','target_type','target_id','cliente_id','emoji','fecha','fecha_actualizacion']
   };
   
   for (var i = 0; i < HOJAS.length; i++) {
@@ -821,6 +875,7 @@ function getProductos(filters) {
       filtrados[j].imagenes_extra = extras;
       filtrados[j].video_url = filtrados[j].video_drive_id ? getDriveFileUrl(filtrados[j].video_drive_id) : '';
       filtrados[j].video_direct_url = getDriveVideoUrl(filtrados[j].video_drive_id);
+      filtrados[j].reaction_summary = getReactionSummary('producto', filtrados[j].id, '');
       applyProductRating(filtrados[j]);
     }
     
@@ -879,7 +934,8 @@ function getProductoById(id) {
     row.imagenes_extra = extras;
     row.video_url = row.video_drive_id ? getDriveFileUrl(row.video_drive_id) : '';
     row.video_direct_url = getDriveVideoUrl(row.video_drive_id);
-    row.comentarios = getActiveVisibleComentarios(row.id);
+    row.reaction_summary = getReactionSummary('producto', row.id, '');
+    row.comentarios = attachReactionSummaryToComments(getActiveVisibleComentarios(row.id), '');
     applyProductRating(row);
     
     return {success:true, data: row};
@@ -1085,7 +1141,7 @@ function getProductsCount() {
 /** Obtiene comentarios visibles de un producto */
 function getComentariosByProducto(productoId) {
   try {
-    return {success:true, data: getActiveVisibleComentarios(productoId)};
+    return {success:true, data: attachReactionSummaryToComments(getActiveVisibleComentarios(productoId), '')};
   } catch(e) {
     return {success:false, error: e.toString()};
   }
@@ -1094,20 +1150,97 @@ function getComentariosByProducto(productoId) {
 /** Crea comentario (cualquier cliente) */
 function createComentario(data) {
   try {
-    ensureColumns('Comentarios', ['leido','respuesta_admin']);
+    ensureColumns('Comentarios', ['leido','respuesta_admin','parent_id']);
     if (!data.producto_id || !data.cliente_nombre || !data.comentario) {
       return {success:false, error:'Faltan datos obligatorios'};
     }
     
     var id = generateId('COM');
-    getHoja('Comentarios').appendRow([
-      id, data.producto_id, data.cliente_id || '', data.cliente_nombre,
-      Number(data.calificacion) || 5, data.comentario, new Date().toISOString(), true, false, ''
-    ]);
+    appendObject('Comentarios', {
+      id: id,
+      producto_id: data.producto_id,
+      cliente_id: data.cliente_id || '',
+      cliente_nombre: data.cliente_nombre,
+      calificacion: Number(data.calificacion) || 5,
+      comentario: data.comentario,
+      fecha: new Date().toISOString(),
+      visible: true,
+      leido: false,
+      respuesta_admin: '',
+      parent_id: data.parent_id || ''
+    }, ['id','producto_id','cliente_id','cliente_nombre','calificacion','comentario','fecha','visible','leido','respuesta_admin','parent_id']);
     
-    return {success:true};
+    return {success:true, data:{id:id}};
   } catch(e) {
     return {success:false, error: e.toString()};
+  }
+}
+
+// ==========================================
+// REACCIONES SOCIALES
+// ==========================================
+
+function getReactionsForTargets(targets, clienteId) {
+  try {
+    ensureColumns('Reacciones', ['id','target_type','target_id','cliente_id','emoji','fecha','fecha_actualizacion']);
+    targets = targets || [];
+    var data = {};
+    for (var i = 0; i < targets.length; i++) {
+      var target = targets[i] || {};
+      var type = target.target_type || target.type;
+      var id = target.target_id || target.id;
+      if (!type || !id) continue;
+      data[reactionKey(type, id)] = getReactionSummary(type, id, clienteId || '');
+    }
+    return {success:true, data:data};
+  } catch(e) {
+    return {success:false, error:e.toString()};
+  }
+}
+
+function reactToTarget(data) {
+  try {
+    ensureColumns('Reacciones', ['id','target_type','target_id','cliente_id','emoji','fecha','fecha_actualizacion']);
+    data = data || {};
+    var type = normalizeReactionTarget(data.target_type || data.type);
+    var targetId = String(data.target_id || data.id || '').trim();
+    var clienteId = String(data.cliente_id || 'WEB').trim();
+    var emoji = normalizeReactionEmoji(data.emoji);
+    if (!type || !targetId || !clienteId || !emoji) return {success:false, error:'Faltan datos de reaccion'};
+
+    var hoja = getHoja('Reacciones');
+    var rows = getAllRows('Reacciones');
+    var now = new Date().toISOString();
+    var existing = null;
+    for (var i = 0; i < rows.length; i++) {
+      if (normalizeReactionTarget(rows[i].target_type) === type &&
+          String(rows[i].target_id) === targetId &&
+          String(rows[i].cliente_id) === clienteId) {
+        existing = rows[i];
+        break;
+      }
+    }
+
+    if (existing && normalizeReactionEmoji(existing.emoji) === emoji) {
+      hoja.deleteRow(existing._row);
+    } else if (existing) {
+      setField('Reacciones', existing._row, 'emoji', emoji);
+      setField('Reacciones', existing._row, 'fecha_actualizacion', now);
+    } else {
+      appendObject('Reacciones', {
+        id: generateId('REA'),
+        target_type: type,
+        target_id: targetId,
+        cliente_id: clienteId,
+        emoji: emoji,
+        fecha: now,
+        fecha_actualizacion: now
+      }, ['id','target_type','target_id','cliente_id','emoji','fecha','fecha_actualizacion']);
+    }
+
+    return {success:true, data:getReactionSummary(type, targetId, clienteId)};
+  } catch(e) {
+    return {success:false, error:e.toString()};
   }
 }
 
@@ -1315,6 +1448,7 @@ function getTestimonios() {
       filtrados[j].imagen_url = getDriveThumbnailUrl(filtrados[j].imagen_drive_id, 100);
       filtrados[j].video_url = getDriveFileUrl(filtrados[j].video_drive_id);
       filtrados[j].video_direct_url = getDriveVideoUrl(filtrados[j].video_drive_id);
+      filtrados[j].reaction_summary = getReactionSummary('testimonio', filtrados[j].id, '');
     }
     
     return {success:true, data: filtrados};
@@ -1437,6 +1571,7 @@ function getPromocionActiva() {
         rows[i].imagen_url = getDriveThumbnailUrl(rows[i].imagen_drive_id, 800);
         rows[i].video_url = getDriveFileUrl(rows[i].video_drive_id);
         rows[i].video_direct_url = getDriveVideoUrl(rows[i].video_drive_id);
+        rows[i].reaction_summary = getReactionSummary('promocion', rows[i].id, '');
         return {success:true, data: rows[i]};
       }
     }
@@ -1579,6 +1714,7 @@ function getGaleria() {
       filtradas[j].video_url = getDriveFileUrl(filtradas[j].video_drive_id);
       filtradas[j].video_direct_url = getDriveVideoUrl(filtradas[j].video_drive_id);
       filtradas[j].tipo = filtradas[j].tipo || (filtradas[j].video_drive_id ? 'video' : 'imagen');
+      filtradas[j].reaction_summary = getReactionSummary('galeria', filtradas[j].id, '');
     }
     return {success:true, data: filtradas};
   } catch(e) {
@@ -1875,7 +2011,8 @@ function doPost(e) {
       'doLogin','doLoginWithPin','doRegisterCliente','getConfig',
       'getCategorias','getProductos','getProductosDestacados','getProductoById',
       'getComentariosByProducto','createComentario','getTestimonios',
-      'getPromocionActiva','getGaleria','createPedido','getProductsCount'
+      'getPromocionActiva','getGaleria','createPedido','getProductsCount',
+      'getReactionsForTargets','reactToTarget'
     ];
     
     var protectedActions = [

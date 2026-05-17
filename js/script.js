@@ -694,7 +694,9 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPromo(promo.success ? promo.data : null);
         renderTestimonials(testimonials.success ? testimonials.data || [] : []);
         renderGallery(gallery.success ? gallery.data || [] : []);
+        renderSocialHub();
         hydrateHeroFromDatabase();
+        document.dispatchEvent(new CustomEvent('lg:content-rendered'));
     }
 
     async function apiCall(action, params = {}) {
@@ -776,6 +778,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.lgAddToCart?.(button.dataset.name, button.dataset.price, button.dataset.img);
             });
         });
+        document.dispatchEvent(new CustomEvent('lg:content-rendered'));
     }
 
     function productCard(product) {
@@ -837,7 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderTestimonials(testimonials) {
         if (!testimonialsTrack) return;
         testimonialsTrack.innerHTML = testimonials.length ? testimonials.map(item => `
-            <div class="testimonial-card">
+            <div class="testimonial-card social-surface-card" data-social-target="testimonio" data-social-id="${esc(item.id || item.cliente_nombre || '')}">
                 <div class="testimonial-stars">${stars(item.calificacion || 5)}</div>
                 <p>${esc(item.texto || '')}</p>
                 <div class="testimonial-author">
@@ -850,19 +853,41 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `).join('') : emptyState();
         document.querySelector('.testimonials-nav')?.removeAttribute('style');
+        document.dispatchEvent(new CustomEvent('lg:content-rendered'));
     }
 
     function renderGallery(items) {
         if (!galleryGrid) return;
         galleryGrid.innerHTML = items.length ? items.map((item, index) => `
-            <div class="gallery-item ${index === 0 ? 'large' : index === 5 ? 'wide' : ''}">
-                ${realImage(item.imagen_url, item.titulo)}
+            <div class="gallery-item social-surface-card ${index === 0 ? 'large' : index === 5 ? 'wide' : ''}" data-social-target="galeria" data-social-id="${esc(item.id || item.titulo || index)}">
+                ${item.tipo === 'video' && item.video_direct_url ? `<video src="${esc(item.video_direct_url)}" poster="${esc(item.imagen_url || '')}" muted playsinline controls preload="metadata"></video>` : realImage(item.imagen_url, item.titulo)}
                 <div class="gallery-overlay">
-                    <i class="fas fa-heart"></i>
+                    <i class="${item.tipo === 'video' ? 'fas fa-play' : 'fas fa-heart'}"></i>
                     <span>${esc(item.titulo || 'Galeria')}</span>
                 </div>
             </div>
         `).join('') : '';
+        document.dispatchEvent(new CustomEvent('lg:content-rendered'));
+    }
+
+    function renderSocialHub() {
+        if (document.querySelector('.social-hub')) return;
+        const productsSection = document.querySelector('.products .container');
+        if (!productsSection) return;
+        productsSection.insertAdjacentHTML('beforeend', `
+            <div class="social-hub reveal active" data-social-target="publicacion" data-social-id="feed-tendencias">
+                <div>
+                    <span class="section-tag">Tendencias sociales</span>
+                    <h3>Lo que mas esta enamorando hoy</h3>
+                    <p>Reacciona a la tienda, descubre favoritos y siente el catalogo como una comunidad viva.</p>
+                </div>
+                <div class="social-hub-metrics">
+                    <span><b data-hub-products>${state.products.length}</b> productos</span>
+                    <span><b>Top</b> destacados</span>
+                    <span><b>Live</b> reacciones</span>
+                </div>
+            </div>
+        `);
     }
 
     function hydrateHeroFromDatabase() {
@@ -1176,12 +1201,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('quickViewModal');
     const modalClose = document.getElementById('modalClose');
     const productsGrid = document.getElementById('productsGrid');
-    const reactionEmojis = ['❤️', '😍', '🔥', '😂', '😮', '👍', '😢'];
-    const commentEmojis = ['❤️', '😍', '🔥', '👏', '✨', '😊'];
+    const reactionEmojis = ['❤️', '👍', '😂', '😮', '🔥', '😍', '😢', '😡', '👏', '🤯'];
+    const commentEmojis = ['❤️', '👍', '😂', '😮', '🔥', '😍', '😢', '😡', '👏', '🤯'];
     let activeProduct = null;
     let activeImageIndex = 0;
 
     const socialState = readState();
+    const socialClientId = getSocialClientId();
+
+    function getSocialClientId() {
+        try {
+            const session = JSON.parse(localStorage.getItem('lg_session') || '{}');
+            if (session.id || session.cliente_id) return session.id || session.cliente_id;
+        } catch (error) {}
+        let id = localStorage.getItem('lg_social_client_id');
+        if (!id) {
+            id = `web-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+            localStorage.setItem('lg_social_client_id', id);
+        }
+        return id;
+    }
 
     function readState() {
         try {
@@ -1230,10 +1269,11 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             saveState();
         }
-        const userReaction = socialState[key].userReaction || '';
-        const cleanedCounts = emptyReactionCounts();
-        if (userReaction && cleanedCounts[userReaction] !== undefined) cleanedCounts[userReaction] = 1;
+        const cleanedCounts = { ...emptyReactionCounts(), ...(socialState[key].reactions || {}) };
         socialState[key].reactions = cleanedCounts;
+        if (socialState[key].userReaction && cleanedCounts[socialState[key].userReaction] === undefined) {
+            socialState[key].userReaction = '';
+        }
         socialState[key].comments = (socialState[key].comments || []).filter(comment => !String(comment.id || '').includes('-seed-'));
         return socialState[key];
     }
@@ -1281,7 +1321,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderReactionStack(productState) {
         const top = topReactions(productState);
-        return top.length ? top.map(emoji => `<span>${emoji}</span>`).join('') : '<span>👍</span>';
+        return top.length ? top.map(emoji => `<span>${emoji}</span>`).join('') : '<span>❤️</span>';
+    }
+
+    function applyReactionSummary(productState, summary) {
+        if (!summary) return;
+        productState.reactions = { ...emptyReactionCounts(), ...(summary.counts || {}) };
+        productState.userReaction = summary.userReaction || productState.userReaction || '';
+    }
+
+    async function syncProductReactionSummary(key) {
+        if (!key || typeof window.lgDbApi !== 'function') return;
+        const result = await window.lgDbApi('getReactionsForTargets', {
+            targets: [{ target_type: 'producto', target_id: key }],
+            clienteId: socialClientId
+        });
+        const summary = result.success ? result.data?.[`producto:${key}`] : null;
+        if (!summary) return;
+        applyReactionSummary(getProductState(key), summary);
+        saveState();
+        refreshCardSocial(key);
+        if (activeProduct?.key === key) renderModalSocialSummary(activeProduct);
+    }
+
+    async function syncVisibleProductReactions() {
+        if (typeof window.lgDbApi !== 'function') return;
+        const keys = Array.from(document.querySelectorAll('.product-card[data-product-key]'))
+            .map(card => card.dataset.productKey)
+            .filter(Boolean);
+        const unique = [...new Set(keys)];
+        if (!unique.length) return;
+        const result = await window.lgDbApi('getReactionsForTargets', {
+            targets: unique.map(key => ({ target_type: 'producto', target_id: key })),
+            clienteId: socialClientId
+        });
+        if (!result.success || !result.data) return;
+        unique.forEach(key => {
+            applyReactionSummary(getProductState(key), result.data[`producto:${key}`]);
+            refreshCardSocial(key);
+        });
+        saveState();
     }
 
     function enhanceProductCards() {
@@ -1308,9 +1387,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span><b data-product-comment-total>${commentTotal(productState)}</b> comentarios</span>
                     </div>
                     <div class="product-social-actions">
+                        <button class="social-action product-heart-quick ${productState.userReaction === '❤️' ? 'active' : ''}" type="button" data-product-quick-heart aria-pressed="${productState.userReaction === '❤️' ? 'true' : 'false'}">
+                            <i class="${productState.userReaction === '❤️' ? 'fas' : 'far'} fa-heart"></i> Me encanta
+                        </button>
                         <span class="product-reaction-wrap" style="position:relative;">
                             <button class="social-action product-react-toggle ${productState.userReaction ? 'active' : ''}" type="button" aria-pressed="${productState.userReaction ? 'true' : 'false'}">
-                                <span>${productState.userReaction || '👍'}</span> Reaccionar
+                                <span>${productState.userReaction || '❤️'}</span> Reaccionar
                             </button>
                             <span class="reaction-popover" role="menu">
                                 ${reactionEmojis.map(emoji => `<button class="reaction-option" type="button" data-product-reaction="${emoji}" aria-label="Reaccionar ${emoji}">${emoji}</button>`).join('')}
@@ -1320,6 +1402,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             `);
+            const socialBox = productInfo.querySelector('.product-social:last-child');
+            socialBox?.querySelector('.product-react-toggle')?.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                socialBox.querySelector('.reaction-popover')?.classList.toggle('active');
+            });
+            socialBox?.querySelector('[data-product-quick-heart]')?.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                setProductReaction(data.key, '❤️', event.currentTarget);
+            });
+            socialBox?.querySelectorAll('[data-product-reaction]').forEach(button => {
+                button.addEventListener('click', event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setProductReaction(data.key, button.dataset.productReaction, button);
+                    button.closest('.reaction-popover')?.classList.remove('active');
+                });
+            });
+            socialBox?.querySelector('.product-comment-open')?.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                openSocialModal(card, true);
+            });
         });
     }
 
@@ -1332,11 +1438,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const toggle = box.querySelector('.product-react-toggle');
             toggle.classList.toggle('active', Boolean(productState.userReaction));
             toggle.setAttribute('aria-pressed', productState.userReaction ? 'true' : 'false');
-            toggle.querySelector('span').textContent = productState.userReaction || '👍';
+            toggle.querySelector('span').textContent = productState.userReaction || '❤️';
+            const heart = box.querySelector('.product-heart-quick');
+            if (heart) {
+                const liked = productState.userReaction === '❤️';
+                heart.classList.toggle('active', liked);
+                heart.setAttribute('aria-pressed', liked ? 'true' : 'false');
+                heart.querySelector('i').className = `${liked ? 'fas' : 'far'} fa-heart`;
+            }
         });
     }
 
-    function setProductReaction(key, emoji, origin) {
+    async function setProductReaction(key, emoji, origin) {
         const productState = getProductState(key);
         if (productState.userReaction === emoji) {
             productState.reactions[emoji] = Math.max(0, Number(productState.reactions[emoji] || 0) - 1);
@@ -1353,6 +1466,22 @@ document.addEventListener('DOMContentLoaded', () => {
         saveState();
         refreshCardSocial(key);
         if (activeProduct?.key === key) renderModalSocialSummary(activeProduct);
+        if (typeof window.lgDbApi === 'function') {
+            const result = await window.lgDbApi('reactToTarget', {
+                data: {
+                    target_type: 'producto',
+                    target_id: key,
+                    cliente_id: socialClientId,
+                    emoji
+                }
+            });
+            if (result.success && result.data) {
+                applyReactionSummary(productState, result.data);
+                saveState();
+                refreshCardSocial(key);
+                if (activeProduct?.key === key) renderModalSocialSummary(activeProduct);
+            }
+        }
     }
 
     function floatReaction(emoji, origin) {
@@ -1435,7 +1564,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ].filter((src, index, list) => src && list.indexOf(src) === index);
         if (dbImages.length) product.images = dbImages;
         const productState = getProductState(product.key);
+        applyReactionSummary(productState, dbProduct.reaction_summary);
         productState.comments = mapDatabaseComments(dbProduct.comentarios || []);
+        await syncProductReactionSummary(product.key);
     }
 
     function mapDatabaseComments(comments) {
@@ -1447,9 +1578,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 author: comment.cliente_nombre || 'Cliente',
                 body: comment.comentario || '',
                 createdAt: new Date(comment.fecha || Date.now()).getTime(),
-                parentId: '',
-                userReaction: '',
-                reactions: emptyReactionCounts(commentEmojis)
+                parentId: comment.parent_id || '',
+                userReaction: comment.reaction_summary?.userReaction || '',
+                reactions: { ...emptyReactionCounts(commentEmojis), ...(comment.reaction_summary?.counts || {}) }
             });
             if (comment.respuesta_admin) {
                 mapped.push({
@@ -1480,6 +1611,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${reactionEmojis.map(emoji => `<button class="social-action ${productState.userReaction === emoji ? 'active' : ''}" type="button" data-modal-reaction="${emoji}" aria-pressed="${productState.userReaction === emoji ? 'true' : 'false'}">${emoji} <span>${productState.reactions[emoji] || 0}</span></button>`).join('')}
             </div>
         `;
+        summary.querySelectorAll('[data-modal-reaction]').forEach(button => {
+            button.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                setProductReaction(product.key, button.dataset.modalReaction, button);
+            });
+        });
     }
 
     function commentFormTemplate(key, parentId = '') {
@@ -1500,6 +1638,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const productState = getProductState(key);
         const roots = productState.comments.filter(comment => !comment.parentId);
         list.innerHTML = roots.map(comment => renderCommentTree(productState, comment)).join('');
+        list.querySelectorAll('[data-comment-reaction]').forEach(button => {
+            button.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                const comment = button.closest('[data-comment-id]');
+                setCommentReaction(comment?.dataset.commentId, button.dataset.commentReaction, button);
+            });
+        });
+        list.querySelectorAll('[data-reply-open]').forEach(button => {
+            button.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                button.closest('.social-comment')?.querySelector('.reply-form')?.classList.toggle('active');
+            });
+        });
+        const titleCount = document.querySelector('.comments-title span');
+        if (titleCount) titleCount.textContent = `${commentTotal(productState)} conversaciones`;
     }
 
     function renderCommentTree(productState, comment) {
@@ -1524,7 +1679,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p>${text(comment.body)}</p>
                 <div class="social-row">
                     ${commentEmojis.map(emoji => `<button class="social-action ${comment.userReaction === emoji ? 'active' : ''}" type="button" data-comment-reaction="${emoji}" aria-pressed="${comment.userReaction === emoji ? 'true' : 'false'}">${emoji} <span>${comment.reactions?.[emoji] || 0}</span></button>`).join('')}
+                    <button class="social-action" type="button" data-reply-open><i class="fas fa-reply"></i> Responder</button>
                 </div>
+                ${commentFormTemplate(activeProduct?.key || '', comment.id)}
             </article>
         `;
     }
@@ -1539,7 +1696,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function addComment(key, body, parentId = '') {
-        if (!activeProduct?.productId || parentId || typeof window.lgDbApi !== 'function') {
+        const productState = getProductState(key);
+
+        if (!activeProduct?.productId || typeof window.lgDbApi !== 'function') {
+            productState.comments.push({
+                id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                parentId,
+                author: 'Cliente web',
+                body,
+                createdAt: Date.now(),
+                userReaction: '',
+                reactions: emptyReactionCounts(commentEmojis)
+            });
+            saveState();
+            refreshCardSocial(key);
+            renderModalSocialSummary(activeProduct);
+            renderComments(key);
+            window.lgShowToast?.(parentId ? 'Respuesta guardada' : 'Comentario guardado');
             return;
         }
         const created = await window.lgDbApi('createComentario', {
@@ -1548,7 +1721,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 cliente_id: 'WEB',
                 cliente_nombre: 'Cliente web',
                 calificacion: 5,
-                comentario: body
+                comentario: body,
+                parent_id: parentId
             }
         });
         if (!created.success) {
@@ -1556,7 +1730,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         await hydrateProductFromDatabase(activeProduct);
-        const productState = getProductState(key);
         saveState();
         refreshCardSocial(key);
         renderModalSocialSummary(activeProduct);
@@ -1564,7 +1737,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.lgShowToast?.('Comentario guardado');
     }
 
-    function setCommentReaction(commentId, emoji, origin) {
+    async function setCommentReaction(commentId, emoji, origin) {
         if (!activeProduct) return;
         const productState = getProductState(activeProduct.key);
         const comment = productState.comments.find(item => item.id === commentId);
@@ -1584,6 +1757,130 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         saveState();
         renderComments(activeProduct.key);
+        if (typeof window.lgDbApi === 'function' && commentId && !String(commentId).startsWith('local-')) {
+            const result = await window.lgDbApi('reactToTarget', {
+                data: {
+                    target_type: 'comentario',
+                    target_id: commentId,
+                    cliente_id: socialClientId,
+                    emoji
+                }
+            });
+            if (result.success && result.data) {
+                comment.reactions = { ...emptyReactionCounts(commentEmojis), ...(result.data.counts || {}) };
+                comment.userReaction = result.data.userReaction || '';
+                saveState();
+                renderComments(activeProduct.key);
+            }
+        }
+    }
+
+    function getSurfaceState(type, id) {
+        const key = `${type}:${id}`;
+        if (!socialState[key]) {
+            socialState[key] = { userReaction: '', reactions: emptyReactionCounts(), comments: [] };
+        }
+        socialState[key].reactions = { ...emptyReactionCounts(), ...(socialState[key].reactions || {}) };
+        return socialState[key];
+    }
+
+    function renderUniversalSocial(type, id) {
+        const state = getSurfaceState(type, id);
+        return `
+            <div class="universal-social" data-universal-social="${text(`${type}:${id}`)}">
+                <div class="reaction-stack">${renderReactionStack(state)}</div>
+                <button class="social-action universal-toggle ${state.userReaction ? 'active' : ''}" type="button" data-universal-toggle aria-pressed="${state.userReaction ? 'true' : 'false'}">
+                    <span>${state.userReaction || '❤️'}</span> <b data-universal-total>${reactionTotal(state)}</b>
+                </button>
+                <div class="reaction-popover compact" role="menu">
+                    ${reactionEmojis.map(emoji => `<button class="reaction-option" type="button" data-universal-reaction="${emoji}" aria-label="Reaccionar ${emoji}">${emoji}</button>`).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    function refreshUniversalSurface(type, id) {
+        const state = getSurfaceState(type, id);
+        document.querySelectorAll('[data-universal-social]').forEach(box => {
+            if (box.dataset.universalSocial !== `${type}:${id}`) return;
+            box.querySelector('.reaction-stack').innerHTML = renderReactionStack(state);
+            box.querySelector('[data-universal-total]').textContent = reactionTotal(state);
+            const toggle = box.querySelector('[data-universal-toggle]');
+            toggle.classList.toggle('active', Boolean(state.userReaction));
+            toggle.setAttribute('aria-pressed', state.userReaction ? 'true' : 'false');
+            toggle.querySelector('span').textContent = state.userReaction || '❤️';
+        });
+    }
+
+    function enhanceSocialSurfaces() {
+        document.querySelectorAll('[data-social-target][data-social-id]').forEach(surface => {
+            if (surface.dataset.surfaceReady) return;
+            const type = surface.dataset.socialTarget;
+            const id = surface.dataset.socialId;
+            if (!type || !id) return;
+            surface.dataset.surfaceReady = 'true';
+            surface.insertAdjacentHTML('beforeend', renderUniversalSocial(type, id));
+            const socialBox = surface.querySelector('.universal-social:last-child');
+            socialBox?.querySelector('[data-universal-toggle]')?.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                socialBox.querySelector('.reaction-popover')?.classList.toggle('active');
+            });
+            socialBox?.querySelectorAll('[data-universal-reaction]').forEach(button => {
+                button.addEventListener('click', event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setUniversalReaction(surface, button.dataset.universalReaction, button);
+                    button.closest('.reaction-popover')?.classList.remove('active');
+                });
+            });
+        });
+        syncUniversalSurfaces();
+    }
+
+    async function syncUniversalSurfaces() {
+        if (typeof window.lgDbApi !== 'function') return;
+        const targets = Array.from(document.querySelectorAll('[data-social-target][data-social-id]'))
+            .map(surface => ({ target_type: surface.dataset.socialTarget, target_id: surface.dataset.socialId }))
+            .filter(target => target.target_type && target.target_id);
+        const unique = [...new Map(targets.map(target => [`${target.target_type}:${target.target_id}`, target])).values()];
+        if (!unique.length) return;
+        const result = await window.lgDbApi('getReactionsForTargets', { targets: unique, clienteId: socialClientId });
+        if (!result.success || !result.data) return;
+        unique.forEach(target => {
+            const state = getSurfaceState(target.target_type, target.target_id);
+            applyReactionSummary(state, result.data[`${target.target_type}:${target.target_id}`]);
+            refreshUniversalSurface(target.target_type, target.target_id);
+        });
+        saveState();
+    }
+
+    async function setUniversalReaction(surface, emoji, origin) {
+        const type = surface?.dataset.socialTarget;
+        const id = surface?.dataset.socialId;
+        if (!type || !id) return;
+        const state = getSurfaceState(type, id);
+        if (state.userReaction === emoji) {
+            state.reactions[emoji] = Math.max(0, Number(state.reactions[emoji] || 0) - 1);
+            state.userReaction = '';
+        } else {
+            if (state.userReaction) state.reactions[state.userReaction] = Math.max(0, Number(state.reactions[state.userReaction] || 0) - 1);
+            state.reactions[emoji] = Number(state.reactions[emoji] || 0) + 1;
+            state.userReaction = emoji;
+            floatReaction(emoji, origin);
+        }
+        saveState();
+        refreshUniversalSurface(type, id);
+        if (typeof window.lgDbApi === 'function') {
+            const result = await window.lgDbApi('reactToTarget', {
+                data: { target_type: type, target_id: id, cliente_id: socialClientId, emoji }
+            });
+            if (result.success && result.data) {
+                applyReactionSummary(state, result.data);
+                saveState();
+                refreshUniversalSurface(type, id);
+            }
+        }
     }
 
     function bindModalInteractions() {
@@ -1620,6 +1917,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.addEventListener('click', event => {
+        if (event.target.closest('[data-product-reaction], [data-modal-reaction], [data-comment-reaction], [data-universal-reaction], [data-universal-toggle], [data-product-quick-heart], .product-react-toggle, .product-comment-open, [data-reply-open]')) {
+            return;
+        }
+
         const quick = event.target.closest('.quick-view, .static-detail-link');
         if (quick) {
             const card = quick.closest('.product-card');
@@ -1641,6 +1942,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (toggle) {
             const popover = toggle.closest('.product-reaction-wrap')?.querySelector('.reaction-popover');
             popover?.classList.toggle('active');
+            return;
+        }
+
+        const quickHeart = event.target.closest('[data-product-quick-heart]');
+        if (quickHeart) {
+            const card = quickHeart.closest('.product-card');
+            if (!card) return;
+            setProductReaction(card.dataset.productKey, '❤️', quickHeart);
             return;
         }
 
@@ -1679,6 +1988,20 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const universalToggle = event.target.closest('[data-universal-toggle]');
+        if (universalToggle) {
+            universalToggle.closest('.universal-social')?.querySelector('.reaction-popover')?.classList.toggle('active');
+            return;
+        }
+
+        const universalReaction = event.target.closest('[data-universal-reaction]');
+        if (universalReaction) {
+            const surface = universalReaction.closest('[data-social-target][data-social-id]');
+            setUniversalReaction(surface, universalReaction.dataset.universalReaction, universalReaction);
+            universalReaction.closest('.reaction-popover')?.classList.remove('active');
+            return;
+        }
+
         const emoji = event.target.closest('[data-insert-emoji]');
         if (emoji) {
             const form = emoji.closest('form');
@@ -1709,9 +2032,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     enhanceProductCards();
+    enhanceSocialSurfaces();
+    setTimeout(syncVisibleProductReactions, 250);
     if (productsGrid) {
-        new MutationObserver(enhanceProductCards).observe(productsGrid, { childList: true, subtree: true });
+        new MutationObserver(() => {
+            enhanceProductCards();
+            enhanceSocialSurfaces();
+            syncVisibleProductReactions();
+        }).observe(productsGrid, { childList: true, subtree: true });
     }
+    document.addEventListener('lg:content-rendered', () => {
+        enhanceProductCards();
+        enhanceSocialSurfaces();
+        syncVisibleProductReactions();
+    });
 });
 
 // ==========================================
