@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" type="image/png" href="../img/flores.png">
     <!-- CSS -->
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/style.css?v=social-db-6">
 </head>
 <body>
 
@@ -85,6 +85,11 @@
                     <span class="cart-count" id="cartCount">0</span>
                 </button>
 
+                <!-- Cerrar Sesion -->
+                <button class="logout-btn" id="logoutBtn" aria-label="Cerrar sesion" title="Cerrar sesion">
+                    <i class="fas fa-right-from-bracket"></i>
+                </button>
+
                 <!-- Menú Hamburguesa -->
                 <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">
                     <span></span>
@@ -103,6 +108,9 @@
             <a href="#nosotros" class="nav-mobile-link">Nosotros</a>
             <a href="#galeria" class="nav-mobile-link">Galería</a>
             <a href="#contacto" class="nav-mobile-link">Contacto</a>
+            <button class="nav-mobile-link nav-mobile-logout" id="mobileLogoutBtn">
+                <i class="fas fa-right-from-bracket"></i> Cerrar Sesion
+            </button>
             <div class="nav-mobile-footer">
                 <a href="https://wa.me/573213092850" target="_blank"><i class="fab fa-whatsapp"></i></a>
                 <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
@@ -918,8 +926,8 @@
     </footer>
 
     <!-- ==================== MODAL VISTA RÁPIDA ==================== -->
-    <div class="modal" id="quickViewModal">
-        <div class="modal-content">
+    <div class="modal" id="quickViewModal" aria-hidden="true">
+        <div class="modal-content social-product-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
             <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
             <div class="modal-body">
                 <div class="modal-img">
@@ -953,7 +961,7 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="../js/script.js"></script>
+    <script src="../js/script.js?v=social-db-6"></script>
 </body>
 </html>
 

@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartCount = document.getElementById('cartCount');
     const cartTotal = document.getElementById('cartTotal');
     const themeToggle = document.getElementById('themeToggle');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
     const backToTop = document.getElementById('backToTop');
     const loader = document.getElementById('page-loader');
     const contactForm = document.getElementById('contactForm');
@@ -127,6 +129,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
+    // CERRAR SESION
+    // ==========================================
+    function logout() {
+        localStorage.removeItem('lg_session');
+        window.location.href = '../index.html';
+    }
+
+    [logoutBtn, mobileLogoutBtn].forEach(button => {
+        if (button) {
+            button.addEventListener('click', logout);
+        }
+    });
+
+    // ==========================================
     // CARRITO DE COMPRAS
     // ==========================================
     function openCart() {
@@ -211,9 +227,85 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Exponer función global para eliminar items
+    function buildCartMessage(total) {
+        const itemsList = cart
+            .map(item => `- ${item.name} (x${item.quantity}): $ ${(item.price * item.quantity).toFixed(2)}`)
+            .join('\n');
+        return `Hola, quiero comprar estos productos:\n\n${itemsList}\n\nTotal: $ ${total.toFixed(2)}`;
+    }
+
+    function getCheckoutClient() {
+        try {
+            const session = JSON.parse(localStorage.getItem('lg_session') || '{}');
+            return {
+                id: session.id || session.cliente_id || 'CLI_WEB',
+                nombre: session.nombre || session.cliente_nombre || 'Cliente web',
+                telefono: session.telefono || session.cliente_telefono || 'No registrado'
+            };
+        } catch (error) {
+            return { id: 'CLI_WEB', nombre: 'Cliente web', telefono: 'No registrado' };
+        }
+    }
+
+    async function saveOrderAndOpenWhatsApp(event) {
+        event.preventDefault();
+        const checkoutBtn = event.currentTarget;
+        if (!cart.length) {
+            showToast('Tu carrito esta vacio');
+            return;
+        }
+        if (checkoutBtn.dataset.saving === 'true') return;
+
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const message = buildCartMessage(total);
+        const client = getCheckoutClient();
+        const items = cart.map(item => ({
+            producto_id: item.producto_id || item.name,
+            nombre: item.name,
+            cantidad: item.quantity,
+            precio_unitario: item.price,
+            subtotal: item.price * item.quantity,
+            imagen_url: item.img || ''
+        }));
+
+        checkoutBtn.dataset.saving = 'true';
+        checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando pedido...';
+
+        const result = typeof window.lgDbApi === 'function'
+            ? await window.lgDbApi('createPedido', {
+                data: {
+                    cliente_id: client.id,
+                    cliente_nombre: client.nombre,
+                    cliente_telefono: client.telefono,
+                    items_json: JSON.stringify(items),
+                    total,
+                    whatsapp_mensaje: message
+                }
+            })
+            : { success: false, error: 'Aun no disponible' };
+
+        checkoutBtn.dataset.saving = 'false';
+        checkoutBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Comprar por WhatsApp';
+
+        if (!result.success) {
+            showToast(result.error || 'No se pudo guardar el pedido');
+            return;
+        }
+
+        showToast(`Pedido ${result.data?.id || ''} guardado como pendiente`);
+        window.open(`https://wa.me/573213092850?text=${encodeURIComponent(message)}`, '_blank');
+        cart = [];
+        updateCart();
+        closeCart();
+    }
+
+    document.querySelector('.cart-checkout')?.addEventListener('click', saveOrderAndOpenWhatsApp);
+
     window.removeCartItem = (index) => {
         removeFromCart(index);
     };
+    window.lgAddToCart = addToCart;
+    window.lgShowToast = showToast;
 
     // Event listeners para botones "Agregar al carrito"
     document.querySelectorAll('.add-to-cart').forEach(btn => {
@@ -344,6 +436,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // TEMPORIZADOR DE PROMOCIONES
     // ==========================================
     function updateTimer() {
+        const timerDays = document.getElementById('timerDays');
+        const timerHours = document.getElementById('timerHours');
+        const timerMinutes = document.getElementById('timerMinutes');
+        const timerSeconds = document.getElementById('timerSeconds');
+        if (!timerDays || !timerHours || !timerMinutes || !timerSeconds) return;
+
         const now = new Date();
         const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3, 23, 59, 59);
         const diff = endOfDay - now;
@@ -353,14 +451,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
         
-        document.getElementById('timerDays').textContent = String(days).padStart(2, '0');
-        document.getElementById('timerHours').textContent = String(hours).padStart(2, '0');
-        document.getElementById('timerMinutes').textContent = String(minutes).padStart(2, '0');
-        document.getElementById('timerSeconds').textContent = String(seconds).padStart(2, '0');
+        timerDays.textContent = String(days).padStart(2, '0');
+        timerHours.textContent = String(hours).padStart(2, '0');
+        timerMinutes.textContent = String(minutes).padStart(2, '0');
+        timerSeconds.textContent = String(seconds).padStart(2, '0');
     }
-    
-    updateTimer();
-    setInterval(updateTimer, 1000);
+
+    if (
+        document.getElementById('timerDays') &&
+        document.getElementById('timerHours') &&
+        document.getElementById('timerMinutes') &&
+        document.getElementById('timerSeconds')
+    ) {
+        updateTimer();
+        setInterval(updateTimer, 1000);
+    }
 
     // ==========================================
     // ANIMACIÓN DE NÚMEROS (CONTADORES)
@@ -546,6 +651,1170 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     console.log('✨ Luz Gomez - Tienda Artesanal cargada correctamente');
+});
+
+// ==========================================
+// DATOS REALES DESDE GOOGLE SHEETS / DRIVE
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const BASE_URL = 'https://script.google.com/macros/s/AKfycbyI1pONadMWJhganMWt4kah4bB4jNHgraJG8S1A_uAGnRHiGdjL_U9tdDhpCEbKNqQ/exec';
+    const productsGrid = document.getElementById('productsGrid');
+    const filters = document.querySelector('.filters');
+    const categoriesGrid = document.querySelector('.categories-grid');
+    const galleryGrid = document.querySelector('.gallery-grid');
+    const testimonialsTrack = document.getElementById('testimonialsTrack');
+    const promoBanner = document.querySelector('.promo-banner');
+    const searchInput = document.getElementById('searchInput');
+    const state = { products: [], categories: [], filter: 'all', search: '' };
+
+    if (!productsGrid) return;
+
+    productsGrid.innerHTML = pendingState();
+    if (categoriesGrid) categoriesGrid.innerHTML = '';
+    if (galleryGrid) galleryGrid.innerHTML = '';
+    if (testimonialsTrack) testimonialsTrack.innerHTML = '';
+
+    initDatabaseStore();
+
+    async function initDatabaseStore() {
+        const [categories, products, promo, testimonials, gallery] = await Promise.all([
+            apiCall('getCategorias'),
+            apiCall('getProductos', { filters: { pagina: 1, por_pagina: 60 } }),
+            apiCall('getPromocionActiva'),
+            apiCall('getTestimonios'),
+            apiCall('getGaleria')
+        ]);
+
+        state.categories = categories.success ? (categories.data || []) : [];
+        state.products = products.success ? ((products.data && (products.data.productos || products.data.items)) || []) : [];
+
+        renderCategories(state.categories);
+        renderFilters(state.categories);
+        renderProducts();
+        renderPromo(promo.success ? promo.data : null);
+        renderTestimonials(testimonials.success ? testimonials.data || [] : []);
+        renderGallery(gallery.success ? gallery.data || [] : []);
+        hydrateHeroFromDatabase();
+    }
+
+    async function apiCall(action, params = {}) {
+        try {
+            const response = await fetch(BASE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action, params })
+            });
+            if (!response.ok) throw new Error('Aun no disponible');
+            return await response.json();
+        } catch (error) {
+            window.lgShowToast?.(error.message || 'Aun no disponible');
+            return { success: false, data: null, error: error.message };
+        }
+    }
+    window.lgDbApi = apiCall;
+
+    function renderCategories(categories) {
+        if (!categoriesGrid) return;
+        categoriesGrid.innerHTML = categories.length ? categories.map(category => `
+            <div class="category-card reveal active" data-category="${esc(category.slug || category.id || '')}">
+                <div class="category-img">
+                    ${realImage(category.imagen_url, category.nombre)}
+                    <div class="category-overlay"></div>
+                </div>
+                <div class="category-info">
+                    <div class="category-icon">${esc(category.icono || '✨')}</div>
+                    <h3>${esc(category.nombre)}</h3>
+                    <p>${esc(category.descripcion || 'Coleccion disponible')}</p>
+                    <span class="category-count">${Number(category.productos_count || 0)} productos</span>
+                </div>
+            </div>
+        `).join('') : emptyState();
+
+        categoriesGrid.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('click', () => {
+                state.filter = card.dataset.category || 'all';
+                syncFilterButtons();
+                renderProducts();
+                document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    }
+
+    function renderFilters(categories) {
+        if (!filters) return;
+        filters.innerHTML = `
+            <button class="filter-btn active" data-filter="all">Todos</button>
+            ${categories.map(category => `<button class="filter-btn" data-filter="${esc(category.slug || category.id || '')}">${esc(category.nombre)}</button>`).join('')}
+        `;
+        filters.querySelectorAll('.filter-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                state.filter = button.dataset.filter || 'all';
+                syncFilterButtons();
+                renderProducts();
+            });
+        });
+    }
+
+    function syncFilterButtons() {
+        filters?.querySelectorAll('.filter-btn').forEach(button => {
+            button.classList.toggle('active', button.dataset.filter === state.filter);
+        });
+    }
+
+    function renderProducts() {
+        const query = state.search.trim().toLowerCase();
+        const visible = state.products.filter(product => {
+            const matchesCategory = state.filter === 'all' || product.categoria_slug === state.filter || product.categoria_id === state.filter;
+            const matchesSearch = !query || String(product.nombre || '').toLowerCase().includes(query) || String(product.categoria_nombre || '').toLowerCase().includes(query);
+            return matchesCategory && matchesSearch;
+        });
+
+        productsGrid.innerHTML = visible.length ? visible.map(productCard).join('') : emptyState();
+        productsGrid.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', event => {
+                event.preventDefault();
+                window.lgAddToCart?.(button.dataset.name, button.dataset.price, button.dataset.img);
+            });
+        });
+    }
+
+    function productCard(product) {
+        const image = productImage(product);
+        const price = Number(product.precio || 0);
+        const oldPrice = Number(product.precio_antiguo || 0);
+        return `
+            <div class="product-card reveal active" data-category="${esc(product.categoria_slug || product.categoria_id || '')}" data-product-id="${esc(product.id || '')}" data-comment-count="${Number(product.resenas_count || 0)}">
+                ${product.badge ? `<div class="product-badge">${esc(product.badge)}</div>` : ''}
+                <div class="product-img">
+                    ${realImage(image, product.nombre)}
+                    <div class="product-actions">
+                        <button class="product-action-btn add-to-cart" data-name="${esc(product.nombre)}" data-price="${price}" data-img="${esc(image)}" aria-label="Agregar al carrito">
+                            <i class="fas fa-shopping-bag"></i>
+                        </button>
+                        <a href="https://wa.me/573213092850?text=${encodeURIComponent(`Hola, quiero el producto ${product.nombre || ''}`)}" class="product-action-btn" target="_blank" aria-label="Comprar por WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <button class="product-action-btn quick-view" aria-label="Ver producto">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <span class="product-category">${esc(product.categoria_nombre || 'Producto')}</span>
+                    <h3 class="product-name">${esc(product.nombre || 'Producto sin nombre')}</h3>
+                    <div class="product-price">
+                        <span class="price-current">$ ${money(price)}</span>
+                        ${oldPrice > 0 ? `<span class="price-old">$ ${money(oldPrice)}</span>` : ''}
+                    </div>
+                    <div class="product-rating">${stars(product.rating || 5)} <span>(${Number(product.resenas_count || 0)})</span></div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderPromo(promo) {
+        if (!promoBanner) return;
+        if (!promo) {
+            promoBanner.innerHTML = emptyState();
+            return;
+        }
+        promoBanner.innerHTML = `
+            <div class="promo-content">
+                <span class="promo-tag">Oferta activa</span>
+                <h2 class="promo-title">${esc(promo.titulo || 'Promocion especial')}</h2>
+                <p class="promo-desc">${esc(promo.descripcion || '')}</p>
+                <a href="https://wa.me/573213092850?text=${encodeURIComponent('Hola, quiero aprovechar la promocion')}" class="btn btn-primary btn-large" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Aprovechar Oferta
+                </a>
+            </div>
+            <div class="promo-image">
+                ${realImage(promo.imagen_url, promo.titulo)}
+                <div class="promo-float">-${Number(promo.descuento_porcentaje || 0)}%</div>
+            </div>
+        `;
+    }
+
+    function renderTestimonials(testimonials) {
+        if (!testimonialsTrack) return;
+        testimonialsTrack.innerHTML = testimonials.length ? testimonials.map(item => `
+            <div class="testimonial-card">
+                <div class="testimonial-stars">${stars(item.calificacion || 5)}</div>
+                <p>${esc(item.texto || '')}</p>
+                <div class="testimonial-author">
+                    ${realImage(item.imagen_url, item.cliente_nombre)}
+                    <div>
+                        <h4>${esc(item.cliente_nombre || 'Cliente')}</h4>
+                        <span>${esc(item.cliente_ciudad || 'Colombia')}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('') : emptyState();
+        document.querySelector('.testimonials-nav')?.removeAttribute('style');
+    }
+
+    function renderGallery(items) {
+        if (!galleryGrid) return;
+        galleryGrid.innerHTML = items.length ? items.map((item, index) => `
+            <div class="gallery-item ${index === 0 ? 'large' : index === 5 ? 'wide' : ''}">
+                ${realImage(item.imagen_url, item.titulo)}
+                <div class="gallery-overlay">
+                    <i class="fas fa-heart"></i>
+                    <span>${esc(item.titulo || 'Galeria')}</span>
+                </div>
+            </div>
+        `).join('') : '';
+    }
+
+    function hydrateHeroFromDatabase() {
+        const first = state.products.find(product => productImage(product));
+        if (!first) return;
+        const heroImg = document.querySelector('.hero-img-wrapper img');
+        if (heroImg) {
+            heroImg.src = productImage(first);
+            heroImg.alt = first.nombre || 'Producto Luz Gomez';
+        }
+    }
+
+    function productImage(product) {
+        return product.imagen_url || product.thumbnail_url || '';
+    }
+
+    function realImage(src, alt) {
+        return src
+            ? `<img src="${esc(src)}" alt="${esc(alt || 'Imagen')}" loading="lazy">`
+            : `<div class="db-image-missing"><i class="fas fa-clock"></i><span>Aun no disponible</span></div>`;
+    }
+
+    function pendingState() {
+        return emptyState();
+    }
+
+    function emptyState() {
+        return '<div class="db-empty-state"><i class="fas fa-clock"></i><p>Aun no disponible</p></div>';
+    }
+
+    function stars(value) {
+        const rating = Math.max(0, Math.min(5, Math.round(Number(value || 5))));
+        return Array.from({ length: 5 }, (_, index) => `<i class="${index < rating ? 'fas' : 'far'} fa-star"></i>`).join('');
+    }
+
+    function money(value) {
+        return Number(value || 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function esc(value) {
+        return String(value ?? '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[char]));
+    }
+
+    searchInput?.addEventListener('input', event => {
+        state.search = event.target.value;
+        renderProducts();
+    });
+});
+
+// ==========================================
+// MEJORAS VISUALES PREMIUM - SOLO FRONTEND
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const cartBtnStatic = document.getElementById('cartBtn');
+    const contactFormStatic = document.getElementById('contactForm');
+    const searchInputStatic = document.getElementById('searchInput');
+    const visualState = {
+        reactions: JSON.parse(localStorage.getItem('lg_static_reactions') || '{}'),
+        lightboxIndex: 0
+    };
+
+    function easeOutExpo(x) {
+        return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+    }
+
+    function saveStaticReactions() {
+        localStorage.setItem('lg_static_reactions', JSON.stringify(visualState.reactions));
+    }
+
+    // Fly-to-cart: clona la imagen y la lleva al icono del carrito.
+    function flyToCartFromButton(button) {
+        const card = button.closest('.product-card') || button.closest('.modal-content');
+        const img = card?.querySelector('img') || document.querySelector('.product-card img');
+        if (!img || !cartBtnStatic) return;
+        const start = img.getBoundingClientRect();
+        const end = cartBtnStatic.getBoundingClientRect();
+        const clone = img.cloneNode();
+        clone.className = 'fly-clone';
+        clone.style.left = `${start.left}px`;
+        clone.style.top = `${start.top}px`;
+        document.body.appendChild(clone);
+        const startTime = performance.now();
+        const duration = 720;
+        function frame(now) {
+            const progress = Math.min(1, (now - startTime) / duration);
+            const eased = easeOutExpo(progress);
+            const x = start.left + (end.left - start.left) * eased;
+            const y = start.top + (end.top - start.top) * eased - Math.sin(progress * Math.PI) * 120;
+            clone.style.transform = `translate(${x - start.left}px, ${y - start.top}px) scale(${1 - progress * 0.55}) rotate(${progress * 18}deg)`;
+            clone.style.opacity = String(1 - progress * 0.35);
+            if (progress < 1) requestAnimationFrame(frame);
+            else clone.remove();
+        }
+        requestAnimationFrame(frame);
+    }
+
+    document.querySelectorAll('.add-to-cart, #modalAddToCart').forEach(btn => {
+        btn.addEventListener('click', () => flyToCartFromButton(btn), true);
+    });
+
+    // Tilt 3D: las cards siguen suavemente al cursor.
+    document.querySelectorAll('.category-card, .product-card').forEach(card => {
+        card.classList.add('tilt-card');
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            card.style.transform = `perspective(900px) rotateX(${y * -5}deg) rotateY(${x * 6}deg) translateY(-8px)`;
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = '';
+        });
+    });
+
+    // Magnetic buttons: botones principales responden a la cercania del cursor.
+    if (!window.matchMedia('(hover: none)').matches) {
+        document.querySelectorAll('.btn-primary').forEach(btn => btn.classList.add('magnetic-btn'));
+        document.addEventListener('mousemove', (e) => {
+            document.querySelectorAll('.magnetic-btn').forEach(btn => {
+                const rect = btn.getBoundingClientRect();
+                const dx = e.clientX - (rect.left + rect.width / 2);
+                const dy = e.clientY - (rect.top + rect.height / 2);
+                const distance = Math.hypot(dx, dy);
+                btn.style.transform = distance < 80 ? `translate(${dx * 0.06}px, ${dy * 0.06}px)` : '';
+            });
+        });
+    }
+
+    // Cursor personalizado con punto y aro suavizado.
+    if (!window.matchMedia('(hover: none)').matches) {
+        const dot = document.createElement('div');
+        const circle = document.createElement('div');
+        dot.className = 'cursor-dot';
+        circle.className = 'cursor-circle';
+        document.body.append(dot, circle);
+        let x = 0, y = 0, cx = 0, cy = 0;
+        document.addEventListener('mousemove', (e) => {
+            x = e.clientX;
+            y = e.clientY;
+            dot.style.left = `${x}px`;
+            dot.style.top = `${y}px`;
+        });
+        function loop() {
+            cx += (x - cx) * 0.18;
+            cy += (y - cy) * 0.18;
+            circle.style.left = `${cx}px`;
+            circle.style.top = `${cy}px`;
+            requestAnimationFrame(loop);
+        }
+        loop();
+    }
+
+    // Typewriter visual para subtitulo del hero.
+    const heroDesc = document.querySelector('.hero-desc');
+    if (heroDesc) {
+        const text = heroDesc.textContent.trim();
+        heroDesc.textContent = '';
+        heroDesc.classList.add('typewriter-css');
+        let index = 0;
+        function tick() {
+            heroDesc.textContent = text.slice(0, index);
+            index += 1;
+            if (index <= text.length) setTimeout(tick, 18);
+            else setTimeout(() => heroDesc.classList.remove('typewriter-css'), 900);
+        }
+        setTimeout(tick, 600);
+    }
+
+    // Intersection observer con stagger para hijos.
+    const premiumObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('active', 'stagger');
+            premiumObserver.unobserve(entry.target);
+        });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.products-grid, .categories-grid, .gallery-grid, .contact-grid').forEach(el => premiumObserver.observe(el));
+
+    // Lightbox premium con teclado.
+    function openLightbox(index) {
+        const items = Array.from(document.querySelectorAll('.gallery-item img'));
+        if (!items.length) return;
+        visualState.lightboxIndex = (index + items.length) % items.length;
+        const img = items[visualState.lightboxIndex];
+        const overlay = document.createElement('div');
+        overlay.className = 'lightbox-premium';
+        overlay.innerHTML = `
+            <button class="lightbox-close" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+            <button class="lightbox-prev" aria-label="Anterior"><i class="fas fa-chevron-left"></i></button>
+            <img src="${img.src}" alt="${img.alt || 'Galeria Luz Gomez'}">
+            <button class="lightbox-next" aria-label="Siguiente"><i class="fas fa-chevron-right"></i></button>
+        `;
+        document.body.appendChild(overlay);
+        overlay.querySelector('.lightbox-close').addEventListener('click', () => overlay.remove());
+        overlay.querySelector('.lightbox-prev').addEventListener('click', () => { overlay.remove(); openLightbox(visualState.lightboxIndex - 1); });
+        overlay.querySelector('.lightbox-next').addEventListener('click', () => { overlay.remove(); openLightbox(visualState.lightboxIndex + 1); });
+        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    }
+    document.querySelectorAll('.gallery-item img').forEach((img, index) => {
+        img.closest('.gallery-item')?.addEventListener('dblclick', () => openLightbox(index));
+    });
+    document.addEventListener('keydown', e => {
+        const box = document.querySelector('.lightbox-premium');
+        if (!box) return;
+        if (e.key === 'Escape') box.remove();
+        if (e.key === 'ArrowLeft') { box.remove(); openLightbox(visualState.lightboxIndex - 1); }
+        if (e.key === 'ArrowRight') { box.remove(); openLightbox(visualState.lightboxIndex + 1); }
+    });
+
+    // Reacciones visuales para comentarios o testimonios.
+    document.querySelectorAll('.comment, .testimonial-card').forEach((block, index) => {
+        if (block.dataset.reactionsReady) return;
+        block.dataset.reactionsReady = 'true';
+        const key = block.textContent.trim().slice(0, 64) || `static-${index}`;
+        const current = visualState.reactions[key] || {};
+        block.insertAdjacentHTML('beforeend', `
+            <div class="reaction-row">
+                ${['❤️','😍','🙌','💯','😮'].map(emoji => `<button class="reaction-btn ${current[emoji] ? 'active' : ''}" type="button" data-reaction="${emoji}" data-key="${key}"><span>${emoji}</span><b>${current[emoji] || 0}</b></button>`).join('')}
+            </div>
+        `);
+    });
+    document.addEventListener('click', e => {
+        const reaction = e.target.closest('.reaction-btn');
+        if (!reaction) return;
+        const key = reaction.dataset.key;
+        const emoji = reaction.dataset.reaction;
+        visualState.reactions[key] = visualState.reactions[key] || {};
+        visualState.reactions[key][emoji] = (visualState.reactions[key][emoji] || 0) + 1;
+        saveStaticReactions();
+        reaction.classList.add('active', 'bump');
+        reaction.querySelector('b').textContent = visualState.reactions[key][emoji];
+        setTimeout(() => reaction.classList.remove('bump'), 350);
+    });
+
+    // Feedback visual de busqueda con debounce.
+    function debounce(fn, wait) {
+        let timer;
+        return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn(...args), wait);
+        };
+    }
+    searchInputStatic?.addEventListener('input', debounce(() => {
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.classList.add('notification-slide-in');
+            setTimeout(() => card.classList.remove('notification-slide-in'), 360);
+        });
+    }, 180));
+
+    // Blur-up para imagenes.
+    document.querySelectorAll('img[loading="lazy"], .product-card img, .gallery-item img').forEach(img => {
+        if (img.complete) img.classList.add('blur-up-loaded');
+        else img.addEventListener('load', () => img.classList.add('blur-up-loaded'), { once: true });
+    });
+
+    // Flip-clock para numeros del timer cuando cambian.
+    ['timerDays', 'timerHours', 'timerMinutes', 'timerSeconds'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        let oldValue = el.textContent;
+        setInterval(() => {
+            if (el.textContent === oldValue) return;
+            oldValue = el.textContent;
+            el.classList.remove('flip');
+            void el.offsetWidth;
+            el.classList.add('flip');
+        }, 1000);
+    });
+
+    // Confetti de celebracion para envio del formulario.
+    function confettiBurst() {
+        const colors = ['#8B5CF6', '#D946EF', '#F472B6', '#FCD34D', '#10B981'];
+        for (let i = 0; i < 32; i++) {
+            const piece = document.createElement('span');
+            piece.className = 'confetti-piece';
+            piece.style.left = `${Math.random() * 100}%`;
+            piece.style.background = colors[i % colors.length];
+            piece.style.animationDelay = `${Math.random() * 0.25}s`;
+            piece.style.transform = `rotate(${Math.random() * 180}deg)`;
+            document.body.appendChild(piece);
+            setTimeout(() => piece.remove(), 2100);
+        }
+    }
+    contactFormStatic?.addEventListener('submit', confettiBurst);
+
+    // Ripple global para botones.
+    document.addEventListener('click', e => {
+        const button = e.target.closest('.btn, .icon-btn, .product-action, .cart-close');
+        if (!button) return;
+        const rect = button.getBoundingClientRect();
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        ripple.style.left = `${e.clientX - rect.left}px`;
+        ripple.style.top = `${e.clientY - rect.top}px`;
+        ripple.style.width = ripple.style.height = `${Math.max(rect.width, rect.height)}px`;
+        button.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 700);
+    });
+});
+
+// ==========================================
+// TIENDA SOCIAL INTERACTIVA - PRODUCTOS Y COMENTARIOS
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('quickViewModal');
+    const modalClose = document.getElementById('modalClose');
+    const productsGrid = document.getElementById('productsGrid');
+    const reactionEmojis = ['❤️', '😍', '🔥', '😂', '😮', '👍', '😢'];
+    const commentEmojis = ['❤️', '😍', '🔥', '👏', '✨', '😊'];
+    let activeProduct = null;
+    let activeImageIndex = 0;
+
+    const socialState = readState();
+
+    function readState() {
+        try {
+            return JSON.parse(localStorage.getItem('lg_social_store') || '{}');
+        } catch (error) {
+            return {};
+        }
+    }
+
+    function saveState() {
+        localStorage.setItem('lg_social_store', JSON.stringify(socialState));
+    }
+
+    function emptyReactionCounts(list = reactionEmojis) {
+        return list.reduce((counts, emoji) => {
+            counts[emoji] = 0;
+            return counts;
+        }, {});
+    }
+
+    function text(value) {
+        return String(value || '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[char]));
+    }
+
+    function productKeyFromName(name) {
+        return String(name || 'producto')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '') || 'producto';
+    }
+
+    function getProductState(key) {
+        if (!socialState[key]) {
+            socialState[key] = {
+                userReaction: '',
+                reactions: emptyReactionCounts(),
+                comments: []
+            };
+            saveState();
+        }
+        const userReaction = socialState[key].userReaction || '';
+        const cleanedCounts = emptyReactionCounts();
+        if (userReaction && cleanedCounts[userReaction] !== undefined) cleanedCounts[userReaction] = 1;
+        socialState[key].reactions = cleanedCounts;
+        socialState[key].comments = (socialState[key].comments || []).filter(comment => !String(comment.id || '').includes('-seed-'));
+        return socialState[key];
+    }
+
+    function getCardData(card) {
+        const name = card.querySelector('.product-name')?.textContent.trim() || 'Producto Luz Gomez';
+        const productId = card.dataset.productId || '';
+        const key = productId || productKeyFromName(name);
+        const image = card.querySelector('.product-img img')?.getAttribute('src') || '';
+        const category = card.querySelector('.product-category')?.textContent.trim() || 'Coleccion';
+        const price = card.querySelector('.price-current')?.textContent.trim() || '$ 0.00';
+        const oldPrice = card.querySelector('.price-old')?.textContent.trim() || '';
+        const badge = card.querySelector('.product-badge')?.textContent.trim() || '';
+        const rating = card.querySelector('.product-rating')?.innerHTML || '';
+        return {
+            key,
+            productId,
+            name,
+            image,
+            images: [image].filter(Boolean),
+            category,
+            price,
+            oldPrice,
+            badge,
+            rating,
+            card
+        };
+    }
+
+    function reactionTotal(productState) {
+        return Object.values(productState.reactions || {}).reduce((sum, value) => sum + Number(value || 0), 0);
+    }
+
+    function commentTotal(productState) {
+        return Math.max(productState.comments?.length || 0, Number(productState.databaseCommentCount || 0));
+    }
+
+    function topReactions(productState) {
+        return Object.entries(productState.reactions || {})
+            .filter(([, count]) => Number(count) > 0)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+            .map(([emoji]) => emoji);
+    }
+
+    function renderReactionStack(productState) {
+        const top = topReactions(productState);
+        return top.length ? top.map(emoji => `<span>${emoji}</span>`).join('') : '<span>👍</span>';
+    }
+
+    function enhanceProductCards() {
+        document.querySelectorAll('.product-card').forEach(card => {
+            if (card.dataset.socialReady) return;
+            card.dataset.socialReady = 'true';
+            const data = getCardData(card);
+            const productState = getProductState(data.key);
+            productState.databaseCommentCount = Number(card.dataset.commentCount || 0);
+            card.dataset.productKey = data.key;
+            card.addEventListener('mousemove', event => {
+                const rect = card.getBoundingClientRect();
+                card.style.setProperty('--mouse-x', `${event.clientX - rect.left}px`);
+                card.style.setProperty('--mouse-y', `${event.clientY - rect.top}px`);
+            });
+
+            const productInfo = card.querySelector('.product-info');
+            if (!productInfo) return;
+            productInfo.insertAdjacentHTML('beforeend', `
+                <div class="product-social" data-social-for="${data.key}">
+                    <div class="social-proof">
+                        <span class="reaction-stack">${renderReactionStack(productState)}</span>
+                        <span><b data-product-reaction-total>${reactionTotal(productState)}</b> reacciones</span>
+                        <span><b data-product-comment-total>${commentTotal(productState)}</b> comentarios</span>
+                    </div>
+                    <div class="product-social-actions">
+                        <span class="product-reaction-wrap" style="position:relative;">
+                            <button class="social-action product-react-toggle ${productState.userReaction ? 'active' : ''}" type="button" aria-pressed="${productState.userReaction ? 'true' : 'false'}">
+                                <span>${productState.userReaction || '👍'}</span> Reaccionar
+                            </button>
+                            <span class="reaction-popover" role="menu">
+                                ${reactionEmojis.map(emoji => `<button class="reaction-option" type="button" data-product-reaction="${emoji}" aria-label="Reaccionar ${emoji}">${emoji}</button>`).join('')}
+                            </span>
+                        </span>
+                        <button class="social-action product-comment-open" type="button"><i class="fas fa-comment"></i> Comentar</button>
+                    </div>
+                </div>
+            `);
+        });
+    }
+
+    function refreshCardSocial(key) {
+        const productState = getProductState(key);
+        document.querySelectorAll(`[data-social-for="${key}"]`).forEach(box => {
+            box.querySelector('.reaction-stack').innerHTML = renderReactionStack(productState);
+            box.querySelector('[data-product-reaction-total]').textContent = reactionTotal(productState);
+            box.querySelector('[data-product-comment-total]').textContent = commentTotal(productState);
+            const toggle = box.querySelector('.product-react-toggle');
+            toggle.classList.toggle('active', Boolean(productState.userReaction));
+            toggle.setAttribute('aria-pressed', productState.userReaction ? 'true' : 'false');
+            toggle.querySelector('span').textContent = productState.userReaction || '👍';
+        });
+    }
+
+    function setProductReaction(key, emoji, origin) {
+        const productState = getProductState(key);
+        if (productState.userReaction === emoji) {
+            productState.reactions[emoji] = Math.max(0, Number(productState.reactions[emoji] || 0) - 1);
+            productState.userReaction = '';
+        } else {
+            if (productState.userReaction) {
+                const old = productState.userReaction;
+                productState.reactions[old] = Math.max(0, Number(productState.reactions[old] || 0) - 1);
+            }
+            productState.reactions[emoji] = Number(productState.reactions[emoji] || 0) + 1;
+            productState.userReaction = emoji;
+            floatReaction(emoji, origin);
+        }
+        saveState();
+        refreshCardSocial(key);
+        if (activeProduct?.key === key) renderModalSocialSummary(activeProduct);
+    }
+
+    function floatReaction(emoji, origin) {
+        if (!origin) return;
+        const rect = origin.getBoundingClientRect();
+        for (let i = 0; i < 4; i++) {
+            const item = document.createElement('span');
+            item.className = 'floating-reaction';
+            item.textContent = emoji;
+            item.style.left = `${rect.left + rect.width / 2}px`;
+            item.style.top = `${rect.top + rect.height / 2}px`;
+            item.style.setProperty('--float-x', `${(Math.random() - .5) * 70}px`);
+            item.style.animationDelay = `${i * 45}ms`;
+            document.body.appendChild(item);
+            setTimeout(() => item.remove(), 1050);
+        }
+    }
+
+    async function openSocialModal(card, focusComments = false) {
+        activeProduct = getCardData(card);
+        activeImageIndex = 0;
+        await hydrateProductFromDatabase(activeProduct);
+        const productState = getProductState(activeProduct.key);
+        modal.querySelector('.modal-content').classList.add('social-product-modal');
+        modal.querySelector('.modal-body').innerHTML = `
+            <div class="social-modal-gallery">
+                <div class="social-modal-main" id="socialModalMain">
+                    ${activeProduct.images[0] ? `<img src="${text(activeProduct.images[0])}" alt="${text(activeProduct.name)}" id="modalImg">` : '<div class="db-image-missing"><i class="fas fa-clock"></i><span>Aun no disponible</span></div>'}
+                    <span class="zoom-hint"><i class="fas fa-search-plus"></i> Click para zoom</span>
+                </div>
+                <div class="social-thumbs">
+                    ${activeProduct.images.map((src, index) => `<button class="social-thumb ${index === 0 ? 'active' : ''}" type="button" data-thumb-index="${index}"><img src="${text(src)}" alt="${text(activeProduct.name)} ${index + 1}"></button>`).join('')}
+                </div>
+            </div>
+            <div class="social-modal-info">
+                <span class="modal-category">${text(activeProduct.category)}</span>
+                <h3 class="modal-title" id="modalTitle">${text(activeProduct.name)}</h3>
+                <div class="modal-price">${text(activeProduct.price)} ${activeProduct.oldPrice ? `<span class="price-old">${text(activeProduct.oldPrice)}</span>` : ''}</div>
+                <p class="modal-desc">${text(activeProduct.description || 'Aun no disponible')}</p>
+                <div class="modal-desc-grid">
+                    <span><strong>Entrega</strong> Coordinada por WhatsApp</span>
+                    <span><strong>Origen</strong> Hecho en Colombia</span>
+                    <span><strong>Atencion</strong> Personalizada</span>
+                </div>
+                <div class="modal-social-summary" id="modalSocialSummary"></div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" id="modalSocialAdd"><i class="fas fa-shopping-bag"></i> Agregar al Carrito</button>
+                    <a href="https://wa.me/573213092850?text=${encodeURIComponent(`Hola, quiero comprar ${activeProduct.name}`)}" class="btn btn-whatsapp" target="_blank">
+                        <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
+                    </a>
+                </div>
+                <div class="comments-panel" id="commentsPanel">
+                    <div class="comments-title">
+                        <h4><i class="fas fa-comments"></i> Comentarios</h4>
+                        <span>${commentTotal(productState)} conversaciones</span>
+                    </div>
+                    <div class="comment-list" id="modalComments"></div>
+                    ${commentFormTemplate(activeProduct.key)}
+                </div>
+            </div>
+        `;
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        bindModalInteractions();
+        renderModalSocialSummary(activeProduct);
+        renderComments(activeProduct.key);
+        if (focusComments) setTimeout(() => document.getElementById('commentsPanel')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 80);
+    }
+
+    async function hydrateProductFromDatabase(product) {
+        if (!product?.productId || typeof window.lgDbApi !== 'function') return;
+        const result = await window.lgDbApi('getProductoById', { id: product.productId });
+        if (!result.success || !result.data) return;
+        const dbProduct = result.data;
+        product.description = dbProduct.descripcion || product.description || '';
+        const dbImages = [
+            dbProduct.imagen_url,
+            ...(dbProduct.imagenes_extra || []).map(image => image.url)
+        ].filter((src, index, list) => src && list.indexOf(src) === index);
+        if (dbImages.length) product.images = dbImages;
+        const productState = getProductState(product.key);
+        productState.comments = mapDatabaseComments(dbProduct.comentarios || []);
+    }
+
+    function mapDatabaseComments(comments) {
+        const mapped = [];
+        comments.forEach(comment => {
+            const id = comment.id || `db-${mapped.length}`;
+            mapped.push({
+                id,
+                author: comment.cliente_nombre || 'Cliente',
+                body: comment.comentario || '',
+                createdAt: new Date(comment.fecha || Date.now()).getTime(),
+                parentId: '',
+                userReaction: '',
+                reactions: emptyReactionCounts(commentEmojis)
+            });
+            if (comment.respuesta_admin) {
+                mapped.push({
+                    id: `${id}-respuesta`,
+                    author: 'Luz Gomez',
+                    body: comment.respuesta_admin,
+                    createdAt: new Date(comment.fecha_respuesta || comment.fecha || Date.now()).getTime(),
+                    parentId: id,
+                    userReaction: '',
+                    reactions: emptyReactionCounts(commentEmojis)
+                });
+            }
+        });
+        return mapped;
+    }
+
+    function renderModalSocialSummary(product) {
+        const summary = document.getElementById('modalSocialSummary');
+        if (!summary || !product) return;
+        const productState = getProductState(product.key);
+        summary.innerHTML = `
+            <div class="social-proof">
+                <span class="reaction-stack">${renderReactionStack(productState)}</span>
+                <span><b>${reactionTotal(productState)}</b> personas reaccionaron</span>
+                <span><b>${commentTotal(productState)}</b> comentarios</span>
+            </div>
+            <div class="social-row">
+                ${reactionEmojis.map(emoji => `<button class="social-action ${productState.userReaction === emoji ? 'active' : ''}" type="button" data-modal-reaction="${emoji}" aria-pressed="${productState.userReaction === emoji ? 'true' : 'false'}">${emoji} <span>${productState.reactions[emoji] || 0}</span></button>`).join('')}
+            </div>
+        `;
+    }
+
+    function commentFormTemplate(key, parentId = '') {
+        return `
+            <form class="comment-form ${parentId ? 'reply-form' : ''}" data-comment-form="${key}" data-parent-id="${parentId}">
+                <div class="emoji-strip">
+                    ${commentEmojis.map(emoji => `<button type="button" data-insert-emoji="${emoji}">${emoji}</button>`).join('')}
+                </div>
+                <textarea name="comment" placeholder="${parentId ? 'Escribe una respuesta...' : 'Comparte tu opinion o pregunta por este producto...'}" required></textarea>
+                <button class="btn btn-primary" type="submit"><i class="fas fa-paper-plane"></i> Enviar</button>
+            </form>
+        `;
+    }
+
+    function renderComments(key) {
+        const list = document.getElementById('modalComments');
+        if (!list) return;
+        const productState = getProductState(key);
+        const roots = productState.comments.filter(comment => !comment.parentId);
+        list.innerHTML = roots.map(comment => renderCommentTree(productState, comment)).join('');
+    }
+
+    function renderCommentTree(productState, comment) {
+        const replies = productState.comments.filter(item => item.parentId === comment.id);
+        return `
+            ${commentTemplate(comment)}
+            ${replies.map(reply => commentTemplate(reply, true)).join('')}
+        `;
+    }
+
+    function commentTemplate(comment, isReply = false) {
+        const initials = String(comment.author || 'Cliente').trim().slice(0, 1).toUpperCase() || 'C';
+        return `
+            <article class="social-comment ${isReply ? 'reply' : ''}" data-comment-id="${text(comment.id)}">
+                <div class="social-comment-head">
+                    <span class="social-avatar">${text(initials)}</span>
+                    <div class="social-comment-meta">
+                        <strong>${text(comment.author || 'Cliente')}</strong>
+                        <time>${relativeTime(comment.createdAt)}</time>
+                    </div>
+                </div>
+                <p>${text(comment.body)}</p>
+                <div class="social-row">
+                    ${commentEmojis.map(emoji => `<button class="social-action ${comment.userReaction === emoji ? 'active' : ''}" type="button" data-comment-reaction="${emoji}" aria-pressed="${comment.userReaction === emoji ? 'true' : 'false'}">${emoji} <span>${comment.reactions?.[emoji] || 0}</span></button>`).join('')}
+                </div>
+            </article>
+        `;
+    }
+
+    function relativeTime(value) {
+        const diff = Date.now() - Number(value || Date.now());
+        const minutes = Math.max(1, Math.round(diff / 60000));
+        if (minutes < 60) return `Hace ${minutes} min`;
+        const hours = Math.round(minutes / 60);
+        if (hours < 24) return `Hace ${hours} h`;
+        return `Hace ${Math.round(hours / 24)} d`;
+    }
+
+    async function addComment(key, body, parentId = '') {
+        if (!activeProduct?.productId || parentId || typeof window.lgDbApi !== 'function') {
+            return;
+        }
+        const created = await window.lgDbApi('createComentario', {
+            data: {
+                producto_id: activeProduct.productId,
+                cliente_id: 'WEB',
+                cliente_nombre: 'Cliente web',
+                calificacion: 5,
+                comentario: body
+            }
+        });
+        if (!created.success) {
+            window.lgShowToast?.(created.error || 'No se pudo guardar el comentario');
+            return;
+        }
+        await hydrateProductFromDatabase(activeProduct);
+        const productState = getProductState(key);
+        saveState();
+        refreshCardSocial(key);
+        renderModalSocialSummary(activeProduct);
+        renderComments(key);
+        window.lgShowToast?.('Comentario guardado');
+    }
+
+    function setCommentReaction(commentId, emoji, origin) {
+        if (!activeProduct) return;
+        const productState = getProductState(activeProduct.key);
+        const comment = productState.comments.find(item => item.id === commentId);
+        if (!comment) return;
+        comment.reactions = comment.reactions || {};
+        if (comment.userReaction === emoji) {
+            comment.reactions[emoji] = Math.max(0, Number(comment.reactions[emoji] || 0) - 1);
+            comment.userReaction = '';
+        } else {
+            if (comment.userReaction) {
+                const old = comment.userReaction;
+                comment.reactions[old] = Math.max(0, Number(comment.reactions[old] || 0) - 1);
+            }
+            comment.reactions[emoji] = Number(comment.reactions[emoji] || 0) + 1;
+            comment.userReaction = emoji;
+            floatReaction(emoji, origin);
+        }
+        saveState();
+        renderComments(activeProduct.key);
+    }
+
+    function bindModalInteractions() {
+        document.querySelectorAll('[data-thumb-index]').forEach(button => {
+            button.addEventListener('click', () => {
+                activeImageIndex = Number(button.dataset.thumbIndex);
+                document.querySelectorAll('.social-thumb').forEach(item => item.classList.remove('active'));
+                button.classList.add('active');
+                const img = document.getElementById('modalImg');
+                if (img) img.src = activeProduct.images[activeImageIndex];
+                document.getElementById('socialModalMain')?.classList.remove('zoomed');
+            });
+        });
+
+        const main = document.getElementById('socialModalMain');
+        main?.addEventListener('click', () => main.classList.toggle('zoomed'));
+        main?.addEventListener('mousemove', event => {
+            const img = main.querySelector('img');
+            if (!img) return;
+            const rect = main.getBoundingClientRect();
+            img.style.transformOrigin = `${((event.clientX - rect.left) / rect.width) * 100}% ${((event.clientY - rect.top) / rect.height) * 100}%`;
+        });
+
+        document.getElementById('modalSocialAdd')?.addEventListener('click', () => {
+            activeProduct.card.querySelector('.add-to-cart')?.click();
+            closeSocialModal();
+        });
+    }
+
+    function closeSocialModal() {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('click', event => {
+        const quick = event.target.closest('.quick-view, .static-detail-link');
+        if (quick) {
+            const card = quick.closest('.product-card');
+            if (card) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                openSocialModal(card, quick.classList.contains('static-detail-link'));
+                return;
+            }
+        }
+
+        const cardClick = event.target.closest('.product-card');
+        if (cardClick && !event.target.closest('button, a, input, textarea, select, .product-social')) {
+            openSocialModal(cardClick, false);
+            return;
+        }
+
+        const toggle = event.target.closest('.product-react-toggle');
+        if (toggle) {
+            const popover = toggle.closest('.product-reaction-wrap')?.querySelector('.reaction-popover');
+            popover?.classList.toggle('active');
+            return;
+        }
+
+        const productReaction = event.target.closest('[data-product-reaction]');
+        if (productReaction) {
+            const card = productReaction.closest('.product-card');
+            if (!card) return;
+            setProductReaction(card.dataset.productKey, productReaction.dataset.productReaction, productReaction);
+            productReaction.closest('.reaction-popover')?.classList.remove('active');
+            return;
+        }
+
+        const commentOpen = event.target.closest('.product-comment-open');
+        if (commentOpen) {
+            const card = commentOpen.closest('.product-card');
+            if (card) openSocialModal(card, true);
+            return;
+        }
+
+        const modalReaction = event.target.closest('[data-modal-reaction]');
+        if (modalReaction && activeProduct) {
+            setProductReaction(activeProduct.key, modalReaction.dataset.modalReaction, modalReaction);
+            return;
+        }
+
+        const commentReaction = event.target.closest('[data-comment-reaction]');
+        if (commentReaction) {
+            const comment = commentReaction.closest('[data-comment-id]');
+            setCommentReaction(comment?.dataset.commentId, commentReaction.dataset.commentReaction, commentReaction);
+            return;
+        }
+
+        const replyOpen = event.target.closest('[data-reply-open]');
+        if (replyOpen) {
+            replyOpen.closest('.social-comment')?.querySelector('.reply-form')?.classList.toggle('active');
+            return;
+        }
+
+        const emoji = event.target.closest('[data-insert-emoji]');
+        if (emoji) {
+            const form = emoji.closest('form');
+            const textarea = form?.querySelector('textarea');
+            if (textarea) {
+                textarea.value = `${textarea.value}${emoji.dataset.insertEmoji}`;
+                textarea.focus();
+            }
+        }
+    }, true);
+
+    document.addEventListener('submit', event => {
+        const form = event.target.closest('[data-comment-form]');
+        if (!form) return;
+        event.preventDefault();
+        const textarea = form.querySelector('textarea');
+        const body = textarea?.value.trim();
+        if (!body) return;
+        addComment(form.dataset.commentForm, body, form.dataset.parentId || '');
+    });
+
+    modalClose?.addEventListener('click', closeSocialModal);
+    modal?.addEventListener('click', event => {
+        if (event.target === modal) closeSocialModal();
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && modal?.classList.contains('active')) closeSocialModal();
+    });
+
+    enhanceProductCards();
+    if (productsGrid) {
+        new MutationObserver(enhanceProductCards).observe(productsGrid, { childList: true, subtree: true });
+    }
+});
+
+// ==========================================
+// MEJORAS ESPECIFICAS PARA tienda.html
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const storySlides = Array.from(document.querySelectorAll('.tienda-story-slide'));
+    const storyBars = Array.from(document.querySelectorAll('.tienda-story-progress span'));
+    let storyIndex = 0;
+
+    function setStory(index) {
+        if (!storySlides.length) return;
+        storyIndex = (index + storySlides.length) % storySlides.length;
+        storySlides.forEach((slide, i) => slide.classList.toggle('active', i === storyIndex));
+        storyBars.forEach((bar, i) => bar.style.setProperty('--progress', i === storyIndex ? '100%' : '0%'));
+    }
+
+    setStory(0);
+    if (storySlides.length) setInterval(() => setStory(storyIndex + 1), 5200);
+
+    const categoriesGrid = document.querySelector('.categories-grid');
+    document.getElementById('categoryPrev')?.addEventListener('click', () => {
+        categoriesGrid?.scrollBy({ left: -320, behavior: 'smooth' });
+    });
+    document.getElementById('categoryNext')?.addEventListener('click', () => {
+        categoriesGrid?.scrollBy({ left: 320, behavior: 'smooth' });
+    });
+
+    document.getElementById('cartContinue')?.addEventListener('click', () => {
+        document.getElementById('cartSidebar')?.classList.remove('active');
+        document.getElementById('cartOverlay')?.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+
+    function staticCartTotal() {
+        const raw = document.getElementById('cartTotal')?.textContent || '0';
+        return Number(raw.replace(/[^\d.]/g, '')) || 0;
+    }
+
+    function updateStaticShipping() {
+        const city = (document.getElementById('staticShippingCity')?.value || '').trim().toLowerCase();
+        const estimate = document.getElementById('staticShippingEstimate');
+        const bar = document.getElementById('staticShippingBar');
+        const total = staticCartTotal();
+        const goal = 180;
+        const progress = Math.min(100, Math.round((total / goal) * 100));
+        bar?.style.setProperty('--ship-progress', `${progress}%`);
+        if (!estimate) return;
+        if (!city) {
+            estimate.textContent = 'Escribe tu ciudad para estimar el envio';
+            return;
+        }
+        const local = ['bogota', 'bogotá', 'medellin', 'medellín', 'cali'].some(name => city.includes(name));
+        const cost = total >= goal ? 0 : (local ? 9 : 15);
+        const left = Math.max(0, goal - total);
+        estimate.textContent = cost === 0
+            ? 'Envio gratis desbloqueado'
+            : `Envio aprox. $ ${cost.toFixed(2)} · faltan $ ${left.toFixed(2)} para gratis`;
+    }
+
+    document.getElementById('staticShippingCity')?.addEventListener('input', updateStaticShipping);
+    new MutationObserver(updateStaticShipping).observe(document.getElementById('cartTotal') || document.body, {
+        childList: true,
+        characterData: true,
+        subtree: true
+    });
+    updateStaticShipping();
+
+    document.querySelectorAll('.variant-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            chip.parentElement.querySelectorAll('.variant-chip').forEach(item => item.classList.remove('active'));
+            chip.classList.add('active');
+        });
+    });
+
+    document.querySelectorAll('.product-actions').forEach(actions => {
+        if (actions.querySelector('.wishlist-static')) return;
+        const button = document.createElement('button');
+        button.className = 'product-action-btn wishlist-static';
+        button.type = 'button';
+        button.title = 'Guardar favorito';
+        button.innerHTML = '<i class="far fa-heart"></i>';
+        actions.appendChild(button);
+        button.addEventListener('click', () => {
+            const icon = button.querySelector('i');
+            icon.classList.toggle('far');
+            icon.classList.toggle('fas');
+            button.classList.add('bump');
+            setTimeout(() => button.classList.remove('bump'), 350);
+        });
+    });
+
+    document.querySelectorAll('.product-card').forEach(card => {
+        if (card.querySelector('.static-detail-link')) return;
+        const quickView = card.querySelector('.quick-view');
+        if (!quickView) return;
+        const link = document.createElement('button');
+        link.className = 'static-detail-link';
+        link.type = 'button';
+        link.innerHTML = '<i class="fas fa-comments"></i> Ver detalle';
+        link.addEventListener('click', () => quickView.click());
+        card.appendChild(link);
+    });
 });
 
 

@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Panel de vendedor Luz Gomez">
+  <title>Luz Gomez | Panel Vendedor</title>
+  <link rel="icon" type="image/png" href="../img/flores.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --rose-50:#FFF0F3;
+      --rose-100:#FFD6DE;
+      --rose-200:#FFB3C1;
+      --rose-400:#F4637D;
+      --rose-500:#E84265;
+      --rose-600:#C0284A;
+      --rose-700:#9A1A37;
+      --sand-50:#FDFAF6;
+      --sand-100:#F5EFE6;
+      --sand-200:#EAE0D2;
+      --sand-300:#D9CCBA;
+      --sand-400:#BFB09B;
+      --sand-500:#9E9080;
+      --sand-600:#7D7265;
+      --ink-900:#1A1410;
+      --ink-700:#2E2620;
+      --ink-500:#574D44;
+      --ink-300:#8A8078;
+      --ink-100:#C4BCB5;
+      --emerald:#0EA47A;
+      --amber:#D9820A;
+      --crimson:#D93025;
+      --sky:#0F7AC4;
+      --accent:var(--rose-500);
+      --accent-light:var(--rose-100);
+      --bg:var(--sand-50);
+      --bg-soft:var(--sand-100);
+      --bg-card:#FFFFFF;
+      --border:rgba(30,20,10,.09);
+      --border-md:rgba(30,20,10,.14);
+      --ink:var(--ink-900);
+      --muted:var(--ink-300);
+      --sidebar-bg:#18110C;
+      --sidebar-hover:rgba(255,255,255,.07);
+      --sidebar-active:rgba(232,66,101,.15);
+      --sidebar-accent:var(--rose-400);
+      --header-bg:rgba(253,250,246,.88);
+      --shadow-xs:0 1px 3px rgba(15,10,5,.07),0 1px 2px rgba(15,10,5,.04);
+      --shadow-sm:0 2px 8px rgba(15,10,5,.08),0 1px 3px rgba(15,10,5,.05);
+      --shadow-md:0 8px 24px rgba(15,10,5,.10),0 3px 8px rgba(15,10,5,.06);
+      --shadow-lg:0 20px 60px rgba(15,10,5,.14),0 8px 20px rgba(15,10,5,.08);
+      --shadow-accent:0 8px 24px rgba(232,66,101,.22);
+      --radius-xs:6px;
+      --radius-sm:10px;
+      --radius-md:14px;
+      --radius-lg:20px;
+      --radius-xl:28px;
+      --font-display:'DM Serif Display',serif;
+      --font-serif:'Cormorant Garamond',serif;
+      --font-body:'DM Sans',sans-serif;
+      --t:.22s;
+      --t-slow:.4s;
+      --ease:cubic-bezier(.4,0,.2,1);
+      --ease-out:cubic-bezier(0,0,.2,1);
+      --ease-spring:cubic-bezier(.34,1.56,.64,1);
+    }
+    [data-theme="dark"] {
+      --bg:#130E0A;
+      --bg-soft:#1C1510;
+      --bg-card:#221A14;
+      --border:rgba(255,235,210,.08);
+      --border-md:rgba(255,235,210,.12);
+      --ink:#F5EFE6;
+      --muted:#8A8078;
+      --sidebar-bg:#0E0A07;
+      --header-bg:rgba(19,14,10,.88);
+      --accent-light:rgba(232,66,101,.15);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+    body{font-family:var(--font-body);background:var(--bg);color:var(--ink);line-height:1.6;overflow-x:hidden;font-size:15px;-webkit-font-smoothing:antialiased}
+    body.no-scroll{overflow:hidden;touch-action:none}
+    button,input,textarea,select{font:inherit}
+    button{border:0;cursor:pointer;background:transparent}
+    img{max-width:100%;display:block}
+    a{color:inherit;text-decoration:none}
+    .hidden{display:none!important}
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--sand-300);border-radius:99px}
+    [data-theme="dark"]::-webkit-scrollbar-thumb{background:var(--ink-500)}
+
+    /* ── Base Components ── */
+    .card{
+      background:var(--bg-card);
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-sm);
+      transition:box-shadow var(--t) var(--ease);
+    }
+    .card:hover{box-shadow:var(--shadow-md)}
+    .section-desc{color:var(--muted);font-size:.9rem}
+    .brand-fallback{font-family:var(--font-display);font-size:1.5rem;line-height:1;color:#fff;letter-spacing:-.01em}
+
+    /* ── Buttons ── */
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      min-height:40px;padding:9px 18px;border-radius:var(--radius-md);
+      font-weight:500;font-size:.88rem;transition:all var(--t) var(--ease);
+      white-space:nowrap;letter-spacing:.01em;position:relative;overflow:hidden;
+    }
+    .btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0);transition:background var(--t) var(--ease)}
+    .btn:hover::after{background:rgba(255,255,255,.08)}
+    .btn:hover{transform:translateY(-1px)}
+    .btn:active{transform:translateY(0) scale(.98)}
+    .btn-primary{
+      background:var(--rose-500);color:#fff;
+      box-shadow:var(--shadow-accent);
+      font-weight:600;
+    }
+    .btn-primary:hover{background:var(--rose-600);box-shadow:0 12px 32px rgba(232,66,101,.30)}
+    .btn-secondary{
+      background:var(--bg-card);color:var(--ink);
+      border:1px solid var(--border-md);box-shadow:var(--shadow-xs);
+    }
+    .btn-secondary:hover{border-color:var(--sand-300);background:var(--bg-soft)}
+    .btn-danger{background:rgba(217,48,37,.1);color:var(--crimson);border:1px solid rgba(217,48,37,.2)}
+    .btn-danger:hover{background:var(--crimson);color:#fff;border-color:var(--crimson)}
+    .btn-small{min-height:32px;padding:5px 12px;font-size:.8rem;border-radius:var(--radius-sm)}
+    .icon-btn{
+      width:40px;height:40px;border-radius:var(--radius-sm);
+      display:inline-flex;align-items:center;justify-content:center;
+      background:var(--bg-soft);color:var(--ink-500);
+      border:1px solid var(--border);
+      transition:all var(--t) var(--ease);flex-shrink:0;
+    }
+    .icon-btn:hover{background:var(--rose-500);color:#fff;border-color:var(--rose-500);box-shadow:var(--shadow-accent)}
+    .icon-btn i{font-size:.95rem;pointer-events:none}
+
+    /* ── Form Fields ── */
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:.8rem;font-weight:600;color:var(--ink-500);letter-spacing:.03em;text-transform:uppercase}
+    .field input,.field textarea,.field select,textarea[data-response]{
+      width:100%;min-height:42px;padding:10px 14px;
+      border:1.5px solid var(--border-md);border-radius:var(--radius-sm);
+      background:var(--bg-soft);color:var(--ink);outline:none;
+      transition:all var(--t) var(--ease);
+      -webkit-appearance:none;appearance:none;
+    }
+    .field textarea,textarea[data-response]{min-height:100px;resize:vertical;line-height:1.6}
+    .field input:hover,.field textarea:hover,.field select:hover,textarea[data-response]:hover{border-color:var(--sand-400);background:var(--bg-card)}
+    .field input:focus,.field textarea:focus,.field select:focus,textarea[data-response]:focus{
+      border-color:var(--rose-500);background:var(--bg-card);
+      box-shadow:0 0 0 3px rgba(232,66,101,.12);
+    }
+    .field.error input,.field.error textarea,.field.error select{border-color:var(--crimson);box-shadow:0 0 0 3px rgba(217,48,37,.10)}
+    .error-text{display:none;color:var(--crimson);font-size:.78rem;font-weight:500}
+    .field.error .error-text{display:block}
+
+    /* ── Layout ── */
+    .admin-layout{
+      min-height:100vh;display:grid;grid-template-columns:260px 1fr;
+      background:var(--bg);
+    }
+
+    /* ── Sidebar ── */
+    .admin-sidebar{
+      background:var(--sidebar-bg);
+      padding:0;position:sticky;top:0;height:100vh;overflow-y:auto;overflow-x:hidden;
+      box-shadow:1px 0 0 rgba(255,255,255,.04);
+      transition:transform var(--t-slow) var(--ease-out);
+      display:flex;flex-direction:column;
+    }
+    .sidebar-top{padding:24px 20px 16px}
+    .admin-brand{display:flex;align-items:center;gap:12px;margin-bottom:0}
+    .admin-brand img{
+      width:42px;height:42px;object-fit:contain;border-radius:var(--radius-sm);
+      background:rgba(255,255,255,.08);padding:6px;border:1px solid rgba(255,255,255,.1);
+    }
+    .admin-close{display:none;margin-left:auto;width:34px;height:34px;border-radius:var(--radius-xs);background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.08);transition:all var(--t) var(--ease)}
+    .admin-close:hover{background:rgba(255,255,255,.15);color:#fff}
+    .admin-close i{font-size:.9rem}
+    .sidebar-divider{height:1px;background:rgba(255,255,255,.06);margin:8px 20px 16px}
+    .sidebar-label{padding:0 20px 8px;font-size:.65rem;letter-spacing:.12em;color:rgba(255,255,255,.25);text-transform:uppercase;font-weight:600}
+    .admin-nav{display:flex;flex-direction:column;gap:2px;padding:0 12px;flex:1}
+    .admin-link{
+      display:flex;align-items:center;gap:11px;width:100%;padding:10px 12px;border-radius:var(--radius-sm);
+      color:rgba(255,255,255,.55);background:transparent;text-align:left;
+      font-size:.875rem;font-weight:400;
+      transition:all var(--t) var(--ease);position:relative;
+    }
+    .admin-link i{font-size:.9rem;width:18px;text-align:center;flex-shrink:0;opacity:.8;transition:opacity var(--t) var(--ease)}
+    .admin-link:hover{background:var(--sidebar-hover);color:rgba(255,255,255,.9)}
+    .admin-link:hover i{opacity:1}
+    .admin-link.active{
+      background:var(--sidebar-active);color:#fff;font-weight:500;
+    }
+    .admin-link.active i{opacity:1}
+    .admin-link.active::before{
+      content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+      width:3px;height:18px;background:var(--sidebar-accent);border-radius:0 3px 3px 0;
+    }
+    .sidebar-bottom{padding:12px;border-top:1px solid rgba(255,255,255,.06);margin-top:auto}
+    .sidebar-bottom .admin-link{color:rgba(255,255,255,.4)}
+    .sidebar-bottom .admin-link:hover{color:rgba(255,255,255,.8)}
+
+    /* ── Main ── */
+    .admin-main{min-width:0;display:flex;flex-direction:column}
+
+    /* ── Header ── */
+    .admin-header{
+      min-height:66px;display:flex;align-items:center;justify-content:space-between;gap:14px;
+      padding:12px 28px;background:var(--header-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;
+    }
+    .header-left{display:flex;align-items:center;gap:12px}
+    .admin-header h2{font-family:var(--font-display);font-size:1.55rem;letter-spacing:-.02em;font-weight:400;text-transform:capitalize}
+    .admin-actions{display:flex;align-items:center;gap:8px;position:relative}
+    .seller-chip{
+      display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;
+      background:var(--bg-soft);border:1px solid var(--border-md);border-radius:var(--radius-md);
+    }
+    .seller-avatar{
+      width:28px;height:28px;border-radius:var(--radius-xs);
+      background:var(--rose-100);color:var(--rose-600);
+      display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:600;
+    }
+    .seller-chip strong{font-size:.83rem;font-weight:600;color:var(--ink)}
+
+    /* ── Notifications ── */
+    .notification-wrap{position:relative}
+    .bell-count{
+      position:absolute;top:-3px;right:-3px;min-width:16px;height:16px;border-radius:99px;
+      background:var(--rose-500);color:#fff;font-size:.65rem;font-weight:700;
+      display:flex;align-items:center;justify-content:center;padding:0 4px;
+      border:2px solid var(--bg);
+    }
+    .notification-panel{
+      position:absolute;right:0;top:calc(100% + 10px);
+      width:min(380px,calc(100vw - 24px));max-height:440px;overflow-y:auto;
+      background:var(--bg-card);border:1px solid var(--border-md);border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-lg);padding:8px;z-index:50;display:none;
+      animation:panelIn var(--t-slow) var(--ease-out);
+    }
+    @keyframes panelIn{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
+    .notification-panel.active{display:flex;flex-direction:column;gap:4px}
+
+    /* ── Content ── */
+    .admin-content{padding:28px;flex:1}
+    .admin-page{display:none}
+    .admin-page.active{display:block;animation:pageIn var(--t-slow) var(--ease-out)}
+    @keyframes pageIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+    /* ── Overlay ── */
+    .admin-overlay{
+      position:fixed;inset:0;background:rgba(10,7,4,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+      z-index:1190;opacity:0;visibility:hidden;transition:all var(--t-slow) var(--ease);
+    }
+    .admin-overlay.active{opacity:1;visibility:visible}
+
+    /* ── Stats Grid ── */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .stat-card{
+      padding:22px;display:flex;flex-direction:column;gap:16px;
+      position:relative;overflow:hidden;
+    }
+    .stat-card::before{
+      content:'';position:absolute;right:-20px;top:-20px;width:100px;height:100px;
+      border-radius:50%;opacity:.06;background:var(--accent);
+      transition:opacity var(--t) var(--ease);
+    }
+    .stat-card:hover::before{opacity:.12}
+    .stat-top{display:flex;align-items:flex-start;justify-content:space-between}
+    .stat-icon{
+      width:44px;height:44px;display:grid;place-items:center;border-radius:var(--radius-sm);
+      flex-shrink:0;font-size:.95rem;
+    }
+    .stat-icon.rose{background:rgba(232,66,101,.12);color:var(--rose-500)}
+    .stat-icon.emerald{background:rgba(14,164,122,.12);color:var(--emerald)}
+    .stat-icon.amber{background:rgba(217,130,10,.12);color:var(--amber)}
+    .stat-icon.sky{background:rgba(15,122,196,.12);color:var(--sky)}
+    .stat-label{font-size:.8rem;color:var(--muted);font-weight:500;letter-spacing:.02em;text-transform:uppercase;margin-bottom:4px}
+    .stat-value{font-family:var(--font-display);font-size:1.9rem;letter-spacing:-.02em;font-weight:400;line-height:1}
+    .stat-badge{display:inline-flex;align-items:center;gap:4px;font-size:.75rem;font-weight:500;color:var(--emerald);margin-top:6px}
+
+    /* ── Dashboard Grid ── */
+    .admin-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+
+    /* ── Toolbar ── */
+    .toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+    .toolbar-left{display:flex;flex-direction:column;gap:2px}
+    .toolbar h3{font-family:var(--font-display);font-size:1.7rem;letter-spacing:-.02em;font-weight:400}
+    .toolbar-sub{font-size:.82rem;color:var(--muted);font-weight:400}
+    .toolbar-actions{display:flex;align-items:center;gap:8px}
+
+    /* ── Tables ── */
+    .table-wrap{overflow-x:auto;border-radius:var(--radius-lg);overflow:hidden}
+    table{width:100%;min-width:760px;border-collapse:collapse}
+    thead{background:var(--bg-soft)}
+    th{padding:12px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;font-weight:600;white-space:nowrap}
+    td{padding:13px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle;font-size:.875rem}
+    tr:last-child td{border-bottom:none}
+    tbody tr{transition:background var(--t) var(--ease)}
+    tbody tr:hover{background:var(--bg-soft)}
+    .table-img{width:48px;height:48px;border-radius:var(--radius-sm);object-fit:cover;background:var(--bg-soft);border:1px solid var(--border)}
+
+    /* ── Status Badges ── */
+    .status{
+      display:inline-flex;padding:4px 10px;border-radius:99px;
+      font-size:.72rem;font-weight:600;letter-spacing:.03em;
+      background:rgba(14,164,122,.1);color:var(--emerald);
+      border:1px solid rgba(14,164,122,.15);
+    }
+    .status.off{background:rgba(217,48,37,.08);color:var(--crimson);border-color:rgba(217,48,37,.15)}
+
+    /* ── Bar Chart ── */
+    .chart-section{padding:22px}
+    .chart-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px}
+    .chart-title{font-family:var(--font-display);font-size:1.2rem;letter-spacing:-.01em;font-weight:400}
+    .bars{display:flex;align-items:flex-end;gap:10px;height:180px;padding-top:16px}
+    .bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+    .bar-fill{width:100%;min-height:6px;border-radius:5px 5px 0 0;background:var(--rose-200);position:relative;overflow:hidden;transition:height .5s var(--ease-out)}
+    .bar-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,var(--rose-500),var(--rose-300));opacity:.7}
+    .bar-label{font-size:.72rem;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}
+    .bar-value{font-size:.78rem;font-weight:600;color:var(--rose-600);margin-bottom:3px}
+
+    /* ── Activity Card ── */
+    .activity-section{padding:22px}
+    .activity-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+    .activity-item:last-child{border-bottom:none}
+    .activity-dot{width:8px;height:8px;border-radius:50%;background:var(--rose-400);flex-shrink:0;margin-top:6px}
+    .activity-dot.neutral{background:var(--sand-400)}
+    .activity-text{font-size:.85rem;color:var(--ink-500)}
+    .activity-text strong{color:var(--ink);font-weight:600}
+    .activity-meta{font-size:.78rem;color:var(--muted);margin-top:2px}
+    .recent-order{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:10px 12px;border-radius:var(--radius-sm);
+      background:var(--bg-soft);border:1px solid var(--border);margin-top:8px;
+      font-size:.83rem;gap:8px;
+    }
+    .recent-order-id{color:var(--muted);font-size:.78rem}
+    .recent-order-total{font-weight:600;color:var(--rose-600)}
+
+    /* ── Form Grid ── */
+    .admin-form{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+    .admin-form .full{grid-column:1 / -1}
+    .form-section-title{font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;grid-column:1/-1;padding-top:8px;border-top:1px solid var(--border);margin-top:4px}
+
+    /* ── Preview Grid ── */
+    .preview-grid{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .preview-grid img,.preview-grid video{
+      width:84px;height:84px;object-fit:cover;border-radius:var(--radius-sm);
+      background:var(--bg-soft);border:1px solid var(--border);
+    }
+
+    /* ── Comments ── */
+    .comment{
+      padding:18px;border-radius:var(--radius-md);
+      background:var(--bg-soft);border:1px solid var(--border);
+      transition:all var(--t) var(--ease);
+    }
+    .comment:hover{border-color:var(--border-md);box-shadow:var(--shadow-sm)}
+    .comment-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px}
+    .comment-author{font-weight:600;font-size:.9rem}
+    .comment-product{font-size:.78rem;color:var(--muted);margin-top:2px}
+    .comment-text{font-size:.875rem;color:var(--ink-500);line-height:1.65;margin-bottom:12px}
+    .admin-response{
+      margin-top:12px;padding:12px 14px;
+      border-left:3px solid var(--rose-300);background:var(--bg-card);
+      border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+    }
+    .admin-response strong{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:6px}
+    .comment-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .media-id{font-size:.72rem;color:var(--muted);word-break:break-all;font-family:monospace;opacity:.7}
+
+    /* ── Empty State ── */
+    .empty-state{
+      padding:48px 24px;text-align:center;color:var(--muted);
+      display:flex;flex-direction:column;align-items:center;gap:10px;
+    }
+    .empty-state i{font-size:2rem;opacity:.3}
+    .empty-state p{font-size:.9rem}
+
+    /* ── Modal ── */
+    .modal{
+      position:fixed;inset:0;display:grid;place-items:center;padding:22px;
+      background:rgba(10,7,4,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+      z-index:3000;opacity:0;visibility:hidden;transition:all var(--t-slow) var(--ease);
+    }
+    .modal.active{opacity:1;visibility:visible}
+    .modal-card{
+      width:min(720px,100%);max-height:88vh;overflow-y:auto;
+      background:var(--bg-card);border:1px solid var(--border-md);
+      border-radius:var(--radius-xl);padding:32px;position:relative;
+      box-shadow:var(--shadow-lg);
+      animation:modalIn var(--t-slow) var(--ease-spring);
+    }
+    .modal.active .modal-card{animation:modalIn var(--t-slow) var(--ease-spring)}
+    @keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:none}}
+    .modal-close{position:absolute;right:20px;top:20px}
+
+    /* ── Toast ── */
+    .toast{
+      position:fixed;left:50%;bottom:28px;transform:translate(-50%,80px);
+      z-index:4000;background:var(--ink-900);color:#fff;
+      padding:12px 22px;border-radius:var(--radius-md);
+      box-shadow:0 8px 32px rgba(0,0,0,.3);opacity:0;
+      transition:all .3s var(--ease-spring);max-width:min(480px,92vw);text-align:center;
+      font-size:.875rem;font-weight:500;border:1px solid rgba(255,255,255,.1);
+    }
+    [data-theme="dark"] .toast{background:var(--sand-100);color:var(--ink-900)}
+    .toast.show{transform:translate(-50%,0);opacity:1}
+
+    /* ── Select styling ── */
+    select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px!important}
+
+    /* ── Notification item ── */
+    .notif-item{
+      display:flex;align-items:flex-start;gap:12px;padding:12px;
+      border-radius:var(--radius-sm);background:var(--bg-soft);
+      border:1px solid var(--border);cursor:pointer;text-align:left;
+      width:100%;transition:all var(--t) var(--ease);
+    }
+    .notif-item:hover{border-color:var(--rose-200);background:var(--rose-50)}
+    [data-theme="dark"] .notif-item:hover{background:rgba(232,66,101,.08)}
+    .notif-icon{width:34px;height:34px;border-radius:var(--radius-xs);background:rgba(232,66,101,.12);color:var(--rose-500);display:grid;place-items:center;flex-shrink:0}
+    .notif-content strong{font-size:.85rem;font-weight:600;display:block}
+    .notif-content p{font-size:.8rem;color:var(--muted);margin-top:2px}
+
+    /* ── Config ── */
+    .config-card{padding:24px}
+    .config-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+
+    /* ── Order State Select ── */
+    td select{
+      min-height:36px;padding:6px 32px 6px 10px;font-size:.8rem;
+      border-radius:var(--radius-sm);border:1.5px solid var(--border-md);
+      background:var(--bg-soft);color:var(--ink);
+    }
+    td select:focus{border-color:var(--rose-500);box-shadow:0 0 0 3px rgba(232,66,101,.12);outline:none}
+
+    /* ── Star Colors ── */
+    .star-filled{color:var(--amber)}
+    .star-empty{color:var(--sand-300)}
+
+    /* ── Responsive ── */
+    @media(max-width:1200px){
+      .stats-grid{grid-template-columns:repeat(2,1fr)}
+      .admin-grid-2{grid-template-columns:1fr}
+    }
+    @media(max-width:860px){
+      .admin-layout{grid-template-columns:1fr}
+      .admin-sidebar{
+        position:fixed;inset:0 auto 0 0;width:min(280px,84vw);
+        transform:translateX(-100%);transition:transform var(--t-slow) var(--ease-out);
+        z-index:1200;
+      }
+      .admin-sidebar.active{transform:translateX(0)}
+      .admin-close{display:inline-flex}
+      .admin-header{padding:12px 16px}
+      .admin-header h2{font-size:1.25rem}
+      .admin-content{padding:16px}
+      .seller-chip strong{display:none}
+      .admin-form{grid-template-columns:1fr}
+      table{min-width:640px}
+    }
+    @media(max-width:580px){
+      .stats-grid{grid-template-columns:1fr}
+      .admin-content{padding:12px}
+      .card,.comment{border-radius:var(--radius-md)}
+      .toolbar{gap:10px}
+      .toolbar-actions .btn{width:100%}
+      .toolbar{flex-direction:column;align-items:stretch}
+      .toolbar-actions{flex-direction:column}
+      .notification-panel{right:-52px}
+      .config-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-top">
+        <div class="admin-brand">
+          <img src="../img/flores.png" alt="Luz Gomez">
+          <span class="brand-fallback">Luz Gomez</span>
+          <button class="admin-close" id="adminClose" aria-label="Cerrar menu"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-label">Menu principal</div>
+      <nav class="admin-nav" id="sidebarMainNav">
+        <button class="admin-link active" data-admin="dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
+        <button class="admin-link" data-admin="productos-admin"><i class="fa-solid fa-box"></i> Productos</button>
+        <button class="admin-link" data-admin="categorias-admin"><i class="fa-solid fa-layer-group"></i> Categorias</button>
+        <button class="admin-link" data-admin="promociones-admin"><i class="fa-solid fa-tags"></i> Promociones</button>
+        <button class="admin-link" data-admin="testimonios-admin"><i class="fa-solid fa-star"></i> Testimonios</button>
+        <button class="admin-link" data-admin="galeria-admin"><i class="fa-solid fa-images"></i> Galeria</button>
+        <button class="admin-link" data-admin="pedidos-admin"><i class="fa-solid fa-receipt"></i> Pedidos</button>
+        <button class="admin-link" data-admin="comentarios-admin"><i class="fa-solid fa-comments"></i> Comentarios</button>
+        <button class="admin-link" data-admin="config-admin"><i class="fa-solid fa-gear"></i> Configuracion</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <nav style="display:flex;flex-direction:column;gap:2px">
+          <button class="admin-link" id="goStore"><i class="fa-solid fa-store"></i> Ver tienda</button>
+          <button class="admin-link" id="adminLogout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesion</button>
+        </nav>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="icon-btn" id="adminMenu" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+          <h2 id="adminTitle">Dashboard</h2>
+        </div>
+        <div class="admin-actions">
+          <div class="notification-wrap">
+            <button class="icon-btn" id="notificationBell" aria-label="Notificaciones">
+              <i class="fa-solid fa-bell"></i>
+              <span class="bell-count hidden" id="notificationCount">0</span>
+            </button>
+            <div class="notification-panel" id="notificationPanel"></div>
+          </div>
+          <button class="icon-btn" id="adminTheme" aria-label="Cambiar tema"><i class="fa-solid fa-moon"></i></button>
+          <div class="seller-chip">
+            <div class="seller-avatar" id="sellerAvatar">VN</div>
+            <strong id="sellerName">Vendedor</strong>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <section id="admin-dashboard" class="admin-page active"></section>
+        <section id="admin-productos-admin" class="admin-page"></section>
+        <section id="admin-form-producto" class="admin-page"></section>
+        <section id="admin-categorias-admin" class="admin-page"></section>
+        <section id="admin-promociones-admin" class="admin-page"></section>
+        <section id="admin-testimonios-admin" class="admin-page"></section>
+        <section id="admin-galeria-admin" class="admin-page"></section>
+        <section id="admin-pedidos-admin" class="admin-page"></section>
+        <section id="admin-comentarios-admin" class="admin-page"></section>
+        <section id="admin-config-admin" class="admin-page"></section>
+      </div>
+    </main>
+
+    <div class="admin-overlay" id="adminOverlay"></div>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-card">
+      <button class="icon-btn modal-close" id="modalClose"><i class="fa-solid fa-times"></i></button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const BASE_URL = 'https://script.google.com/macros/s/AKfycbyI1pONadMWJhganMWt4kah4bB4jNHgraJG8S1A_uAGnRHiGdjL_U9tdDhpCEbKNqQ/exec';
+    const LOGO_SRC = '../img/flores.png';
+    const state = {
+      config: { moneda: '$' },
+      session: null,
+      cache: {},
+      categorias: [],
+      adminProducts: [],
+      editingProductId: null,
+      notificationTimer: null,
+      unreadComments: []
+    };
+
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+    const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+    const truthy = value => value === true || String(value).toLowerCase() === 'true';
+    const moneyValue = n => Number(n || 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const money = n => `${state.config.moneda || '$'} ${moneyValue(n)}`;
+    const thumbUrl = (id, w = 500) => id ? `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w${w}` : LOGO_SRC;
+
+    document.addEventListener('DOMContentLoaded', initSellerDashboard);
+
+    async function initSellerDashboard() {
+      setupTheme();
+      bindEvents();
+      const raw = localStorage.getItem('lg_session');
+      if (!raw) return redirectLogin();
+      try { state.session = JSON.parse(raw); } catch { return redirectLogin(); }
+      const valid = await apiCall('validateSession', { token: state.session.token });
+      if (!valid.success || valid.data?.tipo !== 'vendedor') return redirectLogin();
+      state.session = { ...state.session, ...valid.data, token: state.session.token };
+      localStorage.setItem('lg_session', JSON.stringify(state.session));
+      await loadConfig();
+      openDashboard();
+    }
+
+    function bindEvents() {
+      $('#adminMenu').addEventListener('click', openAdminMenu);
+      $('#adminClose').addEventListener('click', closeAdminMenu);
+      $('#adminOverlay').addEventListener('click', closeAdminMenu);
+      $('#adminLogout').addEventListener('click', logout);
+      $('#goStore').addEventListener('click', () => window.location.href = 'tienda.html');
+      $('#adminTheme').addEventListener('click', toggleTheme);
+      $('#notificationBell').addEventListener('click', toggleNotifications);
+      $('#modalClose').addEventListener('click', closeModal);
+      $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+      $$('.admin-link[data-admin]').forEach(btn => btn.addEventListener('click', () => openAdminPage(btn.dataset.admin)));
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAdminMenu(); closeModal(); } });
+      document.addEventListener('click', e => {
+        const panel = $('#notificationPanel');
+        if (panel.classList.contains('active') && !panel.contains(e.target) && !$('#notificationBell').contains(e.target)) {
+          panel.classList.remove('active');
+        }
+      });
+    }
+
+    async function apiCall(action, params = {}) {
+      try {
+        const response = await fetch(BASE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action, params })
+        });
+        if (!response.ok) throw new Error('Sin conexion');
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || 'Error al cargar datos');
+        normalizeApiResult(action, result);
+        return result;
+      } catch (error) {
+        showToast(error.message || 'Error de red');
+        return { success: false, data: null, error: error.message };
+      }
+    }
+
+    function normalizeApiResult(action, result) {
+      if (action === 'getProductos' && result.data) {
+        const productos = result.data.productos || result.data.items || [];
+        productos.forEach(normalizeProduct);
+        result.data.items = productos;
+      }
+      if (action === 'getProductoById' && result.data) normalizeProduct(result.data);
+    }
+
+    function normalizeProduct(product) {
+      product.thumbnail_url = product.thumbnail_url || product.imagen_url || thumbUrl(product.imagen_drive_id, 500);
+      product.imagen_url = product.imagen_url || thumbUrl(product.imagen_drive_id, 800);
+      product.imagenes_extra_urls = product.imagenes_extra_urls || product.imagenes_extra || [];
+      return product;
+    }
+
+    function cached(key, loader) {
+      if (state.cache[key]) return Promise.resolve(state.cache[key]);
+      return loader().then(result => {
+        if (result.success) state.cache[key] = result;
+        return result;
+      });
+    }
+
+    async function loadConfig() {
+      const result = await cached('config', () => apiCall('getConfig'));
+      if (!result.success) return;
+      state.config = result.data || {};
+      if (!state.config.moneda || String(state.config.moneda).charAt(0).toUpperCase() === 'S') state.config.moneda = '$';
+    }
+
+    async function openDashboard() {
+      const nombre = state.session?.nombre || 'Vendedor';
+      $('#sellerName').textContent = nombre;
+      const initials = nombre.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+      $('#sellerAvatar').textContent = initials || 'VN';
+      startNotifications();
+      openAdminPage('dashboard');
+    }
+
+    function openAdminMenu() {
+      $('#adminSidebar').classList.add('active');
+      $('#adminOverlay').classList.add('active');
+      document.body.classList.add('no-scroll');
+    }
+
+    function closeAdminMenu() {
+      $('#adminSidebar').classList.remove('active');
+      $('#adminOverlay').classList.remove('active');
+      document.body.classList.remove('no-scroll');
+    }
+
+    function startNotifications() {
+      loadUnreadComments();
+      clearInterval(state.notificationTimer);
+      state.notificationTimer = setInterval(loadUnreadComments, 30000);
+    }
+
+    async function loadUnreadComments() {
+      const result = await apiCall('getNotificacionesVendedor', { token: state.session.token });
+      if (!result.success) return;
+      state.unreadComments = result.data || [];
+      $('#notificationCount').textContent = state.unreadComments.length;
+      $('#notificationCount').classList.toggle('hidden', !state.unreadComments.length);
+      renderNotificationPanel();
+    }
+
+    async function toggleNotifications() {
+      $('#notificationPanel').classList.toggle('active');
+      renderNotificationPanel();
+      if (state.unreadComments.length) {
+        await apiCall('marcarNotificacionesLeidas', { token: state.session.token });
+        state.unreadComments = [];
+        $('#notificationCount').classList.add('hidden');
+        renderNotificationPanel();
+      }
+    }
+
+    function renderNotificationPanel() {
+      const panel = $('#notificationPanel');
+      panel.innerHTML = state.unreadComments.length
+        ? state.unreadComments.map(c => `
+          <button class="notif-item" data-admin-notification="${esc(c.tipo)}">
+            <div class="notif-icon"><i class="fa-solid ${c.tipo === 'pedido' ? 'fa-receipt' : 'fa-comment'}"></i></div>
+            <div class="notif-content">
+              <strong>${esc(c.titulo || 'Notificacion')}</strong>
+              <p>${esc(c.texto || '')}</p>
+            </div>
+          </button>`).join('')
+        : '<p class="empty-state"><i class="fa-solid fa-bell-slash"></i><span>No hay notificaciones nuevas</span></p>';
+      $$('[data-admin-notification]', panel).forEach(btn => btn.addEventListener('click', () => openAdminPage(btn.dataset.adminNotification === 'pedido' ? 'pedidos-admin' : 'comentarios-admin')));
+    }
+
+    async function openAdminPage(page) {
+      $$('.admin-link').forEach(b => b.classList.toggle('active', b.dataset.admin === page));
+      $$('.admin-page').forEach(p => p.classList.remove('active'));
+      $('#admin-' + page).classList.add('active');
+      const titles = {
+        'dashboard':'Dashboard','productos-admin':'Productos','categorias-admin':'Categorias',
+        'promociones-admin':'Promociones','testimonios-admin':'Testimonios','galeria-admin':'Galeria',
+        'pedidos-admin':'Pedidos','comentarios-admin':'Comentarios','config-admin':'Configuracion','form-producto':'Producto'
+      };
+      $('#adminTitle').textContent = titles[page] || page;
+      closeAdminMenu();
+      const loaders = {
+        dashboard: renderDashboard,
+        'productos-admin': renderProductsAdmin,
+        'categorias-admin': renderCategoriasAdmin,
+        'promociones-admin': renderPromocionesAdmin,
+        'testimonios-admin': renderTestimoniosAdmin,
+        'galeria-admin': renderGaleriaAdmin,
+        'pedidos-admin': renderPedidosAdmin,
+        'comentarios-admin': renderComentariosAdmin,
+        'config-admin': renderConfigAdmin
+      };
+      if (loaders[page]) await loaders[page]();
+    }
+
+    async function renderDashboard() {
+      const result = await apiCall('getDashboardStats', { token: state.session.token });
+      if (!result.success) return;
+      const s = result.data || {};
+      const bars = [
+        {label:'Pedidos', total:s.total_pedidos || 0},
+        {label:'Pendientes', total:s.pedidos_pendientes || 0},
+        {label:'Nuevos', total:s.pedidos_nuevos || 0},
+        {label:'Comentarios', total:s.comentarios_pendientes || 0}
+      ];
+      const maxVal = Math.max(...bars.map(b => b.total), 1);
+
+      $('#admin-dashboard').innerHTML = `
+        <div class="stats-grid">
+          ${statCard('fa-box','Productos',s.total_productos||0,'rose')}
+          ${statCard('fa-users','Clientes',s.total_clientes||0,'sky')}
+          ${statCard('fa-clock','Pendientes',s.pedidos_pendientes||0,'amber')}
+          ${statCard('fa-coins','Ingresos del Mes',money(s.ingresos_mes||0),'emerald')}
+        </div>
+        <div class="admin-grid-2">
+          <div class="card chart-section">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Resumen operativo</div>
+                <div class="section-desc" style="font-size:.78rem;margin-top:3px">Metricas actuales del panel</div>
+              </div>
+            </div>
+            <div class="bars">
+              ${bars.map(b => {
+                const pct = Math.max(8, Math.round((b.total / maxVal) * 160));
+                return `<div class="bar">
+                  <div class="bar-value">${b.total}</div>
+                  <div class="bar-fill" style="height:${pct}px"></div>
+                  <div class="bar-label">${esc(b.label)}</div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+          <div class="card activity-section">
+            <div class="chart-header" style="margin-bottom:4px">
+              <div>
+                <div class="chart-title">Actividad reciente</div>
+                <div class="section-desc" style="font-size:.78rem;margin-top:3px">Estado actual del negocio</div>
+              </div>
+            </div>
+            <div>
+              <div class="activity-item">
+                <div class="activity-dot"></div>
+                <div>
+                  <div class="activity-text">Productos sin stock: <strong>${s.productos_sin_stock||0}</strong></div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot"></div>
+                <div><div class="activity-text">Comentarios nuevos: <strong>${s.comentarios_pendientes||0}</strong></div></div>
+              </div>
+              <div class="activity-item" style="margin-bottom:14px">
+                <div class="activity-dot neutral"></div>
+                <div><div class="activity-text">Pedidos nuevos: <strong>${s.pedidos_nuevos||0}</strong></div></div>
+              </div>
+              <div style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Ultimos pedidos</div>
+              ${(s.ultimos_pedidos||[]).map(p=>`
+                <div class="recent-order">
+                  <span class="recent-order-id">#${esc(p.id)}</span>
+                  <span style="flex:1;padding:0 8px;font-size:.83rem">${esc(p.cliente_nombre)}</span>
+                  <span class="recent-order-total">${money(p.total)}</span>
+                </div>`).join('')||'<p class="section-desc" style="font-size:.82rem;padding:8px 0">Aun no disponible.</p>'}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function statCard(icon, label, value, color) {
+      return `<div class="stat-card card">
+        <div class="stat-top">
+          <div>
+            <div class="stat-label">${label}</div>
+            <div class="stat-value">${value}</div>
+          </div>
+          <div class="stat-icon ${color}"><i class="fa-solid ${icon}"></i></div>
+        </div>
+      </div>`;
+    }
+
+    async function renderProductsAdmin() {
+      const [products, cats] = await Promise.all([
+        apiCall('getProductos', { filters: { pagina: 1, por_pagina: 80 } }),
+        cached('categorias', () => apiCall('getCategorias'))
+      ]);
+      state.adminProducts = products.data?.items || [];
+      state.categorias = cats.data || [];
+      $('#admin-productos-admin').innerHTML = `
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <h3>Productos</h3>
+            <span class="toolbar-sub">${state.adminProducts.length} productos registrados</span>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-primary" id="newProduct"><i class="fa-solid fa-plus"></i> Nuevo Producto</button>
+          </div>
+        </div>
+        <div class="card table-wrap">
+          <table>
+            <thead><tr>
+              <th>Imagen</th><th>Nombre</th><th>Categoria</th><th>Precio</th>
+              <th>Stock</th><th>Estado</th><th>Destacado</th><th>Acciones</th>
+            </tr></thead>
+            <tbody>${state.adminProducts.length ? state.adminProducts.map(p => `
+              <tr>
+                <td><img class="table-img" src="${p.thumbnail_url||LOGO_SRC}" alt="" onerror="this.src='${LOGO_SRC}'"></td>
+                <td><strong style="font-size:.88rem">${esc(p.nombre)}</strong></td>
+                <td style="color:var(--muted);font-size:.83rem">${esc(p.categoria_nombre)}</td>
+                <td><strong style="color:var(--rose-600)">${money(p.precio)}</strong></td>
+                <td>${p.stock||0}</td>
+                <td><span class="status ${truthy(p.activo)?'':'off'}">${truthy(p.activo)?'Activo':'Inactivo'}</span></td>
+                <td>${truthy(p.destacado)?'<span class="status">Si</span>':'<span style="color:var(--muted);font-size:.83rem">No</span>'}</td>
+                <td>
+                  <div style="display:flex;gap:6px">
+                    <button class="btn btn-secondary btn-small" data-edit-product="${p.id}"><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn btn-danger btn-small" data-del-product="${p.id}"><i class="fa-solid fa-trash"></i></button>
+                  </div>
+                </td>
+              </tr>`).join('') : `<tr><td colspan="8"><div class="empty-state"><i class="fa-solid fa-box-open"></i><p>Aun no hay productos registrados.</p></div></td></tr>`}
+            </tbody>
+          </table>
+        </div>`;
+      $('#newProduct').addEventListener('click', () => renderProductForm());
+      $$('[data-edit-product]').forEach(b => b.addEventListener('click', () => renderProductForm(state.adminProducts.find(p => p.id === b.dataset.editProduct))));
+      $$('[data-del-product]').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Eliminar este producto?')) return;
+        const r = await apiCall('deleteProducto', { id: b.dataset.delProduct, token: state.session.token });
+        if (r.success) renderProductsAdmin();
+      }));
+    }
+
+    function renderProductForm(product = null) {
+      state.editingProductId = product?.id || null;
+      $$('.admin-page').forEach(p => p.classList.remove('active'));
+      $('#admin-form-producto').classList.add('active');
+      $('#adminTitle').textContent = product ? 'Editar producto' : 'Nuevo producto';
+      $('#admin-form-producto').innerHTML = `
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <h3>${product ? 'Editar' : 'Crear'} Producto</h3>
+            <span class="toolbar-sub">${product ? 'Modifica los datos del producto' : 'Completa la informacion del nuevo producto'}</span>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-secondary" id="backProducts"><i class="fa-solid fa-arrow-left"></i> Volver</button>
+          </div>
+        </div>
+        <form id="productForm" class="card" style="padding:28px;" novalidate>
+          <div class="admin-form">
+            <div class="form-section-title">Informacion basica</div>
+            <div class="field"><label>Nombre</label><input name="nombre" value="${esc(product?.nombre)}" placeholder="Nombre del producto"><span class="error-text">Nombre requerido.</span></div>
+            <div class="field"><label>Categoria</label><select name="categoria_id">${state.categorias.map(c=>`<option value="${c.id}" ${product?.categoria_id===c.id?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></div>
+            <div class="field full"><label>Descripcion</label><textarea name="descripcion" placeholder="Describe el producto...">${esc(product?.descripcion)}</textarea></div>
+            <div class="form-section-title">Precios y disponibilidad</div>
+            <div class="field"><label>Precio</label><input name="precio" type="text" inputmode="decimal" value="${product?.precio?moneyValue(product.precio):''}" placeholder="0.00"><span class="error-text">Precio requerido.</span></div>
+            <div class="field"><label>Precio antiguo</label><input name="precio_antiguo" type="text" inputmode="decimal" value="${product?.precio_antiguo?moneyValue(product.precio_antiguo):''}" placeholder="0.00"></div>
+            <div class="field"><label>Stock</label><input name="stock" type="number" value="${product?.stock||0}" min="0"></div>
+            <div class="field"><label>Badge</label><select name="badge"><option value="">Ninguno</option>${['Nuevo','Mas Vendido','-20%','-30%','Oferta'].map(v=>`<option ${product?.badge===v?'selected':''}>${v}</option>`).join('')}</select></div>
+            <div class="field full" style="flex-direction:row;align-items:center;gap:12px;padding:14px;background:var(--bg-soft);border-radius:var(--radius-sm);border:1.5px solid var(--border-md)">
+              <input name="destacado" type="checkbox" ${truthy(product?.destacado)?'checked':''} style="width:18px;height:18px;min-height:unset;accent-color:var(--rose-500)">
+              <div><label style="text-transform:none;font-size:.88rem;font-weight:500;margin:0;color:var(--ink)">Producto destacado</label><p style="font-size:.78rem;color:var(--muted);margin-top:2px">Aparece en la seccion de destacados de la tienda</p></div>
+            </div>
+            <input type="hidden" name="imagen_drive_id" value="${esc(product?.imagen_drive_id)}">
+            <input type="hidden" name="imagenes_extra_ids" value="${esc(product?.imagenes_extra_ids)}">
+            <input type="hidden" name="video_drive_id" value="${esc(product?.video_drive_id)}">
+            <div class="form-section-title">Archivos multimedia</div>
+            <div class="field full"><label>Imagen principal</label><input id="mainImageInput" type="file" accept="image/*"><div class="preview-grid" id="mainPreview">${product?.imagen_url?`<img src="${product.imagen_url}" onerror="this.src='${LOGO_SRC}'">`:''}  </div></div>
+            <div class="field full"><label>Imagenes extra</label><input id="extraImagesInput" type="file" accept="image/*" multiple><div class="preview-grid" id="extraPreview">${(product?.imagenes_extra_urls||[]).map(i=>`<img src="${i.url}" onerror="this.src='${LOGO_SRC}'">`).join('')}</div></div>
+            <div class="field full"><label>Video</label><input id="videoInput" type="file" accept="video/*"><div class="preview-grid" id="videoPreview">${product?.video_url?`<video src="${product.video_url}" controls></video>`:''}</div></div>
+            <div class="full" style="padding-top:8px;border-top:1px solid var(--border)">
+              <button class="btn btn-primary" type="submit" style="min-width:180px"><i class="fa-solid fa-save"></i> Guardar producto</button>
+            </div>
+          </div>
+        </form>`;
+      $('#backProducts').addEventListener('click', () => openAdminPage('productos-admin'));
+      $('#productForm').addEventListener('submit', saveProduct);
+      $('#mainImageInput').addEventListener('change', e => previewFiles(e.target, '#mainPreview'));
+      $('#extraImagesInput').addEventListener('change', e => previewFiles(e.target, '#extraPreview'));
+      $('#videoInput').addEventListener('change', e => previewFiles(e.target, '#videoPreview'));
+    }
+
+    async function saveProduct(e) {
+      e.preventDefault();
+      const form = e.currentTarget;
+      if (!validateForm(form, ['nombre', 'precio'])) return;
+      const data = Object.fromEntries(new FormData(form));
+      data.precio = parseMoneyInput(data.precio);
+      data.precio_antiguo = parseMoneyInput(data.precio_antiguo);
+      data.destacado = form.destacado.checked;
+      const action = state.editingProductId ? 'updateProducto' : 'createProducto';
+      const params = state.editingProductId ? { id: state.editingProductId, data, token: state.session.token } : { data, token: state.session.token };
+      const result = await apiCall(action, params);
+      if (!result.success) return;
+      const productId = state.editingProductId || result.data.id;
+      await uploadProductFiles(productId);
+      state.cache = {};
+      showToast('Producto guardado exitosamente');
+      openAdminPage('productos-admin');
+    }
+
+    function uploadProductFiles(productId) {
+      const jobs = [];
+      const main = $('#mainImageInput').files[0];
+      if (main) jobs.push(uploadViaScript('uploadProductoImagenBase64', [main, productId, true, state.session.token]));
+      Array.from($('#extraImagesInput').files || []).forEach(file => jobs.push(uploadViaScript('uploadProductoImagenBase64', [file, productId, false, state.session.token])));
+      const video = $('#videoInput').files[0];
+      if (video) jobs.push(uploadViaScript('uploadProductoVideoBase64', [video, productId, state.session.token]));
+      return Promise.all(jobs);
+    }
+
+    async function renderCategoriasAdmin() { renderSimpleCrud('categorias-admin','Categorias','Categoria',['nombre','descripcion','icono','orden'],'getCategorias','createCategoria','deleteCategoria'); }
+    async function renderPromocionesAdmin() { renderSimpleCrud('promociones-admin','Promociones','Promocion',['titulo','descripcion','descuento_porcentaje','fecha_inicio','fecha_fin'],'getPromociones','createPromocion','deletePromocion'); }
+    async function renderTestimoniosAdmin() { renderSimpleCrud('testimonios-admin','Testimonios','Testimonio',['cliente_nombre','cliente_ciudad','texto','calificacion','orden'],'getTestimonios','createTestimonio','deleteTestimonio'); }
+    async function renderGaleriaAdmin() { renderSimpleCrud('galeria-admin','Galeria','Imagen',['titulo','orden'],'getGaleria','addGaleriaItem','deleteGaleriaItem'); }
+
+    async function renderSimpleCrud(page, title, singular, fields, listAction, createAction, deleteAction) {
+      const listParams = listAction === 'getPromociones' ? { token: state.session.token } : {};
+      const result = await apiCall(listAction, listParams);
+      const items = result.data || [];
+      const el = $('#admin-' + page);
+      el.innerHTML = `
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <h3>${title}</h3>
+            <span class="toolbar-sub">${items.length} registros</span>
+          </div>
+        </div>
+        <div class="card" style="padding:24px;margin-bottom:20px">
+          <div style="font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px">Agregar ${singular}</div>
+          <form class="simple-form">
+            <div class="admin-form">
+              ${fields.map(f => {
+                const isLong = f === 'descripcion' || f === 'texto';
+                const control = isLong ? `<textarea name="${f}" placeholder="${label(f)}..."></textarea>` : `<input name="${f}" placeholder="${label(f)}" ${f.includes('fecha')?'type="date"':''}>`;
+                return `<div class="field ${isLong ? 'full' : ''}"><label>${label(f)}</label>${control}</div>`;
+              }).join('')}
+              <div class="field"><label>Imagen</label><input name="file" type="file" accept="image/*"><div class="preview-grid" data-preview="image"></div></div>
+              <div class="field"><label>Video</label><input name="video" type="file" accept="video/*"><div class="preview-grid" data-preview="video"></div></div>
+              <div class="full" style="padding-top:8px;border-top:1px solid var(--border)">
+                <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Guardar ${singular}</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="card table-wrap">
+          <table>
+            <thead><tr><th>Media</th><th>Datos</th><th>IDs</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody>${items.length ? items.map(i => `
+              <tr>
+                <td>${i.video_url?`<video class="table-img" src="${i.video_url}" controls></video>`:`<img class="table-img" src="${i.imagen_url||LOGO_SRC}" alt="" onerror="this.src='${LOGO_SRC}'">`}</td>
+                <td>
+                  <strong style="font-size:.88rem">${esc(i.nombre||i.titulo||i.cliente_nombre||i.id)}</strong>
+                  <div style="font-size:.78rem;color:var(--muted);margin-top:2px">${esc(i.descripcion||i.texto||i.cliente_ciudad||'')}</div>
+                </td>
+                <td>
+                  <div class="media-id">Img: ${esc(i.imagen_drive_id||'—')}</div>
+                  <div class="media-id">Vid: ${esc(i.video_drive_id||'—')}</div>
+                </td>
+                <td><span class="status ${i.activa===false||i.activo===false?'off':''}">${i.activa===false||i.activo===false?'Inactivo':'Activo'}</span></td>
+                <td><button class="btn btn-danger btn-small" data-delete-simple="${i.id}"><i class="fa-solid fa-trash"></i></button></td>
+              </tr>`).join('') : `<tr><td colspan="5"><div class="empty-state"><i class="fa-solid fa-inbox"></i><p>Aun no hay registros.</p></div></td></tr>`}
+            </tbody>
+          </table>
+        </div>`;
+      $('input[name="file"]', el).addEventListener('change', e => previewFiles(e.target, '[data-preview="image"]'));
+      $('input[name="video"]', el).addEventListener('change', e => previewFiles(e.target, '[data-preview="video"]'));
+      $('.simple-form', el).addEventListener('submit', async e => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const data = Object.fromEntries(new FormData(form));
+        delete data.file; delete data.video;
+        const r = await apiCall(createAction, { data, token: state.session.token });
+        if (!r.success) return;
+        const file = form.file.files[0];
+        const video = form.video.files[0];
+        if (file) await uploadSimpleMedia(page, r.data.id, file, 'image');
+        if (video) await uploadSimpleMedia(page, r.data.id, video, 'video');
+        state.cache = {};
+        showToast(singular + ' guardado exitosamente');
+        renderSimpleCrud(page, title, singular, fields, listAction, createAction, deleteAction);
+      });
+      $$('[data-delete-simple]', el).forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Eliminar este registro?')) return;
+        const r = await apiCall(deleteAction, { id: b.dataset.deleteSimple, token: state.session.token });
+        if (r.success) { state.cache = {}; renderSimpleCrud(page, title, singular, fields, listAction, createAction, deleteAction); }
+      }));
+    }
+
+    function uploadSimpleMedia(page, id, file, type) {
+      const maps = {
+        image: {'categorias-admin':'uploadCategoriaImagenBase64','promociones-admin':'uploadPromocionImagenBase64','testimonios-admin':'uploadTestimonioImagenBase64','galeria-admin':'uploadGaleriaImagenBase64'},
+        video: {'categorias-admin':'uploadCategoriaVideoBase64','promociones-admin':'uploadPromocionVideoBase64','testimonios-admin':'uploadTestimonioVideoBase64','galeria-admin':'uploadGaleriaVideoBase64'}
+      };
+      return uploadViaScript(maps[type][page], [file, id, state.session.token]);
+    }
+
+    async function renderPedidosAdmin() {
+      const result = await apiCall('getPedidos', { token: state.session.token });
+      const items = result.data || [];
+      $('#admin-pedidos-admin').innerHTML = `
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <h3>Pedidos</h3>
+            <span class="toolbar-sub">${items.length} pedidos registrados</span>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-secondary btn-small" id="refreshOrders"><i class="fa-solid fa-rotate-right"></i> Refrescar</button>
+          </div>
+        </div>
+        <div class="card table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody>${items.length ? items.map(p => `
+              <tr>
+                <td style="font-family:monospace;font-size:.8rem;color:var(--muted)">#${esc(p.id)}</td>
+                <td>
+                  <strong style="font-size:.88rem">${esc(p.cliente_nombre)}</strong>
+                  <div style="font-size:.78rem;color:var(--muted)">${esc(p.cliente_telefono)}</div>
+                </td>
+                <td style="font-size:.83rem;color:var(--muted)">${formatDate(p.fecha_creacion)}</td>
+                <td><strong style="color:var(--rose-600)">${money(p.total)}</strong></td>
+                <td><select data-order-state="${p.id}">${['pendiente','confirmado','en_preparacion','enviado','entregado','cancelado'].map(s=>`<option ${p.estado===s?'selected':''}>${s}</option>`).join('')}</select></td>
+                <td><button class="btn btn-secondary btn-small" data-order-detail="${p.id}"><i class="fa-solid fa-eye"></i> Detalle</button></td>
+              </tr>`).join('') : `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-receipt"></i><p>Aun no hay pedidos.</p></div></td></tr>`}
+            </tbody>
+          </table>
+        </div>`;
+      $('#refreshOrders').addEventListener('click', renderPedidosAdmin);
+      $$('[data-order-state]').forEach(s => s.addEventListener('change', async () => {
+        const r = await apiCall('updatePedidoEstado', { id: s.dataset.orderState, estado: s.value, token: state.session.token });
+        if (r.success) showToast('Estado actualizado');
+      }));
+      $$('[data-order-detail]').forEach(b => b.addEventListener('click', () => {
+        const p = items.find(x => x.id === b.dataset.orderDetail);
+        const parsed = safeJson(p.items_json, []);
+        const lines = parsed.map(i => `<li style="padding:6px 0;border-bottom:1px solid var(--border)">${esc(i.nombre)} &times;${i.cantidad} &mdash; <strong>${money(i.subtotal)}</strong></li>`).join('');
+        openModal(`
+          <h2 style="font-family:var(--font-display);font-size:1.6rem;margin-bottom:6px">Pedido #${esc(p.id)}</h2>
+          <p style="color:var(--muted);margin-bottom:18px">${esc(p.cliente_nombre)} &bull; ${formatDate(p.fecha_creacion)}</p>
+          <ul style="list-style:none;margin-bottom:16px">${lines||'<li style="color:var(--muted)">Aun no disponible.</li>'}</ul>
+          <div style="display:flex;justify-content:space-between;padding:14px 0;border-top:2px solid var(--border);margin-top:8px">
+            <span style="font-weight:600">Total</span>
+            <strong style="color:var(--rose-600);font-size:1.1rem">${money(p.total)}</strong>
+          </div>
+          ${p.whatsapp_mensaje?`<div style="margin-top:16px;padding:14px;background:var(--bg-soft);border-radius:var(--radius-sm);font-size:.83rem;white-space:pre-wrap;color:var(--ink-500)">${esc(p.whatsapp_mensaje)}</div>`:''}
+        `);
+      }));
+    }
+
+    async function renderComentariosAdmin() {
+      const result = await apiCall('getComentariosPendientes', { token: state.session.token });
+      const items = result.data || [];
+      $('#admin-comentarios-admin').innerHTML = `
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <h3>Comentarios</h3>
+            <span class="toolbar-sub">${items.length} comentarios pendientes</span>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-secondary btn-small" id="refreshComments"><i class="fa-solid fa-rotate-right"></i> Refrescar</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          ${items.length ? items.map(c => `
+            <div class="comment">
+              <div class="comment-header">
+                <div>
+                  <div class="comment-author">${esc(c.cliente_nombre)}</div>
+                  <div class="comment-product">${esc(c.producto_nombre||'Producto')}</div>
+                </div>
+                <div style="color:var(--amber);font-size:.85rem">${stars(c.calificacion)}</div>
+              </div>
+              <div class="comment-text">${esc(c.comentario)}</div>
+              ${c.respuesta_admin?`<div class="admin-response"><strong>Respuesta actual</strong><p style="font-size:.85rem;color:var(--ink-500)">${esc(c.respuesta_admin)}</p></div>`:''}
+              <div class="field" style="margin-top:12px">
+                <label>Tu respuesta</label>
+                <textarea data-response="${esc(c.id)}" placeholder="Escribe una respuesta al cliente...">${esc(c.respuesta_admin||'')}</textarea>
+              </div>
+              <div class="comment-actions">
+                <button class="btn btn-primary btn-small" data-reply="${c.id}"><i class="fa-solid fa-reply"></i> Responder</button>
+                <button class="btn btn-danger btn-small" data-reject="${c.id}"><i class="fa-solid fa-trash"></i> Eliminar</button>
+              </div>
+            </div>`).join('') : '<div class="card"><div class="empty-state"><i class="fa-solid fa-comments"></i><p>No hay comentarios pendientes.</p></div></div>'}
+        </div>`;
+      $('#refreshComments').addEventListener('click', renderComentariosAdmin);
+      $$('[data-reply]').forEach(b => b.addEventListener('click', async () => {
+        const respuesta = $(`[data-response="${CSS.escape(b.dataset.reply)}"]`).value;
+        const r = await apiCall('responderComentario', { id: b.dataset.reply, respuesta, token: state.session.token });
+        if (r.success) renderComentariosAdmin();
+      }));
+      $$('[data-reject]').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Eliminar este comentario?')) return;
+        const r = await apiCall('rechazarComentario', { id: b.dataset.reject, token: state.session.token });
+        if (r.success) renderComentariosAdmin();
+      }));
+    }
+
+    async function renderConfigAdmin() {
+      await loadConfig();
+      const keys = Object.keys(state.config);
+      $('#admin-config-admin').innerHTML = `
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <h3>Configuracion</h3>
+            <span class="toolbar-sub">Ajustes del panel de vendedor</span>
+          </div>
+        </div>
+        <div class="card config-card">
+          <form id="configForm">
+            <div class="config-grid">
+              ${keys.length ? keys.map(k => `
+                <div class="field"><label>${label(k)}</label><input name="${k}" value="${esc(state.config[k])}" placeholder="${label(k)}"></div>
+              `).join('') : '<div class="empty-state full"><i class="fa-solid fa-gear"></i><p>Aun no hay configuraciones disponibles.</p></div>'}
+            </div>
+            ${keys.length?`<div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border)">
+              <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar configuracion</button>
+            </div>`:''}
+          </form>
+        </div>`;
+      $('#configForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const entries = Object.entries(Object.fromEntries(new FormData(e.currentTarget)));
+        for (const [clave, valor] of entries) await apiCall('updateConfig', { clave, valor, token: state.session.token });
+        state.cache = {};
+        await loadConfig();
+        showToast('Configuracion guardada exitosamente');
+      });
+    }
+
+    async function uploadViaScript(functionName, args) {
+      const fileArgs = await Promise.all(args.map(arg => arg instanceof File ? fileToPayload(arg) : arg));
+      const params = {};
+      const map = {
+        uploadProductoImagenBase64: ['fileData','productoId','esPrincipal','token'],
+        uploadProductoVideoBase64: ['fileData','productoId','token'],
+        uploadCategoriaImagenBase64: ['fileData','categoriaId','token'],
+        uploadCategoriaVideoBase64: ['fileData','categoriaId','token'],
+        uploadPromocionImagenBase64: ['fileData','promocionId','token'],
+        uploadPromocionVideoBase64: ['fileData','promocionId','token'],
+        uploadTestimonioImagenBase64: ['fileData','testimonioId','token'],
+        uploadTestimonioVideoBase64: ['fileData','testimonioId','token'],
+        uploadGaleriaImagenBase64: ['fileData','galeriaId','token'],
+        uploadGaleriaVideoBase64: ['fileData','galeriaId','token']
+      };
+      (map[functionName] || []).forEach((key, index) => params[key] = fileArgs[index]);
+      return Object.keys(params).length ? apiCall(functionName, params) : null;
+    }
+
+    function fileToPayload(file) {
+      return new Promise((resolve, reject) => {
+        if (file.type.startsWith('video') && file.size > 20 * 1024 * 1024) {
+          showToast('El video supera 20MB. Usa un archivo mas pequeno.');
+          return reject(new Error('Video demasiado grande'));
+        }
+        const reader = new FileReader();
+        reader.onload = () => resolve({ name: file.name, type: file.type, dataUrl: reader.result });
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function previewFiles(input, target) {
+      const box = $(target);
+      box.innerHTML = '';
+      Array.from(input.files || []).forEach(file => {
+        const url = URL.createObjectURL(file);
+        box.insertAdjacentHTML('beforeend', file.type.startsWith('video')
+          ? `<video src="${url}" controls></video>`
+          : `<img src="${url}" alt="">`);
+      });
+    }
+
+    function validateForm(form, names) {
+      let ok = true;
+      names.forEach(name => {
+        const input = form.elements[name];
+        const field = input?.closest('.field');
+        const invalid = !input || !String(input.value || '').trim();
+        field?.classList.toggle('error', invalid);
+        if (invalid) ok = false;
+      });
+      return ok;
+    }
+
+    function parseMoneyInput(value) {
+      const raw = String(value ?? '').trim();
+      if (!raw) return 0;
+      const cleaned = raw.replace(/[^\d.,-]/g, '');
+      const lastComma = cleaned.lastIndexOf(',');
+      const lastDot = cleaned.lastIndexOf('.');
+      if (lastComma > lastDot) return Number(cleaned.replace(/\./g, '').replace(',', '.')) || 0;
+      if (lastDot > -1 && cleaned.slice(lastDot + 1).length <= 2) return Number(cleaned.replace(/,/g, '')) || 0;
+      return Number(cleaned.replace(/[.,]/g, '')) || 0;
+    }
+
+    function stars(value) {
+      const n = Math.round(Number(value || 5));
+      return Array.from({length:5},(_,i)=>`<i class="fa-${i<n?'solid':'regular'} fa-star"></i>`).join('');
+    }
+
+    function formatDate(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-CO');
+    }
+
+    function safeJson(value, fallback) {
+      try { return JSON.parse(value || ''); } catch { return fallback; }
+    }
+
+    function openModal(html) {
+      $('#modalBody').innerHTML = html;
+      $('#modal').classList.add('active');
+    }
+
+    function closeModal() {
+      $('#modal').classList.remove('active');
+    }
+
+    function showToast(message) {
+      const t = $('#toast');
+      t.textContent = message;
+      t.classList.add('show');
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    function setupTheme() {
+      document.documentElement.setAttribute('data-theme', localStorage.getItem('lg_theme') || 'light');
+      updateThemeIcon();
+    }
+
+    function updateThemeIcon() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const icon = $('#adminTheme').querySelector('i');
+      icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+    }
+
+    function toggleTheme() {
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('lg_theme', next);
+      updateThemeIcon();
+    }
+
+    async function logout() {
+      if (state.session?.token) await apiCall('doLogout', { token: state.session.token });
+      redirectLogin();
+    }
+
+    function redirectLogin() {
+      clearInterval(state.notificationTimer);
+      localStorage.removeItem('lg_session');
+      window.location.href = '../index.html';
+    }
+
+    function label(k) {
+      return String(k).replaceAll('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+  </script>
+</body>
+</html>
