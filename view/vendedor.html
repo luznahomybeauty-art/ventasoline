@@ -428,13 +428,35 @@
     }
     [data-theme="dark"] .toast{background:var(--sand-100);color:var(--ink-900)}
     .toast.show{transform:translate(-50%,0);opacity:1}
+    .action-overlay{
+      position:fixed;inset:0;z-index:5200;display:grid;place-items:center;
+      padding:20px;background:rgba(18,12,8,.58);backdrop-filter:blur(8px);
+      opacity:0;visibility:hidden;pointer-events:none;
+      transition:opacity var(--t) var(--ease),visibility var(--t) var(--ease);
+    }
+    .action-overlay.active{opacity:1;visibility:visible;pointer-events:auto}
+    .action-card{
+      width:min(360px,100%);padding:26px 22px;border-radius:var(--radius-lg);
+      background:var(--bg-card);border:1px solid var(--border-md);
+      box-shadow:var(--shadow-lg);text-align:center;
+    }
+    .action-spinner{
+      width:46px;height:46px;margin:0 auto 16px;border-radius:50%;
+      border:3px solid rgba(232,66,101,.18);border-top-color:var(--rose-500);
+      animation:actionSpin .8s linear infinite;
+    }
+    .action-title{display:block;margin-bottom:6px;color:var(--rose-600);font-weight:700}
+    .action-message{margin:0;color:var(--muted);font-size:.9rem;line-height:1.5}
+    .btn.is-loading{opacity:.82;cursor:wait;pointer-events:none}
+    .btn.is-loading i{animation:actionSpin .8s linear infinite}
+    @keyframes actionSpin{to{transform:rotate(360deg)}}
     .slow-notice{position:fixed;right:22px;bottom:24px;width:min(390px,calc(100vw - 32px));z-index:4100;padding:16px;border-radius:var(--radius-md);background:rgba(53,37,28,.96);color:#fff;border:1px solid rgba(212,165,116,.32);box-shadow:var(--shadow-lg);backdrop-filter:blur(18px);opacity:0;visibility:hidden;transform:translate3d(0,18px,0);transition:opacity .24s var(--ease),transform .24s var(--ease),visibility .24s var(--ease)}
     .slow-notice.show{opacity:1;visibility:visible;transform:translate3d(0,0,0)}
     .slow-notice strong{display:block;margin-bottom:5px;color:var(--gold);font-size:.94rem}
     .slow-notice p{font-size:.84rem;line-height:1.45;margin-bottom:12px;color:rgba(255,255,255,.82)}
     .slow-notice-actions{display:flex;gap:8px;flex-wrap:wrap}
     .slow-notice-actions button{min-height:36px;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);color:#fff;font-size:.78rem;font-weight:700}
-    .slow-notice-actions button:first-child{background:var(--gold);color:var(--ink-900);border-color:transparent}
+    .slow-notice-actions button{background:linear-gradient(135deg, var(--rose-400), var(--rose-500));color:#fff;border-color:transparent;box-shadow:0 14px 30px rgba(232,66,101,.18)}
     @media(max-width:540px){.slow-notice{left:14px;right:14px;bottom:14px;width:auto}}
 
     /* ── Select styling ── */
@@ -604,13 +626,19 @@
   </div>
   <div id="slowNotice" class="slow-notice" role="status" aria-live="polite">
     <strong>El panel puede tardar unos segundos.</strong>
-    <p>Google a veces responde lento. Evita tocar varias veces el mismo botón; si se queda cargando, recarga sin cerrar tu sesión.</p>
+    <p>Google a veces responde lento. Evita tocar varias veces el mismo boton. Si no ves cambios, usa el boton de recargar que esta en la parte superior de la pagina. Da click en Entendido si ya leiste este aviso.</p>
     <div class="slow-notice-actions">
-      <button type="button" data-slow-reload>Recargar página</button>
       <button type="button" data-slow-dismiss>Entendido</button>
     </div>
   </div>
   <div id="toast" class="toast"></div>
+  <div id="actionOverlay" class="action-overlay" role="status" aria-live="polite" aria-hidden="true">
+    <div class="action-card">
+      <div class="action-spinner" aria-hidden="true"></div>
+      <strong class="action-title">Procesando</strong>
+      <p class="action-message" id="actionOverlayMessage">Un momento...</p>
+    </div>
+  </div>
 
   <script>
     const BASE_URL = 'https://script.google.com/macros/s/AKfycbyI1pONadMWJhganMWt4kah4bB4jNHgraJG8S1A_uAGnRHiGdjL_U9tdDhpCEbKNqQ/exec';
@@ -662,7 +690,7 @@
       $('#notificationBell').addEventListener('click', toggleNotifications);
       $('#modalClose').addEventListener('click', closeModal);
       $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
-      $$('.admin-link[data-admin]').forEach(btn => btn.addEventListener('click', () => openAdminPage(btn.dataset.admin)));
+      $$('.admin-link[data-admin]').forEach(btn => btn.addEventListener('click', () => navigateAdminPage(btn.dataset.admin, btn)));
       document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAdminMenu(); closeModal(); } });
       document.addEventListener('click', e => {
         const panel = $('#notificationPanel');
@@ -684,7 +712,6 @@
         notice.classList.add('show');
         sessionStorage.setItem(storageKey, String(Date.now()));
       };
-      $('[data-slow-reload]', notice)?.addEventListener('click', () => window.location.reload());
       $('[data-slow-dismiss]', notice)?.addEventListener('click', () => notice.classList.remove('show'));
       setTimeout(show, 12000);
       setInterval(show, intervalMs);
@@ -798,7 +825,26 @@
             </div>
           </button>`).join('')
         : '<p class="empty-state"><i class="fa-solid fa-bell-slash"></i><span>No hay notificaciones nuevas</span></p>';
-      $$('[data-admin-notification]', panel).forEach(btn => btn.addEventListener('click', () => openAdminPage(btn.dataset.adminNotification === 'pedido' ? 'pedidos-admin' : 'comentarios-admin')));
+      $$('[data-admin-notification]', panel).forEach(btn => btn.addEventListener('click', () => navigateAdminPage(btn.dataset.adminNotification === 'pedido' ? 'pedidos-admin' : 'comentarios-admin', btn)));
+    }
+
+    function adminLoadingText(page) {
+      const names = {
+        dashboard: 'dashboard',
+        'productos-admin': 'productos',
+        'categorias-admin': 'categorias',
+        'promociones-admin': 'promociones',
+        'testimonios-admin': 'testimonios',
+        'galeria-admin': 'galeria',
+        'pedidos-admin': 'pedidos',
+        'comentarios-admin': 'comentarios',
+        'config-admin': 'configuracion'
+      };
+      return `Cargando ${names[page] || 'seccion'}...`;
+    }
+
+    async function navigateAdminPage(page, trigger) {
+      return withBusy(trigger || document.body, adminLoadingText(page), () => openAdminPage(page));
     }
 
     async function openAdminPage(page) {
@@ -1039,7 +1085,7 @@
             </div>
           </div>
         </form>`;
-      $('#backProducts').addEventListener('click', () => openAdminPage('productos-admin'));
+      $('#backProducts').addEventListener('click', () => navigateAdminPage('productos-admin', $('#backProducts')));
       $('#productForm').addEventListener('submit', saveProduct);
       $('#mainImageInput').addEventListener('change', e => previewFiles(e.target, '#mainPreview'));
       $('#extraImagesInput').addEventListener('change', e => previewFiles(e.target, '#extraPreview'));
@@ -1050,19 +1096,23 @@
       e.preventDefault();
       const form = e.currentTarget;
       if (!validateForm(form, ['nombre', 'precio'])) return;
-      const data = Object.fromEntries(new FormData(form));
-      data.precio = parseMoneyInput(data.precio);
-      data.precio_antiguo = parseMoneyInput(data.precio_antiguo);
-      data.destacado = form.destacado.checked;
-      const action = state.editingProductId ? 'updateProducto' : 'createProducto';
-      const params = state.editingProductId ? { id: state.editingProductId, data, token: state.session.token } : { data, token: state.session.token };
-      const result = await apiCall(action, params);
-      if (!result.success) return;
-      const productId = state.editingProductId || result.data.id;
-      await uploadProductFiles(productId);
-      state.cache = {};
-      showToast('Producto guardado exitosamente');
-      openAdminPage('productos-admin');
+      await withBusy(form, 'Guardando producto...', async () => {
+        const data = Object.fromEntries(new FormData(form));
+        data.precio = parseMoneyInput(data.precio);
+        data.precio_antiguo = parseMoneyInput(data.precio_antiguo);
+        data.destacado = form.destacado.checked;
+        const action = state.editingProductId ? 'updateProducto' : 'createProducto';
+        const params = state.editingProductId ? { id: state.editingProductId, data, token: state.session.token } : { data, token: state.session.token };
+        const result = await apiCall(action, params);
+        if (!result.success) return;
+        const productId = state.editingProductId || result.data.id;
+        setActionMessage('Subiendo imagenes y video...');
+        await uploadProductFiles(productId);
+        state.cache = {};
+        showToast('Producto guardado exitosamente');
+        setActionMessage('Actualizando listado...');
+        await openAdminPage('productos-admin');
+      });
     }
 
     function uploadProductFiles(productId) {
@@ -1134,17 +1184,21 @@
       $('.simple-form', el).addEventListener('submit', async e => {
         e.preventDefault();
         const form = e.currentTarget;
-        const data = Object.fromEntries(new FormData(form));
-        delete data.file; delete data.video;
-        const r = await apiCall(createAction, { data, token: state.session.token });
-        if (!r.success) return;
-        const file = form.file.files[0];
-        const video = form.video.files[0];
-        if (file) await uploadSimpleMedia(page, r.data.id, file, 'image');
-        if (video) await uploadSimpleMedia(page, r.data.id, video, 'video');
-        state.cache = {};
-        showToast(singular + ' guardado exitosamente');
-        renderSimpleCrud(page, title, singular, fields, listAction, createAction, deleteAction);
+        await withBusy(form, `Guardando ${singular.toLowerCase()}...`, async () => {
+          const data = Object.fromEntries(new FormData(form));
+          delete data.file; delete data.video;
+          const r = await apiCall(createAction, { data, token: state.session.token });
+          if (!r.success) return;
+          const file = form.file.files[0];
+          const video = form.video.files[0];
+          if (file || video) setActionMessage('Subiendo archivos...');
+          if (file) await uploadSimpleMedia(page, r.data.id, file, 'image');
+          if (video) await uploadSimpleMedia(page, r.data.id, video, 'video');
+          state.cache = {};
+          showToast(singular + ' guardado exitosamente');
+          setActionMessage('Actualizando listado...');
+          await renderSimpleCrud(page, title, singular, fields, listAction, createAction, deleteAction);
+        });
       });
       $$('[data-delete-simple]', el).forEach(b => b.addEventListener('click', async () => {
         if (!confirm('Eliminar este registro?')) return;
@@ -1390,6 +1444,48 @@
       t.classList.add('show');
       clearTimeout(showToast.timer);
       showToast.timer = setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    function setActionMessage(message) {
+      const msg = $('#actionOverlayMessage');
+      if (msg) msg.textContent = message || 'Un momento...';
+    }
+
+    function setActionOverlay(active, message) {
+      const overlay = $('#actionOverlay');
+      if (!overlay) return;
+      if (message) setActionMessage(message);
+      overlay.classList.toggle('active', active);
+      overlay.setAttribute('aria-hidden', active ? 'false' : 'true');
+    }
+
+    async function withBusy(target, message, task) {
+      const button = target?.matches?.('button') ? target : target?.querySelector?.('button[type="submit"]');
+      if (target?.dataset.busy === 'true' || button?.dataset.busy === 'true') return null;
+      const originalHtml = button?.innerHTML;
+      if (target?.dataset) target.dataset.busy = 'true';
+      if (button) {
+        button.dataset.busy = 'true';
+        button.disabled = true;
+        button.classList.add('is-loading');
+        button.innerHTML = '<i class="fa-solid fa-spinner"></i> Procesando...';
+      }
+      setActionOverlay(true, message);
+      try {
+        return await task();
+      } catch (error) {
+        showToast(error.message || 'No se pudo completar la accion');
+        return null;
+      } finally {
+        setActionOverlay(false);
+        if (button) {
+          button.disabled = false;
+          button.classList.remove('is-loading');
+          if (originalHtml) button.innerHTML = originalHtml;
+          delete button.dataset.busy;
+        }
+        if (target?.dataset) delete target.dataset.busy;
+      }
     }
 
     function setupTheme() {

@@ -491,13 +491,22 @@
     ═══════════════════════════════════════ */
     .toast { position: fixed; left: 50%; bottom: 32px; transform: translate(-50%, 90px); z-index: 4000; background: rgba(13,11,15,0.92); color: var(--cream); padding: 14px 24px; border-radius: var(--radius-full); box-shadow: var(--shadow-deep); opacity: 0; transition: var(--transition); max-width: min(520px, 90vw); text-align: center; font-size: 0.9rem; border: 1px solid rgba(201,168,76,0.20); backdrop-filter: blur(12px); }
     .toast.show { transform: translate(-50%, 0); opacity: 1; }
+    .action-overlay { position: fixed; inset: 0; z-index: 5200; display: grid; place-items: center; padding: 20px; background: rgba(8,6,9,0.62); backdrop-filter: blur(8px); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.22s ease, visibility 0.22s ease; }
+    .action-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
+    .action-card { width: min(360px, 100%); padding: 26px 22px; border-radius: var(--radius-lg); background: rgba(20,14,28,0.96); border: 1px solid rgba(255,226,138,0.26); box-shadow: var(--shadow-deep); color: var(--cream); text-align: center; }
+    .action-spinner { width: 46px; height: 46px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid rgba(255,226,138,0.22); border-top-color: var(--gold); animation: actionSpin 0.8s linear infinite; }
+    .action-title { display: block; margin-bottom: 6px; color: var(--gold-light); font-weight: 700; }
+    .action-message { margin: 0; color: rgba(248,242,232,0.76); font-size: 0.9rem; line-height: 1.5; }
+    .btn.is-loading { opacity: 0.82; cursor: wait; pointer-events: none; }
+    .btn.is-loading i { animation: actionSpin 0.8s linear infinite; }
+    @keyframes actionSpin { to { transform: rotate(360deg); } }
     .slow-notice { position: fixed; right: 22px; bottom: 24px; width: min(390px, calc(100vw - 32px)); z-index: 4100; padding: 16px; border-radius: var(--radius); background: rgba(16,10,22,0.94); color: var(--cream); border: 1px solid rgba(255,226,138,0.28); box-shadow: var(--shadow-deep); backdrop-filter: blur(18px); opacity: 0; visibility: hidden; transform: translate3d(0, 18px, 0); transition: opacity 0.24s ease, transform 0.24s ease, visibility 0.24s ease; }
     .slow-notice.show { opacity: 1; visibility: visible; transform: translate3d(0, 0, 0); }
     .slow-notice strong { display: block; margin-bottom: 5px; font-size: 0.94rem; color: var(--gold-light); }
     .slow-notice p { color: var(--text-secondary); font-size: 0.84rem; line-height: 1.45; margin-bottom: 12px; }
     .slow-notice-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .slow-notice-actions button { min-height: 36px; padding: 8px 12px; border-radius: var(--radius-full); color: var(--cream); border: 1px solid rgba(255,226,138,0.24); background: rgba(255,248,236,0.08); font-size: 0.78rem; font-weight: 700; }
-    .slow-notice-actions button:first-child { background: var(--grad-gold); color: var(--noir); border-color: transparent; }
+    .slow-notice-actions button { background: var(--grad-gold); color: var(--noir); border-color: transparent; }
 
     /* ═══════════════════════════════════════
        MODAL
@@ -1194,13 +1203,19 @@
     <div id="modal" class="modal"><div class="modal-card"><button class="icon-btn modal-close" id="modalClose"><i class="fa-solid fa-times"></i></button><div id="modalBody"></div></div></div>
     <div id="slowNotice" class="slow-notice" role="status" aria-live="polite">
       <strong>Un momento, estamos cargando todo con calma.</strong>
-      <p>A veces la conexión con Google tarda un poquito. No necesitas tocar muchas veces; si ves que se queda pensando, puedes recargar sin cerrar tu sesión.</p>
+      <p>A veces la conexion con Google tarda un poquito. No necesitas tocar muchas veces. Si no ves cambios, usa el boton de recargar que esta en la parte superior de la pagina. Da click en Entendido si ya leiste este aviso.</p>
       <div class="slow-notice-actions">
-        <button type="button" data-slow-reload>Recargar página</button>
         <button type="button" data-slow-dismiss>Entendido</button>
       </div>
     </div>
     <div id="toast" class="toast"></div>
+    <div id="actionOverlay" class="action-overlay" role="status" aria-live="polite" aria-hidden="true">
+      <div class="action-card">
+        <div class="action-spinner" aria-hidden="true"></div>
+        <strong class="action-title">Procesando</strong>
+        <p class="action-message" id="actionOverlayMessage">Un momento...</p>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -1226,7 +1241,7 @@
 
     const state = {
       config: {}, categorias: [], products: [], page: 1, totalPages: 1,
-      currentFilter: 'all', search: '', session: null,
+      currentFilter: 'all', search: '', session: null, productsLoading: false,
       cart: JSON.parse(localStorage.getItem('lg_cart') || '[]'),
       cache: {}, adminProducts: [], editingProductId: null,
       notificationTimer: null, unreadComments: [], testimonialSlide: 0, accessSlide: 0,
@@ -1538,11 +1553,10 @@
 
     function goToVisualView(type) {
       if (isAppsScriptRuntime()) {
-        if (type === 'vendedor') openDashboard();
-        else openStore();
-        return;
+        return type === 'vendedor' ? openDashboard() : openStore();
       }
       window.location.href = type === 'vendedor' ? 'view/vendedor.html' : 'view/tienda.html';
+      return Promise.resolve();
     }
 
     function showView(name) {
@@ -1605,7 +1619,7 @@
       const ao = $('#adminOverlay'); if (ao) ao.addEventListener('click', closeAdminMenu);
       const al = $('#adminLogout'); if (al) al.addEventListener('click', logout);
       const nb = $('#notificationBell'); if (nb) nb.addEventListener('click', toggleNotifications);
-      $$('.admin-link[data-admin]').forEach(btn => btn.addEventListener('click', () => openAdminPage(btn.dataset.admin)));
+      $$('.admin-link[data-admin]').forEach(btn => btn.addEventListener('click', () => navigateAdminPage(btn.dataset.admin, btn)));
       document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAdminMenu(); });
     }
 
@@ -1642,7 +1656,6 @@
         notice.classList.add('show');
         sessionStorage.setItem(storageKey, String(Date.now()));
       };
-      $('[data-slow-reload]', notice)?.addEventListener('click', () => window.location.reload());
       $('[data-slow-dismiss]', notice)?.addEventListener('click', () => notice.classList.remove('show'));
       setTimeout(show, 12000);
       setInterval(show, intervalMs);
@@ -1708,26 +1721,34 @@
 
     async function submitCliente(e) {
       e.preventDefault();
-      if (!validateForm(e.currentTarget, ['nombre', 'correo', 'telefono'])) return;
-      const data = Object.fromEntries(new FormData(e.currentTarget));
-      const result = await apiCall('doRegisterCliente', data);
-      if (!result.success) return;
-      state.session = result.data;
-      state.session.telefono = data.telefono;
-      localStorage.setItem('lg_session', JSON.stringify(state.session));
-      showToast('Bienvenida, ' + state.session.nombre);
-      goToVisualView('tienda');
+      const form = e.currentTarget;
+      if (!validateForm(form, ['nombre', 'correo', 'telefono'])) return;
+      await withBusy(form, 'Entrando a la tienda...', async () => {
+        const data = Object.fromEntries(new FormData(form));
+        const result = await apiCall('doRegisterCliente', data);
+        if (!result.success) return;
+        state.session = result.data;
+        state.session.telefono = data.telefono;
+        localStorage.setItem('lg_session', JSON.stringify(state.session));
+        showToast('Bienvenida, ' + state.session.nombre);
+        setActionMessage('Cargando tu tienda...');
+        await goToVisualView('tienda');
+      });
     }
 
     async function submitVendedor(e) {
       e.preventDefault();
-      const fd = Object.fromEntries(new FormData(e.currentTarget));
-      const pinMode = !$('#sellerPinField').classList.contains('hidden');
-      const result = pinMode ? await apiCall('doLoginWithPin', { pin: fd.pin }) : await apiCall('doLogin', { tipo: 'vendedor', correo: fd.correo, password: fd.password });
-      if (!result.success) return;
-      state.session = result.data;
-      localStorage.setItem('lg_session', JSON.stringify(state.session));
-      goToVisualView('vendedor');
+      const form = e.currentTarget;
+      await withBusy(form, 'Validando acceso de vendedor...', async () => {
+        const fd = Object.fromEntries(new FormData(form));
+        const pinMode = !$('#sellerPinField').classList.contains('hidden');
+        const result = pinMode ? await apiCall('doLoginWithPin', { pin: fd.pin }) : await apiCall('doLogin', { tipo: 'vendedor', correo: fd.correo, password: fd.password });
+        if (!result.success) return;
+        state.session = result.data;
+        localStorage.setItem('lg_session', JSON.stringify(state.session));
+        setActionMessage('Abriendo panel de vendedor...');
+        await goToVisualView('vendedor');
+      });
     }
 
     async function loadCategorias() {
@@ -1761,16 +1782,27 @@
     function setActiveFilter() { $$('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === state.currentFilter)); }
 
     async function loadProductos(reset) {
-      if (reset) { state.page = 1; state.products = []; const pg = $('#productsGrid'); if (pg) pg.innerHTML = skeletonProducts(); }
-      const filters = { buscar: state.search, pagina: state.page, por_pagina: 8 };
-      if (state.currentFilter !== 'all') filters.categoria_slug = state.currentFilter;
-      const result = await apiCall('getProductos', { filters });
-      if (!result.success) return;
-      state.totalPages = result.data.total_paginas || 1;
-      state.products = reset ? result.data.items : state.products.concat(result.data.items);
-      renderProducts();
-      const lm = $('#loadMoreBtn'); if (lm) lm.classList.toggle('hidden', state.page >= state.totalPages);
-      state.page += 1;
+      if (state.productsLoading) return;
+      state.productsLoading = true;
+      const lm = $('#loadMoreBtn');
+      $$('.filter-btn').forEach(btn => btn.disabled = true);
+      if (lm) lm.disabled = true;
+      try {
+        if (reset) { state.page = 1; state.products = []; const pg = $('#productsGrid'); if (pg) pg.innerHTML = skeletonProducts(); }
+        const filters = { buscar: state.search, pagina: state.page, por_pagina: 8 };
+        if (state.currentFilter !== 'all') filters.categoria_slug = state.currentFilter;
+        const result = await apiCall('getProductos', { filters });
+        if (!result.success) return;
+        state.totalPages = result.data.total_paginas || 1;
+        state.products = reset ? result.data.items : state.products.concat(result.data.items);
+        renderProducts();
+        if (lm) lm.classList.toggle('hidden', state.page >= state.totalPages);
+        state.page += 1;
+      } finally {
+        state.productsLoading = false;
+        $$('.filter-btn').forEach(btn => btn.disabled = false);
+        if (lm) lm.disabled = false;
+      }
     }
 
     function skeletonProducts() {
@@ -1806,11 +1838,11 @@
           </div>
         </article>`).join('');
       $$('[data-cart]').forEach(btn => btn.addEventListener('click', () => addToCart(state.products.find(p => p.id === btn.dataset.cart))));
-      $$('[data-detail]').forEach(btn => btn.addEventListener('click', () => openProductDetail(btn.dataset.detail)));
+      $$('[data-detail]').forEach(btn => btn.addEventListener('click', () => openProductDetail(btn.dataset.detail, btn)));
       $$('[data-product-card]', pg).forEach(card => {
         const open = event => {
           if (event.target.closest('button, a, input, textarea, select, [data-reaction-widget], .reaction-palette, .product-actions')) return;
-          openProductDetail(card.dataset.productCard);
+          openProductDetail(card.dataset.productCard, card);
         };
         card.addEventListener('click', open);
         card.addEventListener('keydown', event => {
@@ -1823,7 +1855,11 @@
       refreshReactionSummaries(state.products.map(p => ({ target_type: 'producto', target_id: p.id })), pg);
     }
 
-    async function openProductDetail(id) {
+    async function openProductDetail(id, trigger) {
+      return withBusy(trigger || document.body, 'Cargando producto...', () => renderProductDetail(id));
+    }
+
+    async function renderProductDetail(id) {
       const result = await apiCall('getProductoById', { id });
       if (!result.success) return;
       const p = result.data;
@@ -2174,7 +2210,26 @@
           <strong>${c.tipo === 'pedido' ? '<i class="fa-solid fa-receipt"></i>' : '<i class="fa-solid fa-comment"></i>'} ${esc(c.titulo || 'Notificación')}</strong>
           <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">${esc(c.texto || '')}</p>
         </button>`).join('') : '<p style="color:var(--text-muted);font-size:0.88rem;text-align:center;">No hay notificaciones nuevas</p>';
-      $$('[data-admin-notification]', panel).forEach(btn => btn.addEventListener('click', () => openAdminPage(btn.dataset.adminNotification === 'pedido' ? 'pedidos-admin' : 'comentarios-admin')));
+      $$('[data-admin-notification]', panel).forEach(btn => btn.addEventListener('click', () => navigateAdminPage(btn.dataset.adminNotification === 'pedido' ? 'pedidos-admin' : 'comentarios-admin', btn)));
+    }
+
+    function adminLoadingText(page) {
+      const names = {
+        dashboard: 'dashboard',
+        'productos-admin': 'productos',
+        'categorias-admin': 'categorias',
+        'promociones-admin': 'promociones',
+        'testimonios-admin': 'testimonios',
+        'galeria-admin': 'galeria',
+        'pedidos-admin': 'pedidos',
+        'comentarios-admin': 'comentarios',
+        'config-admin': 'configuracion'
+      };
+      return `Cargando ${names[page] || 'seccion'}...`;
+    }
+
+    async function navigateAdminPage(page, trigger) {
+      return withBusy(trigger || document.body, adminLoadingText(page), () => openAdminPage(page));
     }
 
     async function openAdminPage(page) {
@@ -2262,7 +2317,7 @@
           <div class="field full"><label>Video</label><input id="videoInput" type="file" accept="video/*"><div class="preview-grid" id="videoPreview">${product?.video_url?`<video src="${product.video_url}" controls></video>`:''}</div></div>
           <div class="full"><button class="btn btn-gold" type="submit"><i class="fa-solid fa-save"></i> Guardar producto</button></div>
         </form>`;
-      $('#backProducts').addEventListener('click', () => openAdminPage('productos-admin'));
+      $('#backProducts').addEventListener('click', () => navigateAdminPage('productos-admin', $('#backProducts')));
       $('#productForm').addEventListener('submit', saveProduct);
       $('#mainImageInput').addEventListener('change', e => previewFiles(e.target, '#mainPreview'));
       $('#extraImagesInput').addEventListener('change', e => previewFiles(e.target, '#extraPreview'));
@@ -2271,19 +2326,25 @@
 
     async function saveProduct(e) {
       e.preventDefault();
-      if (!validateForm(e.currentTarget, ['nombre', 'precio'])) return;
-      const data = Object.fromEntries(new FormData(e.currentTarget));
-      data.precio = parseMoneyInput(data.precio);
-      data.precio_antiguo = parseMoneyInput(data.precio_antiguo);
-      data.destacado = e.currentTarget.destacado.checked;
-      const action = state.editingProductId ? 'updateProducto' : 'createProducto';
-      const params = state.editingProductId ? { id: state.editingProductId, data, token: state.session.token } : { data, token: state.session.token };
-      const result = await apiCall(action, params);
-      if (!result.success) return;
-      const productId = state.editingProductId || result.data.id;
-      await uploadProductFiles(productId);
-      showToast('Producto guardado ✨');
-      openAdminPage('productos-admin');
+      const form = e.currentTarget;
+      if (!validateForm(form, ['nombre', 'precio'])) return;
+      await withBusy(form, 'Guardando producto...', async () => {
+        const data = Object.fromEntries(new FormData(form));
+        data.precio = parseMoneyInput(data.precio);
+        data.precio_antiguo = parseMoneyInput(data.precio_antiguo);
+        data.destacado = form.destacado.checked;
+        const action = state.editingProductId ? 'updateProducto' : 'createProducto';
+        const params = state.editingProductId ? { id: state.editingProductId, data, token: state.session.token } : { data, token: state.session.token };
+        const result = await apiCall(action, params);
+        if (!result.success) return;
+        const productId = state.editingProductId || result.data.id;
+        setActionMessage('Subiendo imagenes y video...');
+        await uploadProductFiles(productId);
+        state.cache = {};
+        showToast('Producto guardado correctamente');
+        setActionMessage('Actualizando listado...');
+        await openAdminPage('productos-admin');
+      });
     }
 
     function uploadProductFiles(productId) {
@@ -2362,14 +2423,19 @@
       $('.simple-form', el).addEventListener('submit', async e => {
         e.preventDefault();
         const form = e.currentTarget;
-        const data = Object.fromEntries(new FormData(form)); delete data.file; delete data.video;
-        const r = await apiCall(createAction, { data, token: state.session.token });
-        if (!r.success) return;
-        const file = form.file.files[0], video = form.video.files[0];
-        if (file) await uploadSimpleMedia(page, r.data.id, file, 'image');
-        if (video) await uploadSimpleMedia(page, r.data.id, video, 'video');
-        showToast(singular + ' guardado ✨');
-        renderSimpleCrud(page, title, singular, fields, listAction, createAction, updateAction, deleteAction);
+        await withBusy(form, `Guardando ${singular.toLowerCase()}...`, async () => {
+          const data = Object.fromEntries(new FormData(form)); delete data.file; delete data.video;
+          const r = await apiCall(createAction, { data, token: state.session.token });
+          if (!r.success) return;
+          const file = form.file.files[0], video = form.video.files[0];
+          if (file || video) setActionMessage('Subiendo archivos...');
+          if (file) await uploadSimpleMedia(page, r.data.id, file, 'image');
+          if (video) await uploadSimpleMedia(page, r.data.id, video, 'video');
+          state.cache = {};
+          showToast(singular + ' guardado correctamente');
+          setActionMessage('Actualizando listado...');
+          await renderSimpleCrud(page, title, singular, fields, listAction, createAction, updateAction, deleteAction);
+        });
       });
       $$('[data-delete-simple]', el).forEach(b => b.addEventListener('click', async () => { const r = await apiCall(deleteAction, { id: b.dataset.deleteSimple, token: state.session.token }); if (r.success) renderSimpleCrud(page, title, singular, fields, listAction, createAction, updateAction, deleteAction); }));
     }
@@ -2474,6 +2540,48 @@
       t.textContent = message; t.classList.add('show');
       clearTimeout(showToast.timer);
       showToast.timer = setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    function setActionMessage(message) {
+      const msg = $('#actionOverlayMessage');
+      if (msg) msg.textContent = message || 'Un momento...';
+    }
+
+    function setActionOverlay(active, message) {
+      const overlay = $('#actionOverlay');
+      if (!overlay) return;
+      if (message) setActionMessage(message);
+      overlay.classList.toggle('active', active);
+      overlay.setAttribute('aria-hidden', active ? 'false' : 'true');
+    }
+
+    async function withBusy(target, message, task) {
+      const button = target?.matches?.('button') ? target : target?.querySelector?.('button[type="submit"]');
+      if (target?.dataset.busy === 'true' || button?.dataset.busy === 'true') return null;
+      const originalHtml = button?.innerHTML;
+      if (target?.dataset) target.dataset.busy = 'true';
+      if (button) {
+        button.dataset.busy = 'true';
+        button.disabled = true;
+        button.classList.add('is-loading');
+        button.innerHTML = '<i class="fa-solid fa-spinner"></i> Procesando...';
+      }
+      setActionOverlay(true, message);
+      try {
+        return await task();
+      } catch (error) {
+        showToast(error.message || 'No se pudo completar la accion');
+        return null;
+      } finally {
+        setActionOverlay(false);
+        if (button) {
+          button.disabled = false;
+          button.classList.remove('is-loading');
+          if (originalHtml) button.innerHTML = originalHtml;
+          delete button.dataset.busy;
+        }
+        if (target?.dataset) delete target.dataset.busy;
+      }
     }
 
     function setupTheme() {

@@ -3,6 +3,53 @@
  * JavaScript principal - Funcionalidades interactivas
  */
 
+function ensureStoreActionOverlay() {
+    let overlay = document.getElementById('storeActionOverlay');
+    if (overlay) return overlay;
+    overlay = document.createElement('div');
+    overlay.id = 'storeActionOverlay';
+    overlay.className = 'store-action-overlay';
+    overlay.setAttribute('role', 'status');
+    overlay.setAttribute('aria-live', 'polite');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.innerHTML = `
+        <div class="store-action-card">
+            <div class="store-action-spinner" aria-hidden="true"></div>
+            <strong class="store-action-title">Cargando</strong>
+            <p class="store-action-message" id="storeActionMessage">Un momento...</p>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    return overlay;
+}
+
+function setStoreActionOverlay(active, message) {
+    const overlay = ensureStoreActionOverlay();
+    const label = document.getElementById('storeActionMessage');
+    if (label && message) label.textContent = message;
+    overlay.classList.toggle('active', active);
+    overlay.setAttribute('aria-hidden', active ? 'false' : 'true');
+}
+
+async function withStoreBusy(target, message, task) {
+    if (target?.dataset?.busy === 'true') return null;
+    if (target?.dataset) target.dataset.busy = 'true';
+    target?.classList?.add('is-loading');
+    target?.setAttribute?.('aria-busy', 'true');
+    setStoreActionOverlay(true, message);
+    try {
+        return await task();
+    } catch (error) {
+        if (typeof window.lgShowToast === 'function') window.lgShowToast(error.message || 'No se pudo cargar');
+        return null;
+    } finally {
+        setStoreActionOverlay(false);
+        target?.classList?.remove('is-loading');
+        target?.removeAttribute?.('aria-busy');
+        if (target?.dataset) delete target.dataset.busy;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // VARIABLES GLOBALES
@@ -1297,10 +1344,25 @@ document.addEventListener('DOMContentLoaded', () => {
         overlay.innerHTML = `
             <button class="lightbox-close" aria-label="Cerrar"><i class="fas fa-times"></i></button>
             <button class="lightbox-prev" aria-label="Anterior"><i class="fas fa-chevron-left"></i></button>
-            <img src="${img.src}" alt="${img.alt || 'Galeria Luz Gomez'}">
+            <div class="lightbox-loading" data-lightbox-loading>
+                <div class="lightbox-spinner" aria-hidden="true"></div>
+                <span>Cargando imagen...</span>
+            </div>
+            <img src="${img.src}" alt="${img.alt || 'Galeria Luz Gomez'}" style="opacity:0">
             <button class="lightbox-next" aria-label="Siguiente"><i class="fas fa-chevron-right"></i></button>
         `;
         document.body.appendChild(overlay);
+        const preview = overlay.querySelector('img');
+        const loading = overlay.querySelector('[data-lightbox-loading]');
+        const showImage = () => {
+            if (loading) loading.remove();
+            if (preview) preview.style.opacity = '1';
+        };
+        if (preview?.complete) showImage();
+        else {
+            preview?.addEventListener('load', showImage, { once: true });
+            preview?.addEventListener('error', showImage, { once: true });
+        }
         overlay.querySelector('.lightbox-close').addEventListener('click', () => overlay.remove());
         overlay.querySelector('.lightbox-prev').addEventListener('click', () => { overlay.remove(); openLightbox(visualState.lightboxIndex - 1); });
         overlay.querySelector('.lightbox-next').addEventListener('click', () => { overlay.remove(); openLightbox(visualState.lightboxIndex + 1); });
@@ -1758,6 +1820,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function openSocialModal(card, focusComments = false) {
+        return withStoreBusy(card, 'Cargando producto...', () => renderSocialModal(card, focusComments));
+    }
+
+    async function renderSocialModal(card, focusComments = false) {
         activeProduct = getCardData(card);
         activeImageIndex = 0;
         window.lgSaveRecentView?.(activeProduct.productId || activeProduct.key);
@@ -2001,7 +2067,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderModalSocialSummary(activeProduct);
             renderComments(key);
             window.lgShowToast?.(parentId ? 'Respuesta guardada' : 'Comentario guardado');
-            return;
+            return true;
         }
         const created = await window.lgDbApi('createComentario', {
             data: {
@@ -2015,14 +2081,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (!created.success) {
             window.lgShowToast?.(created.error || 'No se pudo guardar el comentario');
-            return;
+            return false;
         }
+        setStoreActionOverlay(true, 'Actualizando comentarios...');
         await hydrateProductFromDatabase(activeProduct);
         saveState();
         refreshCardSocial(key);
         renderModalSocialSummary(activeProduct);
         renderComments(key);
         window.lgShowToast?.('Comentario guardado');
+        return true;
     }
 
     async function setCommentReaction(commentId, emoji, origin) {
@@ -2328,7 +2396,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const textarea = form.querySelector('textarea');
         const body = textarea?.value.trim();
         if (!body) return;
-        addComment(form.dataset.commentForm, body, form.dataset.parentId || '');
+        withStoreBusy(form, form.dataset.parentId ? 'Subiendo respuesta...' : 'Subiendo comentario...', async () => {
+            const saved = await addComment(form.dataset.commentForm, body, form.dataset.parentId || '');
+            if (saved && textarea) textarea.value = '';
+        });
     });
 
     modalClose?.addEventListener('click', closeSocialModal);

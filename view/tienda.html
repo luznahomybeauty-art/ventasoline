@@ -40,7 +40,7 @@
         .slow-notice p { margin: 0 0 12px; color: rgba(255,255,255,0.82); font-size: 0.84rem; line-height: 1.45; }
         .slow-notice-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .slow-notice-actions button { min-height: 36px; padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.08); color: #fff; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
-        .slow-notice-actions button:first-child { background: linear-gradient(135deg, #fcd34d, #f472b6); color: #111827; border-color: transparent; }
+        .slow-notice-actions button { background: linear-gradient(135deg, #9333EA, #EC4899); color: #fff; border-color: transparent; box-shadow: 0 14px 30px rgba(236,72,153,.18); }
         @media (max-width: 540px) { .slow-notice { left: 14px; right: 14px; bottom: 14px; width: auto; } }
     </style>
 </head>
@@ -995,9 +995,8 @@
     </div>
     <div id="slowNotice" class="slow-notice" role="status" aria-live="polite">
         <strong>La tienda puede tardar un poquito.</strong>
-        <p>Estamos cargando datos desde Google. No hace falta tocar varias veces; si se queda pensando, puedes recargar sin salir de tu sesión.</p>
+        <p>Estamos cargando datos desde Google. No hace falta tocar varias veces. Si no ves cambios, usa el boton de recargar que esta en la parte superior de la pagina. Da click en Entendido si ya leiste este aviso.</p>
         <div class="slow-notice-actions">
-            <button type="button" data-slow-reload>Recargar página</button>
             <button type="button" data-slow-dismiss>Entendido</button>
         </div>
     </div>
@@ -1016,7 +1015,6 @@
                 notice.classList.add('show');
                 sessionStorage.setItem(storageKey, String(Date.now()));
             };
-            notice.querySelector('[data-slow-reload]')?.addEventListener('click', () => window.location.reload());
             notice.querySelector('[data-slow-dismiss]')?.addEventListener('click', () => notice.classList.remove('show'));
             setTimeout(show, 12000);
             setInterval(show, intervalMs);
