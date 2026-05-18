@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Mi perfil de cliente Luz Gomez: favoritos, pedidos, comentarios y actividad social.">
+    <title>Mi Perfil | Luz Gomez</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" type="image/png" href="../img/flores.png">
+    <link rel="stylesheet" href="../css/style.css?v=social-db-9">
+
+    <style>
+        body.profile-page {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, rgba(244, 114, 182, 0.16), transparent 28rem),
+                radial-gradient(circle at top right, rgba(252, 211, 77, 0.20), transparent 24rem),
+                var(--bg-primary);
+        }
+
+        .profile-nav {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.76);
+            backdrop-filter: blur(18px);
+        }
+
+        [data-theme="dark"] .profile-nav {
+            background: rgba(18, 16, 28, 0.82);
+        }
+
+        .profile-nav-inner {
+            width: min(1180px, calc(100% - 32px));
+            min-height: 76px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .profile-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-primary);
+            font-weight: 800;
+        }
+
+        .profile-logo img {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+        }
+
+        .profile-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .profile-icon-btn,
+        .profile-action {
+            min-height: 42px;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(32, 21, 43, 0.07);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .profile-icon-btn {
+            width: 42px;
+            display: inline-grid;
+            place-items: center;
+        }
+
+        .profile-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 16px;
+        }
+
+        .profile-icon-btn:hover,
+        .profile-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 28px rgba(32, 21, 43, 0.12);
+        }
+
+        .profile-main {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 42px 0 64px;
+        }
+
+        .profile-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .profile-panel {
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.72);
+            box-shadow: 0 24px 70px rgba(32, 21, 43, 0.10);
+            backdrop-filter: blur(18px);
+        }
+
+        [data-theme="dark"] .profile-panel {
+            background: rgba(31, 27, 49, 0.72);
+        }
+
+        .profile-identity {
+            padding: 28px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .profile-avatar-xl {
+            width: 96px;
+            height: 96px;
+            flex: 0 0 auto;
+            display: grid;
+            place-items: center;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #d4a574, #e84265);
+            color: white;
+            font-family: "Playfair Display", serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            box-shadow: 0 22px 44px rgba(232, 66, 101, 0.22);
+        }
+
+        .profile-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: var(--purple);
+            font-size: 0.78rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .profile-title {
+            margin: 0;
+            font-family: "Playfair Display", serif;
+            font-size: clamp(2rem, 5vw, 4rem);
+            line-height: 1;
+            letter-spacing: 0;
+            color: var(--text-primary);
+        }
+
+        .profile-subtitle {
+            margin: 10px 0 0;
+            color: var(--text-secondary);
+            font-size: 0.98rem;
+            line-height: 1.6;
+        }
+
+        .profile-level-card {
+            padding: 24px;
+            display: grid;
+            align-content: space-between;
+            gap: 16px;
+        }
+
+        .profile-level-card strong {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        .profile-progress {
+            height: 10px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.22);
+        }
+
+        .profile-progress span {
+            display: block;
+            width: var(--progress, 12%);
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #d4a574, #e84265, #8b5cf6);
+        }
+
+        .profile-stats-grid {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .profile-stat-card {
+            padding: 18px;
+            border-radius: 22px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 14px 34px rgba(32, 21, 43, 0.07);
+        }
+
+        .profile-stat-card i {
+            color: var(--purple);
+            margin-bottom: 12px;
+        }
+
+        .profile-stat-card b {
+            display: block;
+            color: var(--text-primary);
+            font-size: 1.7rem;
+            line-height: 1;
+        }
+
+        .profile-stat-card span {
+            display: block;
+            margin-top: 6px;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 800;
+        }
+
+        .profile-section-grid {
+            margin-top: 22px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+            gap: 20px;
+        }
+
+        .profile-block {
+            padding: 24px;
+        }
+
+        .profile-block-head {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .profile-block h2 {
+            margin: 0;
+            color: var(--text-primary);
+            font-family: "Playfair Display", serif;
+            font-size: clamp(1.5rem, 3vw, 2.1rem);
+            letter-spacing: 0;
+        }
+
+        .profile-block-head span {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            font-weight: 800;
+        }
+
+        .profile-products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 14px;
+        }
+
+        .profile-product {
+            overflow: hidden;
+            border-radius: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            box-shadow: 0 12px 28px rgba(32, 21, 43, 0.08);
+        }
+
+        .profile-product img,
+        .profile-product .profile-product-empty {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.22), rgba(232, 66, 101, 0.16));
+            color: var(--purple);
+        }
+
+        .profile-product div {
+            padding: 12px;
+        }
+
+        .profile-product strong {
+            display: block;
+            font-size: 0.86rem;
+            line-height: 1.35;
+        }
+
+        .profile-product span {
+            display: block;
+            margin-top: 6px;
+            color: var(--purple);
+            font-weight: 900;
+            font-size: 0.82rem;
+        }
+
+        .profile-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .profile-list-item {
+            display: grid;
+            gap: 5px;
+            padding: 14px;
+            border-radius: 18px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+        }
+
+        .profile-list-item strong {
+            color: var(--text-primary);
+            font-size: 0.92rem;
+        }
+
+        .profile-list-item span,
+        .profile-list-item p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            line-height: 1.45;
+        }
+
+        .profile-empty {
+            padding: 24px;
+            border-radius: 20px;
+            border: 1px dashed rgba(139, 92, 246, 0.34);
+            background: rgba(139, 92, 246, 0.07);
+            color: var(--text-secondary);
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .profile-loading {
+            min-height: 50vh;
+            display: grid;
+            place-items: center;
+            gap: 16px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .profile-loading i {
+            font-size: 2rem;
+            color: var(--purple);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 860px) {
+            .profile-hero,
+            .profile-section-grid,
+            .profile-stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-identity {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .profile-nav-inner {
+                min-height: auto;
+                padding: 12px 0;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .profile-nav-actions {
+                width: 100%;
+            }
+
+            .profile-action {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body class="profile-page">
+    <nav class="profile-nav">
+        <div class="profile-nav-inner">
+            <a href="tienda.html" class="profile-logo">
+                <img src="../img/flores.png" alt="Luz Gomez">
+                <span>Luz Gomez</span>
+            </a>
+            <div class="profile-nav-actions">
+                <a class="profile-action" href="tienda.html"><i class="fa-solid fa-store"></i> Tienda</a>
+                <button class="profile-icon-btn" id="reloadBtn" type="button" aria-label="Recargar perfil" title="Recargar perfil">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+                <button class="profile-icon-btn" id="themeBtn" type="button" aria-label="Cambiar tema" title="Cambiar tema">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <button class="profile-icon-btn" id="logoutBtn" type="button" aria-label="Cerrar sesion" title="Cerrar sesion">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="profile-main" id="profileApp">
+        <div class="profile-loading">
+            <i class="fa-solid fa-spinner"></i>
+            <p>Cargando tu perfil social...</p>
+        </div>
+    </main>
+
+    <script>
+        const BASE_URL = 'https://script.google.com/macros/s/AKfycbyI1pONadMWJhganMWt4kah4bB4jNHgraJG8S1A_uAGnRHiGdjL_U9tdDhpCEbKNqQ/exec';
+        const app = document.getElementById('profileApp');
+        const session = readSession();
+
+        document.getElementById('reloadBtn').addEventListener('click', () => window.location.reload());
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+
+        init();
+
+        async function init() {
+            if (!session || !session.id || session.tipo === 'vendedor') {
+                renderNoSession();
+                return;
+            }
+
+            const result = await apiCall('getCustomerProfile', { clienteId: session.id });
+            if (!result.success) {
+                renderError(result.error || 'No se pudo cargar el perfil.');
+                return;
+            }
+            renderProfile(result.data || {});
+        }
+
+        async function apiCall(action, params = {}) {
+            try {
+                const response = await fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action, params })
+                });
+                if (!response.ok) throw new Error('El servidor aun no respondio.');
+                return await response.json();
+            } catch (error) {
+                return { success: false, data: null, error: error.message };
+            }
+        }
+
+        function readSession() {
+            try {
+                return JSON.parse(localStorage.getItem('lg_session') || 'null');
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function renderProfile(profile) {
+            const cliente = profile.cliente || {};
+            const favoritos = profile.favoritos || [];
+            const pedidos = profile.pedidos || [];
+            const comentarios = profile.comentarios || [];
+            const reacciones = profile.reacciones || [];
+            const vistos = profile.vistos || [];
+            const points = Number(profile.puntos || 0);
+            const progress = Math.max(8, Math.min(100, points % 100 || points ? points : 8));
+            const name = cliente.nombre || session.nombre || 'Cliente Luz Gomez';
+            const initial = String(name).trim().slice(0, 1).toUpperCase() || 'L';
+
+            app.innerHTML = `
+                <section class="profile-hero">
+                    <div class="profile-panel profile-identity">
+                        <div class="profile-avatar-xl">${esc(initial)}</div>
+                        <div>
+                            <span class="profile-kicker"><i class="fa-solid fa-user"></i> Mi perfil</span>
+                            <h1 class="profile-title">${esc(name)}</h1>
+                            <p class="profile-subtitle">Tu espacio de cliente: favoritos, pedidos, comentarios, reacciones y productos que has visto.</p>
+                        </div>
+                    </div>
+                    <div class="profile-panel profile-level-card">
+                        <span class="profile-kicker"><i class="fa-solid fa-gem"></i> Nivel social</span>
+                        <strong>${esc(profile.nivel || 'Nueva amiga de Luz')}</strong>
+                        <p class="profile-subtitle">${points} puntos acumulados por compras, favoritos, comentarios y reacciones.</p>
+                        <div class="profile-progress" style="--progress:${progress}%"><span></span></div>
+                    </div>
+                </section>
+
+                <section class="profile-stats-grid" aria-label="Resumen de perfil">
+                    ${statCard('fa-heart', favoritos.length, 'Favoritos')}
+                    ${statCard('fa-bag-shopping', pedidos.length, 'Pedidos')}
+                    ${statCard('fa-comment-dots', comentarios.length, 'Comentarios')}
+                    ${statCard('fa-face-smile', reacciones.length, 'Reacciones')}
+                </section>
+
+                <section class="profile-section-grid">
+                    <div class="profile-panel profile-block">
+                        <div class="profile-block-head">
+                            <h2>Tus favoritos</h2>
+                            <span>Guardado para despues</span>
+                        </div>
+                        <div class="profile-products">
+                            ${favoritos.length ? favoritos.map(productCard).join('') : emptyState('Todavia no tienes favoritos. Vuelve a la tienda y toca el corazon de un producto.')}
+                        </div>
+                    </div>
+
+                    <div class="profile-panel profile-block">
+                        <div class="profile-block-head">
+                            <h2>Actividad</h2>
+                            <span>Social y reciente</span>
+                        </div>
+                        <div class="profile-list">
+                            ${activityList(reacciones, vistos)}
+                        </div>
+                    </div>
+                </section>
+
+                <section class="profile-section-grid">
+                    <div class="profile-panel profile-block">
+                        <div class="profile-block-head">
+                            <h2>Pedidos recientes</h2>
+                            <span>Historial</span>
+                        </div>
+                        <div class="profile-list">
+                            ${pedidos.length ? pedidos.map(orderItem).join('') : emptyState('Aun no hay pedidos registrados en este perfil.')}
+                        </div>
+                    </div>
+
+                    <div class="profile-panel profile-block">
+                        <div class="profile-block-head">
+                            <h2>Comentarios</h2>
+                            <span>Tu voz</span>
+                        </div>
+                        <div class="profile-list">
+                            ${comentarios.length ? comentarios.map(commentItem).join('') : emptyState('Cuando comentes productos, apareceran aqui.')}
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+
+        function statCard(icon, value, label) {
+            return `<article class="profile-stat-card"><i class="fa-solid ${icon}"></i><b>${value}</b><span>${label}</span></article>`;
+        }
+
+        function productCard(product) {
+            const img = product.imagen_url || product.thumbnail_url || '';
+            return `
+                <a class="profile-product" href="tienda.html#productos">
+                    ${img ? `<img src="${esc(img)}" alt="${esc(product.nombre || 'Producto')}" loading="lazy">` : '<div class="profile-product-empty"><i class="fa-solid fa-image"></i></div>'}
+                    <div>
+                        <strong>${esc(product.nombre || 'Producto guardado')}</strong>
+                        <span>${money(product.precio)}</span>
+                    </div>
+                </a>
+            `;
+        }
+
+        function activityList(reacciones, vistos) {
+            const items = [];
+            reacciones.slice(0, 5).forEach(item => {
+                items.push(`<article class="profile-list-item"><strong>${esc(item.emoji || '❤️')} Reaccionaste</strong><span>${esc(item.target_type || 'contenido')} ${esc(item.target_id || '')}</span></article>`);
+            });
+            vistos.slice(0, 5).forEach(item => {
+                items.push(`<article class="profile-list-item"><strong><i class="fa-solid fa-eye"></i> Producto visto</strong><span>${esc(item.target_id || '')}</span></article>`);
+            });
+            return items.length ? items.join('') : emptyState('Tu actividad reciente aparecera aqui.');
+        }
+
+        function orderItem(order) {
+            return `
+                <article class="profile-list-item">
+                    <strong>Pedido ${esc(order.id || '')}</strong>
+                    <span>${esc(order.estado || 'pendiente')} · ${money(order.total)} · ${formatDate(order.fecha_creacion)}</span>
+                </article>
+            `;
+        }
+
+        function commentItem(comment) {
+            return `
+                <article class="profile-list-item">
+                    <strong>${Number(comment.calificacion || 5)} estrellas</strong>
+                    <p>${esc(comment.comentario || '')}</p>
+                    <span>${formatDate(comment.fecha)}</span>
+                </article>
+            `;
+        }
+
+        function emptyState(text) {
+            return `<div class="profile-empty">${esc(text)}</div>`;
+        }
+
+        function renderNoSession() {
+            app.innerHTML = `
+                <section class="profile-panel profile-block" style="max-width:720px;margin:40px auto;text-align:center;">
+                    <span class="profile-kicker"><i class="fa-solid fa-lock"></i> Perfil privado</span>
+                    <h1 class="profile-title">Inicia sesion para ver tu perfil</h1>
+                    <p class="profile-subtitle">Entra desde la pagina principal con tu nombre, correo y telefono para activar favoritos, pedidos y actividad.</p>
+                    <div class="profile-nav-actions" style="justify-content:center;margin-top:20px;">
+                        <a class="profile-action" href="../index.html"><i class="fa-solid fa-right-to-bracket"></i> Iniciar sesion</a>
+                        <a class="profile-action" href="tienda.html"><i class="fa-solid fa-store"></i> Ver tienda</a>
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderError(message) {
+            app.innerHTML = `
+                <section class="profile-panel profile-block" style="max-width:720px;margin:40px auto;text-align:center;">
+                    <span class="profile-kicker"><i class="fa-solid fa-triangle-exclamation"></i> Algo paso</span>
+                    <h1 class="profile-title">No cargo tu perfil</h1>
+                    <p class="profile-subtitle">${esc(message)}</p>
+                    <div class="profile-nav-actions" style="justify-content:center;margin-top:20px;">
+                        <button class="profile-action" type="button" onclick="window.location.reload()"><i class="fa-solid fa-rotate-right"></i> Recargar</button>
+                        <a class="profile-action" href="tienda.html"><i class="fa-solid fa-store"></i> Volver a tienda</a>
+                    </div>
+                </section>
+            `;
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'light';
+            const next = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            updateThemeIcon(next);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = document.querySelector('#themeBtn i');
+            icon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+
+        function logout() {
+            localStorage.removeItem('lg_session');
+            window.location.href = '../index.html';
+        }
+
+        function money(value) {
+            return '$ ' + Number(value || 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function formatDate(value) {
+            if (!value) return 'Sin fecha';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return 'Sin fecha';
+            return date.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function esc(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
+    </script>
+</body>
+</html>

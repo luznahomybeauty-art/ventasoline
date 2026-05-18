@@ -1527,9 +1527,22 @@
         if (!result.success) return logoutLocal();
         state.session = { ...state.session, ...result.data, token: state.session.token };
         localStorage.setItem('lg_session', JSON.stringify(state.session));
-        if (state.session.tipo === 'vendedor') openDashboard();
-        else openStore();
+        if (state.session.tipo === 'vendedor') goToVisualView('vendedor');
+        else goToVisualView('tienda');
       });
+    }
+
+    function isAppsScriptRuntime() {
+      return /script\.google\.com|googleusercontent\.com/i.test(window.location.hostname);
+    }
+
+    function goToVisualView(type) {
+      if (isAppsScriptRuntime()) {
+        if (type === 'vendedor') openDashboard();
+        else openStore();
+        return;
+      }
+      window.location.href = type === 'vendedor' ? 'view/vendedor.html' : 'view/tienda.html';
     }
 
     function showView(name) {
@@ -1703,7 +1716,7 @@
       state.session.telefono = data.telefono;
       localStorage.setItem('lg_session', JSON.stringify(state.session));
       showToast('Bienvenida, ' + state.session.nombre);
-      openStore();
+      goToVisualView('tienda');
     }
 
     async function submitVendedor(e) {
@@ -1714,7 +1727,7 @@
       if (!result.success) return;
       state.session = result.data;
       localStorage.setItem('lg_session', JSON.stringify(state.session));
-      openDashboard();
+      goToVisualView('vendedor');
     }
 
     async function loadCategorias() {

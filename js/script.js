@@ -665,7 +665,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const testimonialsTrack = document.getElementById('testimonialsTrack');
     const promoBanner = document.querySelector('.promo-banner');
     const searchInput = document.getElementById('searchInput');
-    const state = { products: [], categories: [], filter: 'all', search: '' };
+    const state = { products: [], categories: [], filter: 'all', search: '', trends: null, profile: null, favorites: new Set(), recentViews: readRecentViews() };
+    const storeClientId = getStoreClientId();
 
     if (!productsGrid) return;
 
@@ -677,16 +678,21 @@ document.addEventListener('DOMContentLoaded', () => {
     initDatabaseStore();
 
     async function initDatabaseStore() {
-        const [categories, products, promo, testimonials, gallery] = await Promise.all([
+        const [categories, products, promo, testimonials, gallery, trends, profile] = await Promise.all([
             apiCall('getCategorias'),
             apiCall('getProductos', { filters: { pagina: 1, por_pagina: 60 } }),
             apiCall('getPromocionActiva'),
             apiCall('getTestimonios'),
-            apiCall('getGaleria')
+            apiCall('getGaleria'),
+            apiCall('getTrendInsights', { clienteId: storeClientId }),
+            apiCall('getCustomerProfile', { clienteId: storeClientId })
         ]);
 
         state.categories = categories.success ? (categories.data || []) : [];
         state.products = products.success ? ((products.data && (products.data.productos || products.data.items)) || []) : [];
+        state.trends = trends.success ? trends.data : null;
+        state.profile = profile.success ? profile.data : null;
+        state.favorites = new Set((state.profile?.favoritos || []).map(product => String(product.id)));
 
         renderCategories(state.categories);
         renderFilters(state.categories);
@@ -695,6 +701,9 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTestimonials(testimonials.success ? testimonials.data || [] : []);
         renderGallery(gallery.success ? gallery.data || [] : []);
         renderSocialHub();
+        renderTrendShelves();
+        renderProfileHub();
+        renderBottomAppNav();
         hydrateHeroFromDatabase();
         document.dispatchEvent(new CustomEvent('lg:content-rendered'));
     }
@@ -778,6 +787,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.lgAddToCart?.(button.dataset.name, button.dataset.price, button.dataset.img);
             });
         });
+        productsGrid.querySelectorAll('[data-favorite-product]').forEach(button => {
+            button.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                toggleProductFavorite(button.dataset.favoriteProduct, button);
+            });
+        });
         document.dispatchEvent(new CustomEvent('lg:content-rendered'));
     }
 
@@ -785,11 +801,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const image = productImage(product);
         const price = Number(product.precio || 0);
         const oldPrice = Number(product.precio_antiguo || 0);
+        const video = productVideo(product);
+        const trend = trendForProduct(product.id);
+        const labels = trendLabels(product, trend);
+        const favorite = state.favorites.has(String(product.id || ''));
         return `
-            <div class="product-card reveal active" data-category="${esc(product.categoria_slug || product.categoria_id || '')}" data-product-id="${esc(product.id || '')}" data-comment-count="${Number(product.resenas_count || 0)}">
-                ${product.badge ? `<div class="product-badge">${esc(product.badge)}</div>` : ''}
+            <div class="product-card reveal active" data-category="${esc(product.categoria_slug || product.categoria_id || '')}" data-product-id="${esc(product.id || '')}" data-product-image="${esc(image)}" data-video-source="${esc(video)}" data-comment-count="${Number(product.resenas_count || 0)}" data-has-video="${video ? 'true' : 'false'}">
+                <div class="trend-badge-stack">
+                    ${labels.map(label => `<span class="trend-badge">${esc(label)}</span>`).join('')}
+                </div>
                 <div class="product-img">
-                    ${realImage(image, product.nombre)}
+                    ${video ? mediaElement({ tipo: 'video', video_direct_url: video, imagen_url: image, titulo: product.nombre }, true) : realImage(image, product.nombre)}
                     <div class="product-actions">
                         <button class="product-action-btn add-to-cart" data-name="${esc(product.nombre)}" data-price="${price}" data-img="${esc(image)}" aria-label="Agregar al carrito">
                             <i class="fas fa-shopping-bag"></i>
@@ -800,16 +822,27 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button class="product-action-btn quick-view" aria-label="Ver producto">
                             <i class="fas fa-eye"></i>
                         </button>
+                        <button class="product-action-btn wishlist-static ${favorite ? 'saved' : ''}" type="button" data-favorite-product="${esc(product.id || '')}" aria-label="Guardar favorito" aria-pressed="${favorite ? 'true' : 'false'}">
+                            <i class="${favorite ? 'fas' : 'far'} fa-heart"></i>
+                        </button>
                     </div>
                 </div>
                 <div class="product-info">
-                    <span class="product-category">${esc(product.categoria_nombre || 'Producto')}</span>
+                    <div class="product-meta-row">
+                        <span class="product-category">${esc(product.categoria_nombre || 'Producto')}</span>
+                        ${video ? '<span class="media-chip"><i class="fas fa-play"></i> Video</span>' : ''}
+                    </div>
                     <h3 class="product-name">${esc(product.nombre || 'Producto sin nombre')}</h3>
                     <div class="product-price">
                         <span class="price-current">$ ${money(price)}</span>
                         ${oldPrice > 0 ? `<span class="price-old">$ ${money(oldPrice)}</span>` : ''}
                     </div>
                     <div class="product-rating">${stars(product.rating || 5)} <span>(${Number(product.resenas_count || 0)})</span></div>
+                    <div class="trend-signal-row">
+                        <span><i class="fas fa-heart"></i> ${Number(trend?.reactions || 0)}</span>
+                        <span><i class="fas fa-bookmark"></i> ${Number(trend?.favorites || 0)}</span>
+                        <span><i class="fas fa-eye"></i> ${Number(trend?.views || 0)}</span>
+                    </div>
                 </div>
             </div>
         `;
@@ -860,10 +893,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!galleryGrid) return;
         galleryGrid.innerHTML = items.length ? items.map((item, index) => `
             <div class="gallery-item social-surface-card ${index === 0 ? 'large' : index === 5 ? 'wide' : ''}" data-social-target="galeria" data-social-id="${esc(item.id || item.titulo || index)}">
-                ${item.tipo === 'video' && item.video_direct_url ? `<video src="${esc(item.video_direct_url)}" poster="${esc(item.imagen_url || '')}" muted playsinline controls preload="metadata"></video>` : realImage(item.imagen_url, item.titulo)}
+                ${mediaElement(item)}
                 <div class="gallery-overlay">
                     <i class="${item.tipo === 'video' ? 'fas fa-play' : 'fas fa-heart'}"></i>
                     <span>${esc(item.titulo || 'Galeria')}</span>
+                    <small>${esc(item.categoria_galeria || 'Inspiracion del dia')}</small>
                 </div>
             </div>
         `).join('') : '';
@@ -890,6 +924,104 @@ document.addEventListener('DOMContentLoaded', () => {
         `);
     }
 
+    function renderTrendShelves() {
+        const productsSection = document.querySelector('.products .container');
+        if (!productsSection || document.querySelector('.trend-shelves')) return;
+        const top = state.trends?.top || [];
+        const loved = state.trends?.mas_amados || top;
+        productsSection.insertAdjacentHTML('afterbegin', `
+            <div class="trend-shelves reveal active" id="tendencias">
+                <div class="section-header compact">
+                    <span class="section-tag">Tendencias vivas</span>
+                    <h2 class="section-title">Lo que mas se esta moviendo</h2>
+                    <p class="section-desc">Ranking creado con reacciones, comentarios, favoritos, pedidos y vistas recientes.</p>
+                </div>
+                <div class="trend-strip">
+                    ${top.slice(0, 4).map(item => trendCard(item)).join('') || '<div class="trend-empty">Cuando haya actividad, aqui apareceran los favoritos de la comunidad.</div>'}
+                </div>
+                <div class="mini-trend-grid">
+                    ${(state.trends?.insights || []).map(text => `<span><i class="fas fa-wand-magic-sparkles"></i>${esc(text)}</span>`).join('')}
+                    ${loved.slice(0, 2).map(item => `<span><i class="fas fa-heart"></i>${esc(item.nombre)} tiene energia social</span>`).join('')}
+                </div>
+            </div>
+        `);
+    }
+
+    function trendCard(item) {
+        const product = item.producto || {};
+        return `
+            <article class="trend-card" data-trend-product="${esc(product.id || item.producto_id || '')}">
+                ${realImage(product.imagen_url, item.nombre)}
+                <div>
+                    <strong>${esc(item.nombre || product.nombre || 'Producto')}</strong>
+                    <span>${esc((item.labels || ['Trending'])[0])}</span>
+                </div>
+                <b>${Number(item.score || 0)}</b>
+            </article>
+        `;
+    }
+
+    function renderProfileHub() {
+        const contactSection = document.querySelector('#contacto') || document.querySelector('.contact') || document.querySelector('.footer');
+        if (!contactSection || document.querySelector('.profile-hub')) return;
+        const profile = state.profile || {};
+        const cliente = profile.cliente || {};
+        const favs = profile.favoritos || [];
+        contactSection.insertAdjacentHTML('beforebegin', `
+            <section class="profile-hub" id="perfil">
+                <div class="container profile-shell">
+                    <div class="profile-card">
+                        <div class="profile-avatar">${esc(String(cliente.nombre || 'Cliente').trim().slice(0, 1).toUpperCase() || 'L')}</div>
+                        <div>
+                            <span class="section-tag">Mi perfil</span>
+                            <h2>${esc(cliente.nombre || 'Cliente Luz Gomez')}</h2>
+                            <p>${esc(profile.nivel || 'Nueva amiga de Luz')} · ${Number(profile.puntos || 0)} puntos</p>
+                        </div>
+                    </div>
+                    <div class="profile-stats">
+                        <span><b>${favs.length}</b> favoritos</span>
+                        <span><b>${(profile.pedidos || []).length}</b> pedidos</span>
+                        <span><b>${(profile.comentarios || []).length}</b> comentarios</span>
+                        <span><b>${(profile.reacciones || []).length}</b> reacciones</span>
+                    </div>
+                    <div class="saved-products">
+                        <div class="saved-head">
+                            <h3>Tus favoritos</h3>
+                            <span>Guardado para despues</span>
+                        </div>
+                        <div class="saved-strip" id="savedStrip">
+                            ${favs.length ? favs.slice(0, 8).map(product => `
+                                <button type="button" data-saved-jump="${esc(product.id)}">
+                                    ${realImage(product.imagen_url, product.nombre)}
+                                    <span>${esc(product.nombre)}</span>
+                                </button>
+                            `).join('') : '<p>Guarda productos con el corazon para verlos aqui.</p>'}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        `);
+        document.querySelectorAll('[data-saved-jump]').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelector(`[data-product-id="${CSS.escape(button.dataset.savedJump)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        });
+    }
+
+    function renderBottomAppNav() {
+        if (document.querySelector('.bottom-app-nav')) return;
+        document.body.insertAdjacentHTML('beforeend', `
+            <nav class="bottom-app-nav" aria-label="Navegacion movil">
+                <a href="#inicio"><i class="fas fa-home"></i><span>Inicio</span></a>
+                <a href="#productos"><i class="fas fa-store"></i><span>Tienda</span></a>
+                <a href="#galeria"><i class="fas fa-images"></i><span>Ideas</span></a>
+                <a href="mi-perfil.html"><i class="fas fa-user"></i><span>Perfil</span></a>
+                <button type="button" data-bottom-cart><i class="fas fa-shopping-bag"></i><span>Carrito</span></button>
+            </nav>
+        `);
+        document.querySelector('[data-bottom-cart]')?.addEventListener('click', () => document.getElementById('cartBtn')?.click());
+    }
+
     function hydrateHeroFromDatabase() {
         const first = state.products.find(product => productImage(product));
         if (!first) return;
@@ -902,6 +1034,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function productImage(product) {
         return product.imagen_url || product.thumbnail_url || '';
+    }
+
+    function productVideo(product) {
+        return product.video_direct_url || product.video_url || product.video_drive_id || '';
+    }
+
+    function mediaElement(item, autoplay = false) {
+        const video = item.video_direct_url || item.video_url || item.video_drive_id || '';
+        const isVideo = String(item.tipo || '').toLowerCase() === 'video' || /\.(mp4|webm|mov)(\?|$)/i.test(video) || Boolean(video && !item.imagen_url);
+        if (isVideo && video) {
+            return `
+                <div class="premium-video">
+                    <video src="${esc(resolveDriveMedia(video))}" poster="${esc(item.imagen_url || '')}" ${autoplay ? 'autoplay muted loop' : ''} muted playsinline controls preload="metadata"></video>
+                    <span class="video-pill"><i class="fas fa-play"></i> Video</span>
+                </div>
+            `;
+        }
+        return realImage(item.imagen_url, item.titulo);
+    }
+
+    function resolveDriveMedia(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return '';
+        const match = raw.match(/[-\w]{25,}/);
+        if (raw.includes('drive.google.com') && match) return `https://drive.google.com/uc?export=download&id=${match[0]}`;
+        if (!raw.startsWith('http') && match) return `https://drive.google.com/uc?export=download&id=${match[0]}`;
+        return raw;
     }
 
     function realImage(src, alt) {
@@ -935,6 +1094,78 @@ document.addEventListener('DOMContentLoaded', () => {
             '"': '&quot;',
             "'": '&#039;'
         }[char]));
+    }
+
+    function getStoreClientId() {
+        try {
+            const session = JSON.parse(localStorage.getItem('lg_session') || '{}');
+            if (session.id || session.cliente_id) return session.id || session.cliente_id;
+        } catch (error) {}
+        let id = localStorage.getItem('lg_social_client_id');
+        if (!id) {
+            id = `web-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+            localStorage.setItem('lg_social_client_id', id);
+        }
+        return id;
+    }
+
+    function readRecentViews() {
+        try {
+            return JSON.parse(localStorage.getItem('lg_recent_views') || '[]');
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function saveRecentView(productId) {
+        if (!productId) return;
+        state.recentViews = [productId, ...state.recentViews.filter(id => id !== productId)].slice(0, 12);
+        localStorage.setItem('lg_recent_views', JSON.stringify(state.recentViews));
+        apiCall('recordProductView', { data: { producto_id: productId, cliente_id: storeClientId } });
+    }
+    window.lgSaveRecentView = saveRecentView;
+
+    function trendForProduct(productId) {
+        return (state.trends?.top || []).concat(state.trends?.mas_amados || [], state.trends?.favoritos || [])
+            .find(item => String(item.producto_id || item.producto?.id) === String(productId));
+    }
+
+    function trendLabels(product, trend) {
+        const labels = trend?.labels?.length ? trend.labels.slice(0, 2) : [];
+        if (product.badge && labels.indexOf(product.badge) === -1) labels.unshift(product.badge);
+        if (state.recentViews.includes(String(product.id)) && labels.indexOf('Visto recientemente') === -1) labels.push('Visto recientemente');
+        return labels.slice(0, 3);
+    }
+
+    async function toggleProductFavorite(productId, button) {
+        if (!productId) return;
+        const active = !state.favorites.has(String(productId));
+        if (active) state.favorites.add(String(productId));
+        else state.favorites.delete(String(productId));
+        updateFavoriteButtons(productId, active);
+        button?.classList.add('bump');
+        setTimeout(() => button?.classList.remove('bump'), 360);
+        const result = await apiCall('toggleFavorite', { data: { producto_id: productId, cliente_id: storeClientId } });
+        if (!result.success) {
+            if (active) state.favorites.delete(String(productId));
+            else state.favorites.add(String(productId));
+            updateFavoriteButtons(productId, !active);
+        }
+        const profile = await apiCall('getCustomerProfile', { clienteId: storeClientId });
+        if (profile.success) {
+            state.profile = profile.data;
+            document.querySelector('.profile-hub')?.remove();
+            renderProfileHub();
+        }
+    }
+
+    function updateFavoriteButtons(productId, active) {
+        document.querySelectorAll(`[data-favorite-product="${CSS.escape(String(productId))}"]`).forEach(button => {
+            button.classList.toggle('saved', active);
+            button.setAttribute('aria-pressed', active ? 'true' : 'false');
+            const icon = button.querySelector('i');
+            if (icon) icon.className = active ? 'fas fa-heart' : 'far fa-heart';
+        });
     }
 
     searchInput?.addEventListener('input', event => {
@@ -1268,6 +1499,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }[char]));
     }
 
+    function resolveSocialDriveMedia(value) {
+        const raw = String(value || '').trim();
+        const match = raw.match(/[-\w]{25,}/);
+        if (!raw) return '';
+        if (raw.includes('drive.google.com') && match) return `https://drive.google.com/uc?export=download&id=${match[0]}`;
+        if (!raw.startsWith('http') && match) return `https://drive.google.com/uc?export=download&id=${match[0]}`;
+        return raw;
+    }
+
     function productKeyFromName(name) {
         return String(name || 'producto')
             .toLowerCase()
@@ -1299,7 +1539,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = card.querySelector('.product-name')?.textContent.trim() || 'Producto Luz Gomez';
         const productId = card.dataset.productId || '';
         const key = productId || productKeyFromName(name);
-        const image = card.querySelector('.product-img img')?.getAttribute('src') || '';
+        const image = card.dataset.productImage || card.querySelector('.product-img img')?.getAttribute('src') || '';
+        const video = card.dataset.videoSource || '';
         const category = card.querySelector('.product-category')?.textContent.trim() || 'Coleccion';
         const price = card.querySelector('.price-current')?.textContent.trim() || '$ 0.00';
         const oldPrice = card.querySelector('.price-old')?.textContent.trim() || '';
@@ -1311,6 +1552,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name,
             image,
             images: [image].filter(Boolean),
+            video,
             category,
             price,
             oldPrice,
@@ -1520,16 +1762,18 @@ document.addEventListener('DOMContentLoaded', () => {
     async function openSocialModal(card, focusComments = false) {
         activeProduct = getCardData(card);
         activeImageIndex = 0;
+        window.lgSaveRecentView?.(activeProduct.productId || activeProduct.key);
         await hydrateProductFromDatabase(activeProduct);
         const productState = getProductState(activeProduct.key);
         modal.querySelector('.modal-content').classList.add('social-product-modal');
         modal.querySelector('.modal-body').innerHTML = `
             <div class="social-modal-gallery">
                 <div class="social-modal-main" id="socialModalMain">
-                    ${activeProduct.images[0] ? `<img src="${text(activeProduct.images[0])}" alt="${text(activeProduct.name)}" id="modalImg">` : '<div class="db-image-missing"><i class="fas fa-clock"></i><span>Aun no disponible</span></div>'}
+                    ${activeProduct.video ? `<video src="${text(resolveSocialDriveMedia(activeProduct.video))}" poster="${text(activeProduct.images[0] || '')}" controls playsinline preload="metadata" id="modalVideo"></video>` : (activeProduct.images[0] ? `<img src="${text(activeProduct.images[0])}" alt="${text(activeProduct.name)}" id="modalImg">` : '<div class="db-image-missing"><i class="fas fa-clock"></i><span>Aun no disponible</span></div>')}
                     <span class="zoom-hint"><i class="fas fa-search-plus"></i> Click para zoom</span>
                 </div>
                 <div class="social-thumbs">
+                    ${activeProduct.video ? `<button class="social-thumb active" type="button" data-video-thumb="${text(activeProduct.video)}"><span class="video-thumb-icon"><i class="fas fa-play"></i></span></button>` : ''}
                     ${activeProduct.images.map((src, index) => `<button class="social-thumb ${index === 0 ? 'active' : ''}" type="button" data-thumb-index="${index}"><img src="${text(src)}" alt="${text(activeProduct.name)} ${index + 1}"></button>`).join('')}
                 </div>
             </div>
@@ -1580,6 +1824,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ...(dbProduct.imagenes_extra || []).map(image => image.url)
         ].filter((src, index, list) => src && list.indexOf(src) === index);
         if (dbImages.length) product.images = dbImages;
+        product.video = dbProduct.video_direct_url || dbProduct.video_url || product.video || '';
         const productState = getProductState(product.key);
         applyReactionSummary(productState, dbProduct.reaction_summary);
         productState.comments = mapDatabaseComments(dbProduct.comentarios || []);
@@ -1901,14 +2146,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function bindModalInteractions() {
+        document.querySelectorAll('[data-video-thumb]').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.social-thumb').forEach(item => item.classList.remove('active'));
+                button.classList.add('active');
+                const main = document.getElementById('socialModalMain');
+                if (main) {
+                    main.innerHTML = `<video src="${text(resolveSocialDriveMedia(button.dataset.videoThumb))}" poster="${text(activeProduct.images[0] || '')}" controls playsinline preload="metadata" id="modalVideo"></video><span class="zoom-hint"><i class="fas fa-play"></i> Video del producto</span>`;
+                    main.classList.remove('zoomed');
+                }
+            });
+        });
         document.querySelectorAll('[data-thumb-index]').forEach(button => {
             button.addEventListener('click', () => {
                 activeImageIndex = Number(button.dataset.thumbIndex);
                 document.querySelectorAll('.social-thumb').forEach(item => item.classList.remove('active'));
                 button.classList.add('active');
-                const img = document.getElementById('modalImg');
-                if (img) img.src = activeProduct.images[activeImageIndex];
-                document.getElementById('socialModalMain')?.classList.remove('zoomed');
+                const main = document.getElementById('socialModalMain');
+                if (main) {
+                    main.innerHTML = `<img src="${text(activeProduct.images[activeImageIndex])}" alt="${text(activeProduct.name)}" id="modalImg"><span class="zoom-hint"><i class="fas fa-search-plus"></i> Click para zoom</span>`;
+                    main.classList.remove('zoomed');
+                }
             });
         });
 

@@ -9,7 +9,7 @@ const DRIVE_ROOT_ID = '1rg-kFBpm7hMfQBGsQ5f74enZGJlmLIrk';
 const SELLER_EMAIL = 'luznahomybeauty@gmail.com';
 const SELLER_WHATSAPP = '573213092850';
 const SELLER_WHATSAPP_DISPLAY = '+57 321 3092850';
-const HOJAS = ['Config','Vendedores','Clientes','Categorias','Productos','Comentarios','Testimonios','Promociones','Pedidos','Galeria','Sesiones','Reacciones'];
+const HOJAS = ['Config','Vendedores','Clientes','Categorias','Productos','Comentarios','Testimonios','Promociones','Pedidos','Galeria','Sesiones','Reacciones','Favoritos','Vistas'];
 const CARPETAS = ['categorias','productos','galeria','testimonios','promociones','temp','config'];
 
 function getDb() {
@@ -136,6 +136,8 @@ function ensureSchema() {
   ensureColumns('Productos', ['id','categoria_id','nombre','descripcion','precio','precio_antiguo','imagen_drive_id','imagenes_extra_ids','video_drive_id','badge','rating','resenas_count','stock','activo','destacado','fecha_creacion','fecha_actualizacion']);
   ensureColumns('Pedidos', ['id','cliente_id','cliente_nombre','cliente_telefono','items_json','total','estado','fecha_creacion','fecha_actualizacion','whatsapp_mensaje','leido_vendedor','notificado_email']);
   ensureColumns('Reacciones', ['id','target_type','target_id','cliente_id','emoji','fecha','fecha_actualizacion']);
+  ensureColumns('Favoritos', ['id','cliente_id','producto_id','fecha','activo','fecha_actualizacion']);
+  ensureColumns('Vistas', ['id','cliente_id','target_type','target_id','fecha']);
 }
 
 function getHeaderMap(hoja) {
@@ -373,7 +375,9 @@ function initDatabase() {
     'Pedidos': ['id','cliente_id','cliente_nombre','cliente_telefono','items_json','total','estado','fecha_creacion','fecha_actualizacion','whatsapp_mensaje','leido_vendedor','notificado_email'],
     'Galeria': ['id','imagen_drive_id','titulo','orden','activo','video_drive_id','tipo','categoria_galeria'],
     'Sesiones': ['token','usuario_tipo','usuario_id','fecha_expiracion'],
-    'Reacciones': ['id','target_type','target_id','cliente_id','emoji','fecha','fecha_actualizacion']
+    'Reacciones': ['id','target_type','target_id','cliente_id','emoji','fecha','fecha_actualizacion'],
+    'Favoritos': ['id','cliente_id','producto_id','fecha','activo','fecha_actualizacion'],
+    'Vistas': ['id','cliente_id','target_type','target_id','fecha']
   };
   
   for (var i = 0; i < HOJAS.length; i++) {
@@ -1244,6 +1248,242 @@ function reactToTarget(data) {
   }
 }
 
+function getOrderProductCounts() {
+  var pedidos = getAllRows('Pedidos');
+  var counts = {};
+  for (var i = 0; i < pedidos.length; i++) {
+    var items = [];
+    try {
+      items = JSON.parse(pedidos[i].items_json || '[]');
+    } catch(e) {
+      items = [];
+    }
+    for (var j = 0; j < items.length; j++) {
+      var id = String(items[j].producto_id || items[j].id || '').trim();
+      if (!id) continue;
+      counts[id] = (counts[id] || 0) + (Number(items[j].cantidad) || 1);
+    }
+  }
+  return counts;
+}
+
+function getCommentCountsByProduct() {
+  var comentarios = getAllRows('Comentarios');
+  var counts = {};
+  for (var i = 0; i < comentarios.length; i++) {
+    if (!isTruthy(comentarios[i].visible)) continue;
+    var id = String(comentarios[i].producto_id || '').trim();
+    if (!id) continue;
+    counts[id] = (counts[id] || 0) + 1;
+  }
+  return counts;
+}
+
+function getFavoriteCounts() {
+  ensureColumns('Favoritos', ['id','cliente_id','producto_id','fecha','activo','fecha_actualizacion']);
+  var rows = getAllRows('Favoritos');
+  var counts = {};
+  for (var i = 0; i < rows.length; i++) {
+    if (!isTruthy(rows[i].activo)) continue;
+    var id = String(rows[i].producto_id || '').trim();
+    if (!id) continue;
+    counts[id] = (counts[id] || 0) + 1;
+  }
+  return counts;
+}
+
+function getViewCounts() {
+  ensureColumns('Vistas', ['id','cliente_id','target_type','target_id','fecha']);
+  var rows = getAllRows('Vistas');
+  var counts = {};
+  for (var i = 0; i < rows.length; i++) {
+    if (normalizeReactionTarget(rows[i].target_type) !== 'producto') continue;
+    var id = String(rows[i].target_id || '').trim();
+    if (!id) continue;
+    counts[id] = (counts[id] || 0) + 1;
+  }
+  return counts;
+}
+
+function getCustomerFavorites(clienteId) {
+  ensureColumns('Favoritos', ['id','cliente_id','producto_id','fecha','activo','fecha_actualizacion']);
+  var rows = getAllRows('Favoritos');
+  var map = {};
+  clienteId = String(clienteId || '').trim();
+  for (var i = 0; i < rows.length; i++) {
+    if (String(rows[i].cliente_id) === clienteId && isTruthy(rows[i].activo)) {
+      map[String(rows[i].producto_id)] = true;
+    }
+  }
+  return map;
+}
+
+function productPublicView(producto) {
+  var catInfo = getRowById('Categorias', producto.categoria_id);
+  return {
+    id: producto.id,
+    nombre: producto.nombre,
+    categoria_nombre: catInfo ? catInfo.nombre : '',
+    precio: Number(producto.precio) || 0,
+    imagen_url: getDriveThumbnailUrl(producto.imagen_drive_id, 500),
+    video_url: producto.video_drive_id ? getDriveFileUrl(producto.video_drive_id) : '',
+    video_direct_url: getDriveVideoUrl(producto.video_drive_id),
+    badge: producto.badge || ''
+  };
+}
+
+function buildProductSignals(clienteId) {
+  var products = getAllRows('Productos');
+  var orderCounts = getOrderProductCounts();
+  var commentCounts = getCommentCountsByProduct();
+  var favoriteCounts = getFavoriteCounts();
+  var viewCounts = getViewCounts();
+  var favorites = getCustomerFavorites(clienteId || '');
+  var signals = [];
+  for (var i = 0; i < products.length; i++) {
+    var p = products[i];
+    if (!isTruthy(p.activo)) continue;
+    var reaction = getReactionSummary('producto', p.id, clienteId || '');
+    var comments = commentCounts[p.id] || Number(p.resenas_count || 0) || 0;
+    var sales = orderCounts[p.id] || 0;
+    var favs = favoriteCounts[p.id] || 0;
+    var views = viewCounts[p.id] || 0;
+    var score = (reaction.total * 5) + (comments * 4) + (sales * 8) + (favs * 6) + (views * 2) + (isTruthy(p.destacado) ? 5 : 0);
+    var labels = [];
+    if (sales > 0) labels.push('Mas vendido');
+    if (reaction.total >= 3) labels.push('Mas reaccionado');
+    if (comments >= 2) labels.push('Mas comentado');
+    if (favs >= 1) labels.push('Favorito de clientes');
+    if (views >= 3) labels.push('Trending');
+    if (isTruthy(p.destacado)) labels.push('Recomendado');
+    if (!labels.length) labels.push(p.badge || 'Nuevo');
+    signals.push({
+      producto: productPublicView(p),
+      producto_id: p.id,
+      nombre: p.nombre,
+      score: score,
+      reactions: reaction.total,
+      comments: comments,
+      sales: sales,
+      favorites: favs,
+      views: views,
+      labels: labels.slice(0, 3),
+      userFavorite: Boolean(favorites[p.id])
+    });
+  }
+  signals.sort(function(a,b) { return b.score - a.score; });
+  return signals;
+}
+
+function getTrendInsights(clienteId) {
+  try {
+    var signals = buildProductSignals(clienteId || '');
+    var top = signals.slice(0, 8);
+    return {
+      success: true,
+      data: {
+        top: top,
+        mas_amados: signals.filter(function(i) { return i.reactions > 0; }).slice(0, 6),
+        mas_vendidos: signals.filter(function(i) { return i.sales > 0; }).slice(0, 6),
+        favoritos: signals.filter(function(i) { return i.favorites > 0; }).slice(0, 6),
+        insights: [
+          top[0] ? 'Producto con mas energia social: ' + top[0].nombre : 'Aun no hay suficientes datos de tendencias.',
+          signals.some(function(i) { return i.comments > 0; }) ? 'Los comentarios ya estan ayudando a generar confianza.' : 'Invita a tus clientas a comentar para subir la confianza.',
+          signals.some(function(i) { return i.favorites > 0; }) ? 'Hay productos guardados: buena senal para futuras promociones.' : 'Activa favoritos para descubrir intencion de compra.'
+        ]
+      }
+    };
+  } catch(e) {
+    return {success:false, error:e.toString()};
+  }
+}
+
+function recordProductView(data) {
+  try {
+    ensureColumns('Vistas', ['id','cliente_id','target_type','target_id','fecha']);
+    data = data || {};
+    var targetId = String(data.producto_id || data.target_id || data.id || '').trim();
+    if (!targetId) return {success:false, error:'Producto requerido'};
+    appendObject('Vistas', {
+      id: generateId('VIS'),
+      cliente_id: String(data.cliente_id || 'WEB').trim(),
+      target_type: 'producto',
+      target_id: targetId,
+      fecha: new Date().toISOString()
+    }, ['id','cliente_id','target_type','target_id','fecha']);
+    return {success:true};
+  } catch(e) {
+    return {success:false, error:e.toString()};
+  }
+}
+
+function toggleFavorite(data) {
+  try {
+    ensureColumns('Favoritos', ['id','cliente_id','producto_id','fecha','activo','fecha_actualizacion']);
+    data = data || {};
+    var clienteId = String(data.cliente_id || 'WEB').trim();
+    var productId = String(data.producto_id || data.id || '').trim();
+    if (!clienteId || !productId) return {success:false, error:'Faltan datos'};
+    var rows = getAllRows('Favoritos');
+    var now = new Date().toISOString();
+    for (var i = 0; i < rows.length; i++) {
+      if (String(rows[i].cliente_id) === clienteId && String(rows[i].producto_id) === productId) {
+        var next = !isTruthy(rows[i].activo);
+        setField('Favoritos', rows[i]._row, 'activo', next);
+        setField('Favoritos', rows[i]._row, 'fecha_actualizacion', now);
+        return {success:true, data:{producto_id:productId, active:next, favorites:getFavoriteCounts()[productId] || 0}};
+      }
+    }
+    appendObject('Favoritos', {
+      id: generateId('FAV'),
+      cliente_id: clienteId,
+      producto_id: productId,
+      fecha: now,
+      activo: true,
+      fecha_actualizacion: now
+    }, ['id','cliente_id','producto_id','fecha','activo','fecha_actualizacion']);
+    return {success:true, data:{producto_id:productId, active:true, favorites:getFavoriteCounts()[productId] || 0}};
+  } catch(e) {
+    return {success:false, error:e.toString()};
+  }
+}
+
+function getCustomerProfile(clienteId) {
+  try {
+    clienteId = String(clienteId || 'WEB').trim();
+    var clientes = getAllRows('Clientes');
+    var cliente = null;
+    for (var i = 0; i < clientes.length; i++) {
+      if (String(clientes[i].id) === clienteId) {
+        cliente = clientes[i];
+        break;
+      }
+    }
+    var favoriteMap = getCustomerFavorites(clienteId);
+    var productos = getAllRows('Productos');
+    var favoritos = [];
+    for (var j = 0; j < productos.length; j++) {
+      if (favoriteMap[productos[j].id]) favoritos.push(productPublicView(productos[j]));
+    }
+    var pedidos = getAllRows('Pedidos').filter(function(p) { return String(p.cliente_id) === clienteId; });
+    var comentarios = getAllRows('Comentarios').filter(function(c) { return String(c.cliente_id) === clienteId; });
+    var reactions = getAllRows('Reacciones').filter(function(r) { return String(r.cliente_id) === clienteId; });
+    var views = getAllRows('Vistas').filter(function(v) { return String(v.cliente_id) === clienteId && normalizeReactionTarget(v.target_type) === 'producto'; }).slice(-12);
+    return {success:true, data:{
+      cliente: cliente || {id: clienteId, nombre: 'Cliente Luz Gomez'},
+      favoritos: favoritos,
+      pedidos: pedidos.slice(-8).reverse(),
+      comentarios: comentarios.slice(-8).reverse(),
+      reacciones: reactions.slice(-12).reverse(),
+      vistos: views.reverse(),
+      puntos: favoritos.length * 8 + comentarios.length * 5 + pedidos.length * 20 + reactions.length * 2,
+      nivel: pedidos.length >= 5 ? 'Coleccionista premium' : favoritos.length >= 3 ? 'Exploradora de estilo' : 'Nueva amiga de Luz'
+    }};
+  } catch(e) {
+    return {success:false, error:e.toString()};
+  }
+}
+
 /** Obtiene comentarios recientes para moderación (vendedor) */
 function getComentariosPendientes(token) {
   try {
@@ -2012,7 +2252,8 @@ function doPost(e) {
       'getCategorias','getProductos','getProductosDestacados','getProductoById',
       'getComentariosByProducto','createComentario','getTestimonios',
       'getPromocionActiva','getGaleria','createPedido','getProductsCount',
-      'getReactionsForTargets','reactToTarget'
+      'getReactionsForTargets','reactToTarget','getTrendInsights',
+      'recordProductView','toggleFavorite','getCustomerProfile'
     ];
     
     var protectedActions = [
@@ -2029,7 +2270,7 @@ function doPost(e) {
       'addGaleriaItem','deleteGaleriaItem',
       'uploadGaleriaImagenBase64','uploadGaleriaVideoBase64',
       'getPedidos','updatePedidoEstado','getPedidosByCliente',
-      'getDashboardStats'
+      'getDashboardStats','getTrendInsights'
     ];
     
     if (typeof this[action] !== 'function') {
