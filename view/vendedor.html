@@ -300,7 +300,7 @@
     .toolbar-actions{display:flex;align-items:center;gap:8px}
 
     /* ── Tables ── */
-    .table-wrap{overflow-x:auto;border-radius:var(--radius-lg);overflow:hidden}
+    .table-wrap{overflow-x:auto;overflow-y:hidden;border-radius:var(--radius-lg);-webkit-overflow-scrolling:touch}
     table{width:100%;min-width:760px;border-collapse:collapse}
     thead{background:var(--bg-soft)}
     th{padding:12px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;font-weight:600;white-space:nowrap}
@@ -478,13 +478,14 @@
     @media(max-width:860px){
       .admin-layout{grid-template-columns:1fr}
       .admin-sidebar{
-        position:fixed;inset:0 auto 0 0;width:min(280px,84vw);
+        position:fixed;inset:0 auto 0 0;width:min(300px,86vw);
         transform:translateX(-100%);transition:transform var(--t-slow) var(--ease-out);
         z-index:1200;
+        box-shadow:24px 0 70px rgba(0,0,0,.30);
       }
       .admin-sidebar.active{transform:translateX(0)}
       .admin-close{display:inline-flex}
-      .admin-header{padding:12px 16px}
+      .admin-header{padding:10px 14px;gap:10px}
       .admin-header h2{font-size:1.25rem}
       .admin-content{padding:16px}
       .seller-chip strong{display:none}
@@ -499,8 +500,28 @@
       .toolbar-actions .btn{width:100%}
       .toolbar{flex-direction:column;align-items:stretch}
       .toolbar-actions{flex-direction:column}
-      .notification-panel{right:-52px}
+      .notification-panel{position:fixed;top:64px;left:12px;right:12px;width:auto;max-height:70vh;overflow:auto}
       .config-grid{grid-template-columns:1fr}
+      .admin-header{position:sticky;top:0;z-index:900}
+      .admin-header h2{font-size:1.08rem;max-width:42vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .admin-actions{gap:6px}
+      .icon-btn{width:38px;height:38px;border-radius:12px}
+      .seller-chip{padding:6px 8px}
+      .stats-grid{gap:10px}
+      .stat-card{padding:16px;border-radius:var(--radius-md)}
+      .stat-value{font-size:1.7rem}
+      .chart-card{padding:16px;border-radius:var(--radius-md)}
+      .chart-header{gap:10px;flex-direction:column}
+      .insight-pill{align-items:flex-start}
+      .trend-admin-item{grid-template-columns:40px 1fr;gap:10px}
+      .trend-score{grid-column:1 / -1;justify-self:start}
+      .admin-form input,
+      .admin-form textarea,
+      .admin-form select,
+      td select{font-size:16px}
+      .modal{align-items:flex-end;padding:8px}
+      .modal-card{width:100%;max-width:100%;max-height:92vh;border-radius:22px 22px 0 0;overflow:auto}
+      .modal-close{right:12px;top:12px}
     }
   </style>
 </head>
@@ -1093,7 +1114,7 @@
             <thead><tr><th>Media</th><th>Datos</th><th>IDs</th><th>Estado</th><th>Acciones</th></tr></thead>
             <tbody>${items.length ? items.map(i => `
               <tr>
-                <td>${i.video_url?`<video class="table-img" src="${i.video_url}" controls></video>`:`<img class="table-img" src="${i.imagen_url||LOGO_SRC}" alt="" onerror="this.src='${LOGO_SRC}'">`}</td>
+                <td>${i.video_direct_url||i.video_url?`<video class="table-img" src="${i.video_direct_url||i.video_url}" controls playsinline preload="metadata"></video>`:`<img class="table-img" src="${i.imagen_url||LOGO_SRC}" alt="" onerror="this.src='${LOGO_SRC}'">`}</td>
                 <td>
                   <strong style="font-size:.88rem">${esc(i.nombre||i.titulo||i.cliente_nombre||i.id)}</strong>
                   <div style="font-size:.78rem;color:var(--muted);margin-top:2px">${esc(i.descripcion||i.texto||i.cliente_ciudad||'')}</div>

@@ -703,7 +703,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSocialHub();
         renderTrendShelves();
         renderProfileHub();
-        renderBottomAppNav();
         hydrateHeroFromDatabase();
         document.dispatchEvent(new CustomEvent('lg:content-rendered'));
     }
@@ -1006,20 +1005,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.querySelector(`[data-product-id="${CSS.escape(button.dataset.savedJump)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             });
         });
-    }
-
-    function renderBottomAppNav() {
-        if (document.querySelector('.bottom-app-nav')) return;
-        document.body.insertAdjacentHTML('beforeend', `
-            <nav class="bottom-app-nav" aria-label="Navegacion movil">
-                <a href="#inicio"><i class="fas fa-home"></i><span>Inicio</span></a>
-                <a href="#productos"><i class="fas fa-store"></i><span>Tienda</span></a>
-                <a href="#galeria"><i class="fas fa-images"></i><span>Ideas</span></a>
-                <a href="mi-perfil.html"><i class="fas fa-user"></i><span>Perfil</span></a>
-                <button type="button" data-bottom-cart><i class="fas fa-shopping-bag"></i><span>Carrito</span></button>
-            </nav>
-        `);
-        document.querySelector('[data-bottom-cart]')?.addEventListener('click', () => document.getElementById('cartBtn')?.click());
     }
 
     function hydrateHeroFromDatabase() {
