@@ -614,7 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     window.addEventListener('scroll', () => {
         const scrolled = window.scrollY;
-        const parallaxElements = document.querySelectorAll('.hero-img-wrapper img, .about-img-main img');
+        const parallaxElements = document.querySelectorAll('.about-img-main img');
         
         parallaxElements.forEach(el => {
             const speed = 0.1;
@@ -702,7 +702,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderGallery(gallery.success ? gallery.data || [] : []);
         renderSocialHub();
         renderTrendShelves();
-        renderProfileHub();
         hydrateHeroFromDatabase();
         document.dispatchEvent(new CustomEvent('lg:content-rendered'));
     }
@@ -1139,8 +1138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const profile = await apiCall('getCustomerProfile', { clienteId: storeClientId });
         if (profile.success) {
             state.profile = profile.data;
-            document.querySelector('.profile-hub')?.remove();
-            renderProfileHub();
+            state.favorites = new Set((state.profile?.favoritos || []).map(product => String(product.id)));
         }
     }
 
@@ -1342,9 +1340,10 @@ document.addEventListener('DOMContentLoaded', () => {
         block.dataset.reactionsReady = 'true';
         const key = block.textContent.trim().slice(0, 64) || `static-${index}`;
         const current = visualState.reactions[key] || {};
+        const selected = current.__selected || '';
         block.insertAdjacentHTML('beforeend', `
             <div class="reaction-row">
-                ${['❤️','😍','🙌','💯','😮'].map(emoji => `<button class="reaction-btn ${current[emoji] ? 'active' : ''}" type="button" data-reaction="${emoji}" data-key="${key}"><span>${emoji}</span><b>${current[emoji] || 0}</b></button>`).join('')}
+                ${['❤️','😍','🙌','💯','😮'].map(emoji => `<button class="reaction-btn ${selected === emoji ? 'active' : ''}" type="button" data-reaction="${emoji}" data-key="${key}" aria-pressed="${selected === emoji ? 'true' : 'false'}"><span>${emoji}</span><b>${current[emoji] || 0}</b></button>`).join('')}
             </div>
         `);
     });
@@ -1354,10 +1353,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const key = reaction.dataset.key;
         const emoji = reaction.dataset.reaction;
         visualState.reactions[key] = visualState.reactions[key] || {};
-        visualState.reactions[key][emoji] = (visualState.reactions[key][emoji] || 0) + 1;
+        const group = visualState.reactions[key];
+        const previous = group.__selected || '';
+        if (previous === emoji) {
+            group[emoji] = Math.max(0, Number(group[emoji] || 0) - 1);
+            group.__selected = '';
+        } else {
+            if (previous) group[previous] = Math.max(0, Number(group[previous] || 0) - 1);
+            group[emoji] = Number(group[emoji] || 0) + 1;
+            group.__selected = emoji;
+        }
         saveStaticReactions();
-        reaction.classList.add('active', 'bump');
-        reaction.querySelector('b').textContent = visualState.reactions[key][emoji];
+        reaction.closest('.reaction-row')?.querySelectorAll('.reaction-btn').forEach(button => {
+            const active = button.dataset.reaction === group.__selected;
+            button.classList.toggle('active', active);
+            button.setAttribute('aria-pressed', active ? 'true' : 'false');
+            button.querySelector('b').textContent = group[button.dataset.reaction] || 0;
+        });
+        reaction.classList.add('bump');
         setTimeout(() => reaction.classList.remove('bump'), 350);
     });
 
