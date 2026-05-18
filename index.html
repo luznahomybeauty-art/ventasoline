@@ -154,6 +154,8 @@
     .access-nav-links { display: flex; align-items: center; gap: 4px; }
     .access-nav-links a { padding: 8px 14px; border-radius: var(--radius-full); color: var(--text-secondary); font-size: 0.88rem; font-weight: 600; transition: var(--transition); }
     .access-nav-links a:hover { color: var(--gold-light); background: rgba(201,168,76,0.07); }
+    .access-menu-toggle { display: none; }
+    .access-mobile-menu { display: none; }
     .access-landing { position: relative; z-index: 2; padding: 54px 0 44px; }
     .access-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 440px); gap: 42px; align-items: center; }
     .access-copy { min-width: 0; }
@@ -639,6 +641,10 @@
       .container { width: min(100% - 32px, 1320px); }
       .access-nav-inner { height: 70px; }
       .access-nav-links { display: none; }
+      .access-menu-toggle { display: inline-flex; position: relative; z-index: 40; }
+      .access-mobile-menu { position: fixed; left: 16px; right: 16px; top: 78px; z-index: 35; display: grid; gap: 8px; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--radius); background: rgba(13,11,15,0.96); box-shadow: var(--shadow-deep); backdrop-filter: blur(20px); opacity: 0; visibility: hidden; transform: translateY(-8px); transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease; }
+      .access-mobile-menu.active { opacity: 1; visibility: visible; transform: translateY(0); }
+      .access-mobile-menu a { padding: 13px 16px; border-radius: var(--radius-sm); background: rgba(201,168,76,0.06); border: 1px solid var(--border-color); color: var(--text-secondary); font-weight: 600; }
       .access-landing { padding: 32px 0 32px; }
       .access-info-grid, .access-footer-grid { grid-template-columns: 1fr; }
       .access-slide { grid-template-columns: 1fr; }
@@ -683,6 +689,9 @@
       .access-section { padding: 34px 0; }
       .access-card { width: min(100% - 28px, 560px); margin: 22px auto 34px; }
       .access-footer { padding: 30px 0 18px; }
+      .access-nav-inner { gap: 8px; }
+      .access-nav .btn-small { display: none; }
+      .access-mobile-menu { top: 72px; left: 11px; right: 11px; }
       .hero-title { font-size: 2.7rem; }
       .hero-buttons .btn { width: 100%; justify-content: center; }
       .header-container { height: 72px; gap: 8px; width: min(100% - 22px, 1320px); }
@@ -740,7 +749,15 @@
               <a href="#" data-access-target="access-contact">Contacto</a>
             </nav>
             <a class="btn btn-outline btn-small" href="#" data-access-target="access-login">Ingresar</a>
+            <button class="icon-btn access-menu-toggle" id="accessMenuToggle" type="button" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
           </div>
+          <nav class="access-mobile-menu" id="accessMobileMenu" aria-label="Menu movil">
+            <a href="#" data-access-target="access-home">Inicio</a>
+            <a href="#" data-access-target="access-about">Nosotros</a>
+            <a href="#" data-access-target="access-special">Colecciones</a>
+            <a href="#" data-access-target="access-contact">Contacto</a>
+            <a href="#" data-access-target="access-login">Ingresar</a>
+          </nav>
         </header>
 
         <main class="access-landing" id="access-home">
@@ -1532,6 +1549,7 @@
       const cl = $('#clientLogout'); if (cl) cl.addEventListener('click', logout);
       const mt = $('#menuToggle'); if (mt) mt.addEventListener('click', () => { const nm = $('#navMobile'); if (nm) nm.classList.toggle('active'); });
       setupMobileNav();
+      setupAccessMobileNav();
       const cb = $('#cartBtn'); if (cb) cb.addEventListener('click', openCart);
       const cc = $('#cartClose'); if (cc) cc.addEventListener('click', closeCart);
       const co = $('#cartOverlay'); if (co) co.addEventListener('click', closeCart);
@@ -1555,6 +1573,27 @@
       const nb = $('#notificationBell'); if (nb) nb.addEventListener('click', toggleNotifications);
       $$('.admin-link[data-admin]').forEach(btn => btn.addEventListener('click', () => openAdminPage(btn.dataset.admin)));
       document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAdminMenu(); });
+    }
+
+    function setupAccessMobileNav() {
+      const button = $('#accessMenuToggle');
+      const menu = $('#accessMobileMenu');
+      if (!button || !menu || menu.dataset.ready) return;
+      menu.dataset.ready = 'true';
+      button.addEventListener('click', () => {
+        const isOpen = menu.classList.toggle('active');
+        button.setAttribute('aria-expanded', String(isOpen));
+      });
+      $$('[data-access-target]', menu).forEach(link => link.addEventListener('click', () => {
+        menu.classList.remove('active');
+        button.setAttribute('aria-expanded', 'false');
+      }));
+      document.addEventListener('click', event => {
+        if (!menu.classList.contains('active')) return;
+        if (menu.contains(event.target) || button.contains(event.target)) return;
+        menu.classList.remove('active');
+        button.setAttribute('aria-expanded', 'false');
+      });
     }
 
     function setupMobileNav() {
