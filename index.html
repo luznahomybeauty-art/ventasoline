@@ -353,6 +353,7 @@
     .products-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
     .product-card { position: relative; overflow: hidden; transition: var(--transition); border-radius: var(--radius-lg); background: var(--bg-card); border: 1px solid var(--border-color); }
     .product-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.40), 0 0 0 1px rgba(201,168,76,0.15); }
+    .product-card, .gallery-item { cursor: pointer; }
     .product-img { aspect-ratio: 1; background: var(--bg-secondary); overflow: hidden; position: relative; }
     .product-img img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s ease; }
     .product-card:hover .product-img img { transform: scale(1.06); }
@@ -490,6 +491,13 @@
     ═══════════════════════════════════════ */
     .toast { position: fixed; left: 50%; bottom: 32px; transform: translate(-50%, 90px); z-index: 4000; background: rgba(13,11,15,0.92); color: var(--cream); padding: 14px 24px; border-radius: var(--radius-full); box-shadow: var(--shadow-deep); opacity: 0; transition: var(--transition); max-width: min(520px, 90vw); text-align: center; font-size: 0.9rem; border: 1px solid rgba(201,168,76,0.20); backdrop-filter: blur(12px); }
     .toast.show { transform: translate(-50%, 0); opacity: 1; }
+    .slow-notice { position: fixed; right: 22px; bottom: 24px; width: min(390px, calc(100vw - 32px)); z-index: 4100; padding: 16px; border-radius: var(--radius); background: rgba(16,10,22,0.94); color: var(--cream); border: 1px solid rgba(255,226,138,0.28); box-shadow: var(--shadow-deep); backdrop-filter: blur(18px); opacity: 0; visibility: hidden; transform: translate3d(0, 18px, 0); transition: opacity 0.24s ease, transform 0.24s ease, visibility 0.24s ease; }
+    .slow-notice.show { opacity: 1; visibility: visible; transform: translate3d(0, 0, 0); }
+    .slow-notice strong { display: block; margin-bottom: 5px; font-size: 0.94rem; color: var(--gold-light); }
+    .slow-notice p { color: var(--text-secondary); font-size: 0.84rem; line-height: 1.45; margin-bottom: 12px; }
+    .slow-notice-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .slow-notice-actions button { min-height: 36px; padding: 8px 12px; border-radius: var(--radius-full); color: var(--cream); border: 1px solid rgba(255,226,138,0.24); background: rgba(255,248,236,0.08); font-size: 0.78rem; font-weight: 700; }
+    .slow-notice-actions button:first-child { background: var(--grad-gold); color: var(--noir); border-color: transparent; }
 
     /* ═══════════════════════════════════════
        MODAL
@@ -716,6 +724,7 @@
       .reaction-label { max-width: 84px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .social-panel { align-items: stretch; }
       .social-panel .social-reaction { width: 100%; }
+      .slow-notice { left: 14px; right: 14px; bottom: 14px; width: auto; }
     }
   </style>
 </head>
@@ -906,6 +915,7 @@
           <div class="header-actions">
             <div class="search-box"><input id="searchInput" placeholder="Buscar..."><i class="fa-solid fa-search"></i></div>
             <button class="icon-btn" id="themeToggle" aria-label="Cambiar tema"><i class="fa-solid fa-moon"></i></button>
+            <button class="icon-btn" type="button" data-reload-page aria-label="Recargar página" title="Recargar página"><i class="fa-solid fa-rotate-right"></i></button>
             <button class="icon-btn" id="clientLogout" aria-label="Cerrar sesión"><i class="fa-solid fa-right-from-bracket"></i></button>
             <button class="icon-btn cart-btn" id="cartBtn" aria-label="Ver carrito"><i class="fa-solid fa-shopping-bag"></i><span class="cart-count" id="cartCount">0</span></button>
             <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Menú"><i class="fa-solid fa-bars"></i></button>
@@ -1144,6 +1154,7 @@
                 <div class="notification-panel" id="notificationPanel"></div>
               </div>
               <button class="icon-btn" id="adminTheme"><i class="fa-solid fa-moon"></i></button>
+              <button class="icon-btn" type="button" data-reload-page aria-label="Recargar página" title="Recargar página"><i class="fa-solid fa-rotate-right"></i></button>
               <strong id="sellerName" style="font-size:0.88rem;color:var(--text-muted);">Vendedor</strong>
             </div>
           </header>
@@ -1181,6 +1192,14 @@
     <a id="whatsappFloat" class="floating-wa" target="_blank" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
     <button id="backToTop" class="back-to-top" aria-label="Volver arriba"><i class="fa-solid fa-arrow-up"></i></button>
     <div id="modal" class="modal"><div class="modal-card"><button class="icon-btn modal-close" id="modalClose"><i class="fa-solid fa-times"></i></button><div id="modalBody"></div></div></div>
+    <div id="slowNotice" class="slow-notice" role="status" aria-live="polite">
+      <strong>Un momento, estamos cargando todo con calma.</strong>
+      <p>A veces la conexión con Google tarda un poquito. No necesitas tocar muchas veces; si ves que se queda pensando, puedes recargar sin cerrar tu sesión.</p>
+      <div class="slow-notice-actions">
+        <button type="button" data-slow-reload>Recargar página</button>
+        <button type="button" data-slow-dismiss>Entendido</button>
+      </div>
+    </div>
     <div id="toast" class="toast"></div>
   </div>
 
@@ -1471,6 +1490,7 @@
       if (window.location.hash.startsWith('#access-')) history.replaceState(null, '', window.location.pathname + window.location.search);
       setupTheme();
       bindGlobalEvents();
+      setupSlowNotice();
       setupAccessCarousel();
       await loadConfig();
       restoreSession();
@@ -1546,6 +1566,7 @@
       const tpl = $('#togglePinLogin'); if (tpl) tpl.addEventListener('click', togglePinLogin);
       const tt = $('#themeToggle'); if (tt) tt.addEventListener('click', toggleTheme);
       const at = $('#adminTheme'); if (at) at.addEventListener('click', toggleTheme);
+      $$('[data-reload-page]').forEach(btn => btn.addEventListener('click', () => window.location.reload()));
       const cl = $('#clientLogout'); if (cl) cl.addEventListener('click', logout);
       const mt = $('#menuToggle'); if (mt) mt.addEventListener('click', () => { const nm = $('#navMobile'); if (nm) nm.classList.toggle('active'); });
       setupMobileNav();
@@ -1594,6 +1615,24 @@
         menu.classList.remove('active');
         button.setAttribute('aria-expanded', 'false');
       });
+    }
+
+    function setupSlowNotice() {
+      const notice = $('#slowNotice');
+      if (!notice || notice.dataset.ready) return;
+      notice.dataset.ready = 'true';
+      const storageKey = 'lg_slow_notice_last_index';
+      const intervalMs = 4 * 60 * 1000;
+      const show = () => {
+        const last = Number(sessionStorage.getItem(storageKey) || 0);
+        if (Date.now() - last < intervalMs) return;
+        notice.classList.add('show');
+        sessionStorage.setItem(storageKey, String(Date.now()));
+      };
+      $('[data-slow-reload]', notice)?.addEventListener('click', () => window.location.reload());
+      $('[data-slow-dismiss]', notice)?.addEventListener('click', () => notice.classList.remove('show'));
+      setTimeout(show, 12000);
+      setInterval(show, intervalMs);
     }
 
     function setupMobileNav() {
@@ -1729,7 +1768,7 @@
       const pg = $('#productsGrid');
       if (!pg) return;
       pg.innerHTML = state.products.map(p => `
-        <article class="product-card">
+        <article class="product-card" data-product-card="${esc(p.id)}" role="button" tabindex="0" aria-label="Ver producto ${esc(p.nombre)}">
           <div class="reaction-layer" aria-hidden="true"></div>
           ${p.badge ? `<div class="product-badge">${esc(p.badge)}</div>` : ''}
           <div class="product-img">
@@ -1755,6 +1794,18 @@
         </article>`).join('');
       $$('[data-cart]').forEach(btn => btn.addEventListener('click', () => addToCart(state.products.find(p => p.id === btn.dataset.cart))));
       $$('[data-detail]').forEach(btn => btn.addEventListener('click', () => openProductDetail(btn.dataset.detail)));
+      $$('[data-product-card]', pg).forEach(card => {
+        const open = event => {
+          if (event.target.closest('button, a, input, textarea, select, [data-reaction-widget], .reaction-palette, .product-actions')) return;
+          openProductDetail(card.dataset.productCard);
+        };
+        card.addEventListener('click', open);
+        card.addEventListener('keydown', event => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          open(event);
+        });
+      });
       bindReactions(pg);
       refreshReactionSummaries(state.products.map(p => ({ target_type: 'producto', target_id: p.id })), pg);
     }
@@ -1954,7 +2005,7 @@
       const data = result.data || [];
       const gg = $('#galleryGrid');
       if (gg) gg.innerHTML = data.length ? data.map((g, i) => `
-        <div class="gallery-item ${i === 0 ? 'large' : i === 5 ? 'wide' : ''}" data-double-like data-reaction-type="galeria" data-reaction-id="${esc(g.id)}">
+        <div class="gallery-item ${i === 0 ? 'large' : i === 5 ? 'wide' : ''}" data-double-like data-reaction-type="galeria" data-reaction-id="${esc(g.id)}" data-gallery-open="${esc(g.id || i)}" role="button" tabindex="0" aria-label="Ver ${esc(g.titulo || 'imagen de galería')}">
           <div class="reaction-layer" aria-hidden="true"></div>
           ${g.video_drive_id || g.video_url ? videoPlayer(g.video_drive_id || g.video_url, { poster: g.imagen_url || LOGO_SRC }) : `<img src="${g.imagen_url || LOGO_SRC}" alt="${esc(g.titulo)}" loading="lazy" onerror="this.src='${LOGO_SRC}'">`}
           <div class="gallery-overlay"><span class="gallery-label">${esc(g.titulo || 'Luz Gomez')}</span></div>
@@ -1962,7 +2013,34 @@
         </div>`).join('') : `<div class="gallery-item large" style="background:var(--bg-secondary);display:grid;place-items:center;"><span style="font-family:var(--font-script);font-size:4rem;color:var(--gold-light);">Luz Gomez</span></div>`;
       bindVideoPlayers(gg);
       bindReactions(gg);
+      $$('[data-gallery-open]', gg).forEach((item, index) => {
+        const open = event => {
+          if (event.target.closest('button, a, [data-reaction-widget], .reaction-palette')) return;
+          openGalleryItem(data[index]);
+        };
+        item.addEventListener('click', open);
+        item.addEventListener('keydown', event => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          open(event);
+        });
+      });
       refreshReactionSummaries(data.map(g => ({ target_type: 'galeria', target_id: g.id })), gg);
+    }
+
+    function openGalleryItem(item = {}) {
+      const isVideo = item.video_drive_id || item.video_url || item.video_direct_url;
+      openModal(`
+        <div style="display:grid;gap:18px;">
+          <div style="border-radius:var(--radius-lg);overflow:hidden;background:#050505;max-height:72vh;display:grid;place-items:center;">
+            ${isVideo ? videoPlayer(item.video_drive_id || item.video_url || item.video_direct_url, { poster: item.imagen_url || LOGO_SRC }) : `<img src="${item.imagen_url || LOGO_SRC}" alt="${esc(item.titulo || 'Galería Luz Gomez')}" style="width:100%;height:auto;max-height:72vh;object-fit:contain;">`}
+          </div>
+          <div>
+            <span class="product-category">Galería</span>
+            <h2 style="font-family:var(--font-display);font-weight:400;margin-top:4px;">${esc(item.titulo || 'Luz Gomez')}</h2>
+          </div>
+        </div>`);
+      bindVideoPlayers($('#modalBody'));
     }
 
     function renderContact() {

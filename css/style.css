@@ -1182,6 +1182,7 @@ section { padding: 100px 0; }
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
   position: relative;
   border: 1px solid var(--border-color);
+  cursor: pointer;
 }
 
 /* Stacking effect: al hover esta sube, las demás se atenúan */

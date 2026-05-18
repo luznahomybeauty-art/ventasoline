@@ -417,6 +417,14 @@
     }
     [data-theme="dark"] .toast{background:var(--sand-100);color:var(--ink-900)}
     .toast.show{transform:translate(-50%,0);opacity:1}
+    .slow-notice{position:fixed;right:22px;bottom:24px;width:min(390px,calc(100vw - 32px));z-index:4100;padding:16px;border-radius:var(--radius-md);background:rgba(53,37,28,.96);color:#fff;border:1px solid rgba(212,165,116,.32);box-shadow:var(--shadow-lg);backdrop-filter:blur(18px);opacity:0;visibility:hidden;transform:translate3d(0,18px,0);transition:opacity .24s var(--ease),transform .24s var(--ease),visibility .24s var(--ease)}
+    .slow-notice.show{opacity:1;visibility:visible;transform:translate3d(0,0,0)}
+    .slow-notice strong{display:block;margin-bottom:5px;color:var(--gold);font-size:.94rem}
+    .slow-notice p{font-size:.84rem;line-height:1.45;margin-bottom:12px;color:rgba(255,255,255,.82)}
+    .slow-notice-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .slow-notice-actions button{min-height:36px;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);color:#fff;font-size:.78rem;font-weight:700}
+    .slow-notice-actions button:first-child{background:var(--gold);color:var(--ink-900);border-color:transparent}
+    @media(max-width:540px){.slow-notice{left:14px;right:14px;bottom:14px;width:auto}}
 
     /* ── Select styling ── */
     select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px!important}
@@ -530,6 +538,7 @@
             <div class="notification-panel" id="notificationPanel"></div>
           </div>
           <button class="icon-btn" id="adminTheme" aria-label="Cambiar tema"><i class="fa-solid fa-moon"></i></button>
+          <button class="icon-btn" id="reloadPageBtn" type="button" aria-label="Recargar página" title="Recargar página"><i class="fa-solid fa-rotate-right"></i></button>
           <div class="seller-chip">
             <div class="seller-avatar" id="sellerAvatar">VN</div>
             <strong id="sellerName">Vendedor</strong>
@@ -558,6 +567,14 @@
     <div class="modal-card">
       <button class="icon-btn modal-close" id="modalClose"><i class="fa-solid fa-times"></i></button>
       <div id="modalBody"></div>
+    </div>
+  </div>
+  <div id="slowNotice" class="slow-notice" role="status" aria-live="polite">
+    <strong>El panel puede tardar unos segundos.</strong>
+    <p>Google a veces responde lento. Evita tocar varias veces el mismo botón; si se queda cargando, recarga sin cerrar tu sesión.</p>
+    <div class="slow-notice-actions">
+      <button type="button" data-slow-reload>Recargar página</button>
+      <button type="button" data-slow-dismiss>Entendido</button>
     </div>
   </div>
   <div id="toast" class="toast"></div>
@@ -589,6 +606,7 @@
     async function initSellerDashboard() {
       setupTheme();
       bindEvents();
+      setupSlowNotice();
       const raw = localStorage.getItem('lg_session');
       if (!raw) return redirectLogin();
       try { state.session = JSON.parse(raw); } catch { return redirectLogin(); }
@@ -607,6 +625,7 @@
       $('#adminLogout').addEventListener('click', logout);
       $('#goStore').addEventListener('click', () => window.location.href = 'tienda.html');
       $('#adminTheme').addEventListener('click', toggleTheme);
+      $('#reloadPageBtn')?.addEventListener('click', () => window.location.reload());
       $('#notificationBell').addEventListener('click', toggleNotifications);
       $('#modalClose').addEventListener('click', closeModal);
       $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
@@ -618,6 +637,24 @@
           panel.classList.remove('active');
         }
       });
+    }
+
+    function setupSlowNotice() {
+      const notice = $('#slowNotice');
+      if (!notice || notice.dataset.ready) return;
+      notice.dataset.ready = 'true';
+      const storageKey = 'lg_slow_notice_last_vendedor';
+      const intervalMs = 4 * 60 * 1000;
+      const show = () => {
+        const last = Number(sessionStorage.getItem(storageKey) || 0);
+        if (Date.now() - last < intervalMs) return;
+        notice.classList.add('show');
+        sessionStorage.setItem(storageKey, String(Date.now()));
+      };
+      $('[data-slow-reload]', notice)?.addEventListener('click', () => window.location.reload());
+      $('[data-slow-dismiss]', notice)?.addEventListener('click', () => notice.classList.remove('show'));
+      setTimeout(show, 12000);
+      setInterval(show, intervalMs);
     }
 
     async function apiCall(action, params = {}) {

@@ -1092,9 +1092,26 @@ document.addEventListener('DOMContentLoaded', () => {
         overlay.querySelector('.lightbox-next').addEventListener('click', () => { overlay.remove(); openLightbox(visualState.lightboxIndex + 1); });
         overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
     }
-    document.querySelectorAll('.gallery-item img').forEach((img, index) => {
-        img.closest('.gallery-item')?.addEventListener('dblclick', () => openLightbox(index));
-    });
+    function bindGalleryLightbox() {
+        document.querySelectorAll('.gallery-item img').forEach((img, index) => {
+            const item = img.closest('.gallery-item');
+            if (!item || item.dataset.lightboxReady) return;
+            item.dataset.lightboxReady = 'true';
+            item.setAttribute('role', 'button');
+            item.setAttribute('tabindex', '0');
+            item.addEventListener('click', event => {
+                if (event.target.closest('button, a, input, textarea, select, .reaction-row, .product-social')) return;
+                openLightbox(index);
+            });
+            item.addEventListener('keydown', event => {
+                if (event.key !== 'Enter' && event.key !== ' ') return;
+                event.preventDefault();
+                openLightbox(index);
+            });
+        });
+    }
+    window.bindGalleryLightbox = bindGalleryLightbox;
+    bindGalleryLightbox();
     document.addEventListener('keydown', e => {
         const box = document.querySelector('.lightbox-premium');
         if (!box) return;
@@ -2045,6 +2062,7 @@ document.addEventListener('DOMContentLoaded', () => {
         enhanceProductCards();
         enhanceSocialSurfaces();
         syncVisibleProductReactions();
+        window.bindGalleryLightbox?.();
     });
 });
 
