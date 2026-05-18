@@ -1880,11 +1880,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function commentReactionTotal(comment) {
+        return Object.values(comment?.reactions || {}).reduce((sum, value) => sum + Number(value || 0), 0);
+    }
+
     function commentFormTemplate(key, parentId = '') {
         return `
-            <form class="comment-form ${parentId ? 'reply-form' : ''}" data-comment-form="${key}" data-parent-id="${parentId}">
-                <div class="emoji-strip">
-                    ${commentEmojis.map(emoji => `<button type="button" data-insert-emoji="${emoji}">${emoji}</button>`).join('')}
+            <form class="${parentId ? 'comment-form reply-form' : 'comment-form'}" data-comment-form="${key}" data-parent-id="${parentId}">
+                <div class="emoji-strip compact-emoji-picker">
+                    <button class="emoji-picker-toggle" type="button" data-emoji-picker-toggle aria-label="Abrir emojis">
+                        <span>😊</span>
+                    </button>
+                    <div class="emoji-picker-popover" role="menu">
+                        ${commentEmojis.map(emoji => `<button type="button" role="menuitem" data-insert-emoji="${emoji}">${emoji}</button>`).join('')}
+                    </div>
                 </div>
                 <textarea name="comment" placeholder="${parentId ? 'Escribe una respuesta...' : 'Comparte tu opinion o pregunta por este producto...'}" required></textarea>
                 <button class="btn btn-primary" type="submit"><i class="fas fa-paper-plane"></i> Enviar</button>
@@ -1898,12 +1907,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const productState = getProductState(key);
         const roots = productState.comments.filter(comment => !comment.parentId);
         list.innerHTML = roots.map(comment => renderCommentTree(productState, comment)).join('');
+        list.querySelectorAll('[data-comment-reaction-toggle]').forEach(button => {
+            button.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                button.closest('.comment-reaction-wrap')?.querySelector('.reaction-popover')?.classList.toggle('active');
+            });
+        });
         list.querySelectorAll('[data-comment-reaction]').forEach(button => {
             button.addEventListener('click', event => {
                 event.preventDefault();
                 event.stopPropagation();
                 const comment = button.closest('[data-comment-id]');
                 setCommentReaction(comment?.dataset.commentId, button.dataset.commentReaction, button);
+                button.closest('.reaction-popover')?.classList.remove('active');
             });
         });
         list.querySelectorAll('[data-reply-open]').forEach(button => {
@@ -1927,6 +1944,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function commentTemplate(comment, isReply = false) {
         const initials = String(comment.author || 'Cliente').trim().slice(0, 1).toUpperCase() || 'C';
+        const activeEmoji = comment.userReaction || '❤️';
+        const activeLabel = comment.userReaction ? activeEmoji : 'Reaccionar';
+        const total = commentReactionTotal(comment);
         return `
             <article class="social-comment ${isReply ? 'reply' : ''}" data-comment-id="${text(comment.id)}">
                 <div class="social-comment-head">
@@ -1938,7 +1958,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <p>${text(comment.body)}</p>
                 <div class="social-row">
-                    ${commentEmojis.map(emoji => `<button class="social-action ${comment.userReaction === emoji ? 'active' : ''}" type="button" data-comment-reaction="${emoji}" aria-pressed="${comment.userReaction === emoji ? 'true' : 'false'}">${emoji} <span>${comment.reactions?.[emoji] || 0}</span></button>`).join('')}
+                    <span class="comment-reaction-wrap">
+                        <button class="social-action comment-reaction-toggle ${comment.userReaction ? 'active' : ''}" type="button" data-comment-reaction-toggle aria-pressed="${comment.userReaction ? 'true' : 'false'}">
+                            <span>${activeLabel}</span>
+                            <b>${total}</b>
+                        </button>
+                        <span class="reaction-popover compact comment-reaction-popover" role="menu">
+                            ${commentEmojis.map(emoji => `<button class="reaction-option ${comment.userReaction === emoji ? 'active' : ''}" type="button" role="menuitem" data-comment-reaction="${emoji}" aria-label="Reaccionar ${emoji}">${emoji}<small>${comment.reactions?.[emoji] || 0}</small></button>`).join('')}
+                        </span>
+                    </span>
                     <button class="social-action" type="button" data-reply-open><i class="fas fa-reply"></i> Responder</button>
                 </div>
                 ${commentFormTemplate(activeProduct?.key || '', comment.id)}
@@ -2190,7 +2218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.addEventListener('click', event => {
-        if (event.target.closest('[data-product-reaction], [data-modal-reaction], [data-comment-reaction], [data-universal-reaction], [data-universal-toggle], [data-product-quick-heart], .product-react-toggle, .product-comment-open, [data-reply-open]')) {
+        if (event.target.closest('[data-product-reaction], [data-modal-reaction], [data-comment-reaction], [data-comment-reaction-toggle], [data-universal-reaction], [data-universal-toggle], [data-product-quick-heart], .product-react-toggle, .product-comment-open, [data-reply-open]')) {
             return;
         }
 
@@ -2275,6 +2303,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const emojiToggle = event.target.closest('[data-emoji-picker-toggle]');
+        if (emojiToggle) {
+            emojiToggle.closest('.emoji-strip')?.classList.toggle('active');
+            return;
+        }
+
         const emoji = event.target.closest('[data-insert-emoji]');
         if (emoji) {
             const form = emoji.closest('form');
@@ -2283,6 +2317,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 textarea.value = `${textarea.value}${emoji.dataset.insertEmoji}`;
                 textarea.focus();
             }
+            emoji.closest('.emoji-strip')?.classList.remove('active');
         }
     }, true);
 
