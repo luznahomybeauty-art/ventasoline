@@ -1323,6 +1323,7 @@
       const type = widget.dataset.targetType;
       const id = widget.dataset.targetId;
       widget.classList.remove('open');
+      delete widget.dataset.touchOpen;
       burstReaction(widget, emoji, emoji === '❤️');
       const previous = state.reactions[reactionKey(type, id)] || emptyReactionSummary(type, id);
       const counts = { ...(previous.counts || {}) };
@@ -1343,21 +1344,32 @@
         let closeTimer = 0;
         let pressTimer = 0;
         const open = () => { clearTimeout(closeTimer); widget.classList.add('open'); };
-        const close = () => { closeTimer = setTimeout(() => widget.classList.remove('open'), 220); };
-        widget.addEventListener('pointerenter', open);
-        widget.addEventListener('pointerleave', close);
+        const close = () => {
+          if (widget.dataset.touchOpen === 'true') return;
+          closeTimer = setTimeout(() => widget.classList.remove('open'), 220);
+        };
+        widget.addEventListener('pointerenter', e => { if (e.pointerType !== 'touch') open(); });
+        widget.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') close(); });
         widget.addEventListener('focusin', open);
         widget.addEventListener('focusout', close);
         widget.addEventListener('pointerdown', e => {
           pressTimer = setTimeout(open, 280);
-          if (e.pointerType === 'touch') widget.classList.add('open');
+          if (e.pointerType === 'touch') {
+            clearTimeout(closeTimer);
+            widget.dataset.touchOpen = 'true';
+            widget.classList.add('open');
+          }
         });
         widget.addEventListener('pointerup', () => clearTimeout(pressTimer));
         $('.reaction-trigger', widget).addEventListener('click', e => {
           e.preventDefault();
+          if (widget.dataset.touchOpen === 'true') return;
           widget.classList.toggle('open');
         });
-        $$('.reaction-option', widget).forEach(btn => btn.addEventListener('click', e => saveReaction(widget, btn.dataset.reactionEmoji, e)));
+        $$('.reaction-option', widget).forEach(btn => {
+          btn.addEventListener('pointerdown', e => e.stopPropagation());
+          btn.addEventListener('click', e => saveReaction(widget, btn.dataset.reactionEmoji, e));
+        });
       });
       $$('[data-double-like]', root).forEach(el => {
         if (el.dataset.doubleBound) return;
